@@ -1,0 +1,132 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "transpositioner": "transpositioners:block/transpositioner"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        8
+      ],
+      "to": [
+        14,
+        14,
+        9
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            14,
+            14,
+            2,
+            13
+          ],
+          "texture": "transpositioner"
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            14,
+            3
+          ],
+          "texture": "transpositioner"
+        },
+        "north": {
+          "texture": "transpositioner"
+        },
+        "south": {
+          "texture": "transpositioner"
+        },
+        "west": {
+          "uv": [
+            13,
+            2,
+            14,
+            14
+          ],
+          "texture": "transpositioner"
+        },
+        "east": {
+          "uv": [
+            2,
+            2,
+            3,
+            14
+          ],
+          "texture": "transpositioner"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        7,
+        7
+      ],
+      "to": [
+        9,
+        9,
+        8
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            2,
+            0,
+            1
+          ],
+          "texture": "transpositioner"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": "transpositioner"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "transpositioner"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "transpositioner"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            2,
+            2
+          ],
+          "texture": "transpositioner"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            1,
+            2
+          ],
+          "texture": "transpositioner"
+        }
+      }
+    }
+  ]
+}

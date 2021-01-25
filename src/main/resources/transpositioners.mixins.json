@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "com.kneelawk.transpositioners.mixin.impl",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+  ],
+  "client": [
+    "ClientPlayNetworkHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

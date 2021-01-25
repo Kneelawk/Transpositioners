@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "transpositioners",
+  "version": "${version}",
+  "name": "Transpositioners",
+  "description": "Configurable item movement between inventories",
+  "authors": [
+    "Kneelawk"
+  ],
+  "contact": {
+    "homepage": "",
+    "sources": "https://github.com/Kneelawk/Transpositioners"
+  },
+  "license": "MIT",
+  "icon": "assets/transpositioners/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.kneelawk.transpositioners.TranspositionersModKt::init"
+    ],
+    "client": [
+      "com.kneelawk.transpositioners.client.TranspositionersClientModKt::init"
+    ]
+  },
+  "mixins": [
+    "transpositioners.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.9.2",
+    "fabric": "*",
+    "fabric-language-kotlin": ">=1.4.21+build.1",
+    "minecraft": "1.16.x"
+  },
+  "suggests": {
+    "flamingo": "*"
+  }
+}
