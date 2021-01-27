@@ -12,9 +12,11 @@ object TranspositionerItems {
     val TRANSPOSITIONERS_ITEM_SETTINGS = Item.Settings().group(TRANSPOSITIONER_ITEM_GROUP)
 
     val TRANSPOSITIONER = TranspositionerItem(TRANSPOSITIONERS_ITEM_SETTINGS)
+    val TRANSPOSITIONER_CONFIGURATOR = Item(TRANSPOSITIONERS_ITEM_SETTINGS)
 
     fun register() {
         register(TRANSPOSITIONER, "transpositioner")
+        register(TRANSPOSITIONER_CONFIGURATOR, "transpositioner_configurator")
     }
 
     private fun register(item: Item, name: String) {
