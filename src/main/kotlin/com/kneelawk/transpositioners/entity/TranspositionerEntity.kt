@@ -19,6 +19,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.Packet
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket
 import net.minecraft.sound.SoundEvents
+import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
@@ -137,6 +138,10 @@ class TranspositionerEntity : AbstractDecorationEntity {
 
     override fun onPlace() {
         playSound(SoundEvents.BLOCK_PISTON_EXTEND, 1f, 10f)
+    }
+
+    override fun raycast(maxDistance: Double, tickDelta: Float, includeFluids: Boolean): HitResult {
+        return super.raycast(maxDistance, tickDelta, includeFluids)
     }
 
     override fun tick() {

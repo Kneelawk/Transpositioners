@@ -5,7 +5,10 @@
   "mixins": [
   ],
   "client": [
-    "ClientPlayNetworkHandlerMixin"
+    "ClientPlayNetworkHandlerMixin",
+    "WorldRendererMixin"
+  ],
+  "server": [
   ],
   "injectors": {
     "defaultRequire": 1

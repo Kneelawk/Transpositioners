@@ -10,5 +10,5 @@ fun init() {
         TranspositionerEntityRenderer(dispatcher)
     }
 
-    ModelLoadingRegistry.INSTANCE.registerModelProvider { manager, out -> out.accept(TranspositionerEntityRenderer.MODEL_ID) }
+    ModelLoadingRegistry.INSTANCE.registerModelProvider { _, out -> out.accept(TranspositionerEntityRenderer.MODEL_ID) }
 }

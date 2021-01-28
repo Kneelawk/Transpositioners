@@ -1,12 +1,15 @@
 package com.kneelawk.transpositioners.client.entity
 
 import com.kneelawk.transpositioners.TranspositionersConstants
+import com.kneelawk.transpositioners.client.render.TranspositionerGhostRenderer
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
+import com.kneelawk.transpositioners.item.TranspositionerViewer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.OverlayTexture
 import net.minecraft.client.render.TexturedRenderLayers
+import net.minecraft.client.render.VertexConsumer
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.block.BlockRenderManager
 import net.minecraft.client.render.entity.EntityRenderDispatcher
@@ -15,6 +18,7 @@ import net.minecraft.client.texture.SpriteAtlasTexture
 import net.minecraft.client.util.ModelIdentifier
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.client.util.math.Vector3f
+import net.minecraft.util.Hand
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
@@ -63,7 +67,7 @@ class TranspositionerEntityRenderer(dispatcher: EntityRenderDispatcher) :
         matrices.translate(-0.5, -0.5, -0.5)
         blockRenderManager.modelRenderer.render(
             matrices.peek(),
-            vertexConsumers.getBuffer(TexturedRenderLayers.getEntitySolid()),
+            getVertexConsumer(vertexConsumers),
             null,
             bakedModelManager.getModel(MODEL_ID),
             1.0f,
@@ -73,6 +77,18 @@ class TranspositionerEntityRenderer(dispatcher: EntityRenderDispatcher) :
             OverlayTexture.DEFAULT_UV
         )
         matrices.pop()
+    }
+
+    private fun getVertexConsumer(vertexConsumers: VertexConsumerProvider): VertexConsumer {
+        return MinecraftClient.getInstance().player?.let { player ->
+            for (hand in Hand.values()) {
+                val stack = player.getStackInHand(hand)
+                if (stack.item is TranspositionerViewer) {
+                    return@let TranspositionerGhostRenderer.CONSUMERS.getBuffer(TranspositionerGhostRenderer.RENDER_LAYER)
+                }
+            }
+            null
+        } ?: vertexConsumers.getBuffer(TexturedRenderLayers.getEntitySolid())
     }
 
     override fun getPositionOffset(entity: TranspositionerEntity, tickDelta: Float): Vec3d {

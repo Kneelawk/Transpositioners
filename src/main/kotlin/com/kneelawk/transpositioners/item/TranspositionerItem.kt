@@ -9,9 +9,14 @@ import net.minecraft.item.ItemUsageContext
 import net.minecraft.util.ActionResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
+import net.minecraft.util.math.MathHelper
 import net.minecraft.world.World
 
-class TranspositionerItem(settings: Settings) : Item(settings) {
+class TranspositionerItem(settings: Settings) : Item(settings), InteractionCanceler, TranspositionerViewer {
+    override fun shouldCancelInteraction(usageContext: ItemUsageContext): Boolean {
+        return true
+    }
+
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
         val direction = context.side
         val pos = context.blockPos.offset(direction)
