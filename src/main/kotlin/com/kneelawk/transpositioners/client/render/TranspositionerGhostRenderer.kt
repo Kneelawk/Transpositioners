@@ -92,8 +92,7 @@ object TranspositionerGhostRenderer {
                     val stack = player.getStackInHand(hand)
                     val item = stack.item
                     if (item is TranspositionerItem) {
-                        val entity =
-                            item.getTranspositionerPlacement(
+                        val entity = item.getTranspositionerPlacement(
                                 world,
                                 player,
                                 target.blockPos,
@@ -117,8 +116,9 @@ object TranspositionerGhostRenderer {
                                 0
                             )
                             matrices.pop()
-                            break
                         }
+
+                        break
                     }
                 }
             }
