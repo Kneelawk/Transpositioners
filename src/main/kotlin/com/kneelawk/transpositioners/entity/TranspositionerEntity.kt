@@ -8,16 +8,25 @@ import alexiil.mc.lib.attributes.item.ItemInsertable
 import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable
 import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable
 import com.kneelawk.transpositioners.item.TranspositionerItems
+import com.kneelawk.transpositioners.screen.TranspositionerScreenHandler
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.entity.*
 import net.minecraft.entity.decoration.AbstractDecorationEntity
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.Packet
+import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket
+import net.minecraft.screen.ScreenHandler
+import net.minecraft.screen.ScreenHandlerContext
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundEvents
+import net.minecraft.util.ActionResult
+import net.minecraft.util.Hand
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
@@ -25,7 +34,7 @@ import net.minecraft.world.GameRules
 import net.minecraft.world.World
 import org.apache.commons.lang3.Validate
 
-class TranspositionerEntity : AbstractDecorationEntity {
+class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFactory {
     constructor(entityType: EntityType<out TranspositionerEntity>, world: World) : super(entityType, world)
     constructor(world: World, pos: BlockPos, direction: Direction) : super(
         TranspositionerEntityTypes.TRANSPOSITIONER,
@@ -130,20 +139,29 @@ class TranspositionerEntity : AbstractDecorationEntity {
             playSound(SoundEvents.BLOCK_PISTON_CONTRACT, 1f, 1f)
 
             // TODO: handle entity recursive inventory stuff.
-            when {
-                entity is PlayerEntity -> {
-                    if (!entity.isCreative) {
-                        val stack = ItemStack(TranspositionerItems.TRANSPOSITIONER)
+            dropStacks(entity, listOf(ItemStack(TranspositionerItems.TRANSPOSITIONER)))
+        }
+    }
+
+    private fun dropStacks(entity: Entity?, stacks: Iterable<ItemStack>) {
+        when {
+            entity is PlayerEntity -> {
+                if (!entity.isCreative) {
+                    for (stack in stacks) {
                         if (!entity.inventory.insertStack(stack)) {
                             dropStackOnEntity(entity, stack)
                         }
                     }
                 }
-                entity != null -> {
-                    dropStackOnEntity(entity, ItemStack(TranspositionerItems.TRANSPOSITIONER))
+            }
+            entity != null -> {
+                for (stack in stacks) {
+                    dropStackOnEntity(entity, stack)
                 }
-                else -> {
-                    dropItem(TranspositionerItems.TRANSPOSITIONER)
+            }
+            else -> {
+                for (stack in stacks) {
+                    dropStack(stack)
                 }
             }
         }
@@ -183,5 +201,22 @@ class TranspositionerEntity : AbstractDecorationEntity {
                 }
             }
         }
+    }
+
+    override fun interact(player: PlayerEntity, hand: Hand): ActionResult {
+        return if (!player.shouldCancelInteraction()) {
+            player.openHandledScreen(this)
+            ActionResult.SUCCESS
+        } else {
+            ActionResult.PASS
+        }
+    }
+
+    override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler {
+        return TranspositionerScreenHandler(syncId, inv, this, ScreenHandlerContext.EMPTY)
+    }
+
+    override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
+        buf.writeInt(entityId)
     }
 }

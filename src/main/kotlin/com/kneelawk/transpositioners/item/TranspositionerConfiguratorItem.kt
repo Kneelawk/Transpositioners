@@ -26,10 +26,8 @@ class TranspositionerConfiguratorItem(settings: Settings) : Item(settings), Inte
                     ActionResult.SUCCESS
                 }
             } else {
-                if (TranspositionerItemUtils.tryOpenTranspositioner(
-                        context.world,
-                        player
-                    )
+                if (
+                    TranspositionerItemUtils.tryOpenTranspositioner(context.world, player, context.hand)
                 ) ActionResult.SUCCESS else null
             }
         } ?: ActionResult.FAIL
@@ -47,7 +45,7 @@ class TranspositionerConfiguratorItem(settings: Settings) : Item(settings), Inte
             } ?: TypedActionResult.fail(stack)
         } else {
             if (
-                TranspositionerItemUtils.tryOpenTranspositioner(world, user)
+                TranspositionerItemUtils.tryOpenTranspositioner(world, user, hand)
             ) TypedActionResult.success(stack) else TypedActionResult.fail(stack)
         }
     }
