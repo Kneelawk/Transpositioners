@@ -10,6 +10,7 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.MathHelper
+import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
 class TranspositionerItem(settings: Settings) : Item(settings), InteractionCanceler, TranspositionerViewer {
@@ -18,28 +19,118 @@ class TranspositionerItem(settings: Settings) : Item(settings), InteractionCance
     }
 
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
-        val direction = context.side
-        val pos = context.blockPos.offset(direction)
+        val side = context.side
+        val pos = context.blockPos.offset(side)
         val player = context.player
 
-        if (player != null && !canPlaceOn(player, direction, context.stack, pos)) {
-            return ActionResult.FAIL
+        return if (player != null && !canPlaceOn(player, side, context.stack, pos)) {
+            ActionResult.FAIL
         } else {
-            val world = context.world
-            val entity = TranspositionerEntity(world, pos, direction)
-
-            context.stack.tag?.let { EntityType.loadFromEntityTag(world, player, entity, it) }
-
-            return if (entity.canStayAttached()) {
-                if (!world.isClient) {
+            getTranspositionerPlacement(
+                context.world,
+                player,
+                context.blockPos,
+                side,
+                context.stack,
+                context.hitPos
+            )?.let { entity ->
+                if (!context.world.isClient) {
                     entity.onPlace()
-                    world.spawnEntity(entity)
+                    context.world.spawnEntity(entity)
                 }
                 context.stack.decrement(1)
-                ActionResult.success(world.isClient)
-            } else {
-                ActionResult.CONSUME
-            }
+                ActionResult.success(context.world.isClient)
+            } ?: ActionResult.CONSUME
+        }
+    }
+
+    fun getTranspositionerPlacement(
+        world: World,
+        player: PlayerEntity?,
+        blockPos: BlockPos,
+        side: Direction,
+        stack: ItemStack,
+        hitPos: Vec3d
+    ): TranspositionerEntity? {
+        val direction = when (side) {
+            Direction.DOWN -> getPlacementDirection(
+                hitPos.x,
+                hitPos.z,
+                Direction.DOWN,
+                Direction.EAST,
+                Direction.WEST,
+                Direction.SOUTH,
+                Direction.NORTH
+            )
+            Direction.UP -> getPlacementDirection(
+                hitPos.x,
+                hitPos.z,
+                Direction.UP,
+                Direction.EAST,
+                Direction.WEST,
+                Direction.SOUTH,
+                Direction.NORTH
+            )
+            Direction.NORTH -> getPlacementDirection(
+                hitPos.x,
+                hitPos.y,
+                Direction.NORTH,
+                Direction.EAST,
+                Direction.WEST,
+                Direction.UP,
+                Direction.DOWN
+            )
+            Direction.SOUTH -> getPlacementDirection(
+                hitPos.x,
+                hitPos.y,
+                Direction.SOUTH,
+                Direction.EAST,
+                Direction.WEST,
+                Direction.UP,
+                Direction.DOWN
+            )
+            Direction.WEST -> getPlacementDirection(
+                hitPos.z,
+                hitPos.y,
+                Direction.WEST,
+                Direction.SOUTH,
+                Direction.NORTH,
+                Direction.UP,
+                Direction.DOWN
+            )
+            Direction.EAST -> getPlacementDirection(
+                hitPos.z,
+                hitPos.y,
+                Direction.EAST,
+                Direction.SOUTH,
+                Direction.NORTH,
+                Direction.UP,
+                Direction.DOWN
+            )
+        }
+
+        val entity = TranspositionerEntity(world, blockPos.offset(direction), direction)
+        stack.tag?.let { EntityType.loadFromEntityTag(world, player, entity, it) }
+        return if (entity.canStayAttached()) entity else null
+    }
+
+    private fun getPlacementDirection(
+        horizontal: Double,
+        vertical: Double,
+        center: Direction,
+        hPlus: Direction,
+        hMinus: Direction,
+        vPlus: Direction,
+        vMinus: Direction
+    ): Direction {
+        val h = MathHelper.fractionalPart(horizontal)
+        val v = MathHelper.fractionalPart(vertical)
+        return when {
+            h > 12.0 / 16.0 && h > v && h > 1 - v -> hPlus
+            v > 12.0 / 16.0 && v >= h && v >= 1 - h -> vPlus
+            h < 4.0 / 16.0 && h < v && h < 1 - v -> hMinus
+            v < 4.0 / 16.0 && v <= h && v <= 1 - h -> vMinus
+            else -> center
         }
     }
 

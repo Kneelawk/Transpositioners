@@ -31,9 +31,66 @@ class TranspositionerEntityRenderer(dispatcher: EntityRenderDispatcher) :
     EntityRenderer<TranspositionerEntity>(dispatcher) {
     companion object {
         val MODEL_ID = ModelIdentifier(TranspositionersConstants.identifier("transpositioner"), "")
-    }
 
-    private val client = MinecraftClient.getInstance()
+        private val client by lazy { MinecraftClient.getInstance() }
+
+        fun render(
+            entity: TranspositionerEntity,
+            tickDelta: Float,
+            matrices: MatrixStack,
+            vertexConsumer: VertexConsumer,
+            light: Int
+        ) {
+            val newLight = if (light == 0) 15728640 else light
+
+            matrices.push()
+            val direction: Direction = entity.horizontalFacing
+            val vec3d = getPositionOffset(entity, tickDelta)
+            matrices.translate(-vec3d.getX(), -vec3d.getY(), -vec3d.getZ())
+            matrices.translate(
+                direction.offsetX.toDouble() * 7.5 / 16.0, direction.offsetY.toDouble() * 7.5 / 16.0, direction.offsetZ
+                    .toDouble() * 7.5 / 16.0
+            )
+            matrices.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(entity.pitch))
+            matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0f - entity.yaw))
+
+            val blockRenderManager: BlockRenderManager = client.blockRenderManager
+            val bakedModelManager = blockRenderManager.models.modelManager
+            matrices.translate(-0.5, -0.5, -0.5)
+            blockRenderManager.modelRenderer.render(
+                matrices.peek(),
+                vertexConsumer,
+                null,
+                bakedModelManager.getModel(MODEL_ID),
+                1.0f,
+                1.0f,
+                1.0f,
+                newLight,
+                OverlayTexture.DEFAULT_UV
+            )
+            matrices.pop()
+        }
+
+        private fun getVertexConsumer(vertexConsumers: VertexConsumerProvider): VertexConsumer {
+            return MinecraftClient.getInstance().player?.let { player ->
+                for (hand in Hand.values()) {
+                    val stack = player.getStackInHand(hand)
+                    if (stack.item is TranspositionerViewer) {
+                        return@let TranspositionerGhostRenderer.CONSUMERS.getBuffer(TranspositionerGhostRenderer.GHOST)
+                    }
+                }
+                null
+            } ?: vertexConsumers.getBuffer(TexturedRenderLayers.getEntitySolid())
+        }
+
+        fun getPositionOffset(entity: TranspositionerEntity, tickDelta: Float): Vec3d {
+            return Vec3d(
+                entity.horizontalFacing.offsetX * 0.3,
+                entity.horizontalFacing.offsetY * 0.3,
+                entity.horizontalFacing.offsetZ * 0.3
+            )
+        }
+    }
 
     override fun getTexture(entity: TranspositionerEntity?): Identifier {
         return SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE
@@ -48,55 +105,11 @@ class TranspositionerEntityRenderer(dispatcher: EntityRenderDispatcher) :
         light: Int
     ) {
         super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light)
-
-        val newLight = if (light == 0) 15728640 else light
-
-        matrices.push()
-        val direction: Direction = entity.horizontalFacing
-        val vec3d = getPositionOffset(entity, tickDelta)
-        matrices.translate(-vec3d.getX(), -vec3d.getY(), -vec3d.getZ())
-        matrices.translate(
-            direction.offsetX.toDouble() * 7.5 / 16.0, direction.offsetY.toDouble() * 7.5 / 16.0, direction.offsetZ
-                .toDouble() * 7.5 / 16.0
-        )
-        matrices.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(entity.pitch))
-        matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0f - entity.yaw))
-
-        val blockRenderManager: BlockRenderManager = client.blockRenderManager
-        val bakedModelManager = blockRenderManager.models.modelManager
-        matrices.translate(-0.5, -0.5, -0.5)
-        blockRenderManager.modelRenderer.render(
-            matrices.peek(),
-            getVertexConsumer(vertexConsumers),
-            null,
-            bakedModelManager.getModel(MODEL_ID),
-            1.0f,
-            1.0f,
-            1.0f,
-            newLight,
-            OverlayTexture.DEFAULT_UV
-        )
-        matrices.pop()
-    }
-
-    private fun getVertexConsumer(vertexConsumers: VertexConsumerProvider): VertexConsumer {
-        return MinecraftClient.getInstance().player?.let { player ->
-            for (hand in Hand.values()) {
-                val stack = player.getStackInHand(hand)
-                if (stack.item is TranspositionerViewer) {
-                    return@let TranspositionerGhostRenderer.CONSUMERS.getBuffer(TranspositionerGhostRenderer.RENDER_LAYER)
-                }
-            }
-            null
-        } ?: vertexConsumers.getBuffer(TexturedRenderLayers.getEntitySolid())
+        render(entity, tickDelta, matrices, getVertexConsumer(vertexConsumers), light)
     }
 
     override fun getPositionOffset(entity: TranspositionerEntity, tickDelta: Float): Vec3d {
-        return Vec3d(
-            entity.horizontalFacing.offsetX * 0.3,
-            entity.horizontalFacing.offsetY * 0.3,
-            entity.horizontalFacing.offsetZ * 0.3
-        )
+        return TranspositionerEntityRenderer.getPositionOffset(entity, tickDelta)
     }
 
     override fun method_27950(entity: TranspositionerEntity, blockPos: BlockPos): Int {

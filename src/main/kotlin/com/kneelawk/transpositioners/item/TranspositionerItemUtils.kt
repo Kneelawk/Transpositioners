@@ -15,7 +15,7 @@ object TranspositionerItemUtils {
         return raycast(player) != null
     }
 
-    private fun raycast(player: PlayerEntity): TranspositionerEntity? {
+    fun raycast(player: PlayerEntity): TranspositionerEntity? {
         return raycastForPlayer(player)?.entity as? TranspositionerEntity
     }
 

@@ -1,5 +1,6 @@
 package com.kneelawk.transpositioners.item
 
+import net.minecraft.entity.damage.DamageSource
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -16,15 +17,38 @@ class TranspositionerConfiguratorItem(settings: Settings) : Item(settings), Inte
     }
 
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
-        return context.player?.let {
-            if (TranspositionerItemUtils.tryOpenTranspositioner(context.world, it)) ActionResult.SUCCESS else null
+        return context.player?.let { player ->
+            if (player.isSneaking) {
+                TranspositionerItemUtils.raycast(player)?.let { entity ->
+                    if (!context.world.isClient) {
+                        entity.damage(DamageSource.player(player), 1f)
+                    }
+                    ActionResult.SUCCESS
+                }
+            } else {
+                if (TranspositionerItemUtils.tryOpenTranspositioner(
+                        context.world,
+                        player
+                    )
+                ) ActionResult.SUCCESS else null
+            }
         } ?: ActionResult.FAIL
     }
 
     override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
         val stack = user.getStackInHand(hand)
-        return if (
-            TranspositionerItemUtils.tryOpenTranspositioner(world, user)
-        ) TypedActionResult.success(stack) else TypedActionResult.fail(stack)
+        return if (user.isSneaking) {
+            // shift-right-click to break
+            TranspositionerItemUtils.raycast(user)?.let { entity ->
+                if (!world.isClient) {
+                    entity.damage(DamageSource.player(user), 1f)
+                }
+                TypedActionResult.success(stack)
+            } ?: TypedActionResult.fail(stack)
+        } else {
+            if (
+                TranspositionerItemUtils.tryOpenTranspositioner(world, user)
+            ) TypedActionResult.success(stack) else TypedActionResult.fail(stack)
+        }
     }
 }

@@ -17,11 +17,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class WorldRendererMixin {
     @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;FJZLnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/GameRenderer;Lnet/minecraft/client/render/LightmapTextureManager;Lnet/minecraft/util/math/Matrix4f;)V",
             at = @At(value = "CONSTANT", args = "stringValue=particles"))
-    private void renderDetached(MatrixStack matrices, float tickDelta, long startTime, boolean renderBlockOutline,
-                                Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager,
-                                Matrix4f matrix4f, CallbackInfo ci) {
+    private void handleRender(MatrixStack matrices, float tickDelta, long startTime, boolean renderBlockOutline,
+                              Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager,
+                              Matrix4f matrix4f, CallbackInfo ci) {
         if (MinecraftClient.getInstance().player != null) {
-            TranspositionerGhostRenderer.INSTANCE.draw();
+            TranspositionerGhostRenderer.INSTANCE.draw(camera, tickDelta, matrices);
         }
     }
 }

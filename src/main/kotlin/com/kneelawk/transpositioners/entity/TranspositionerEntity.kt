@@ -7,22 +7,21 @@ import alexiil.mc.lib.attributes.item.ItemExtractable
 import alexiil.mc.lib.attributes.item.ItemInsertable
 import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable
 import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable
+import com.kneelawk.transpositioners.item.TranspositionerItems
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityDimensions
-import net.minecraft.entity.EntityPose
-import net.minecraft.entity.EntityType
+import net.minecraft.entity.*
 import net.minecraft.entity.decoration.AbstractDecorationEntity
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.Packet
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket
 import net.minecraft.sound.SoundEvents
-import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
+import net.minecraft.world.GameRules
 import net.minecraft.world.World
 import org.apache.commons.lang3.Validate
 
@@ -127,21 +126,37 @@ class TranspositionerEntity : AbstractDecorationEntity {
     }
 
     override fun onBreak(entity: Entity?) {
-        playSound(SoundEvents.BLOCK_PISTON_CONTRACT, 1f, 10f)
+        if (world.gameRules.getBoolean(GameRules.DO_ENTITY_DROPS)) {
+            playSound(SoundEvents.BLOCK_PISTON_CONTRACT, 1f, 1f)
 
-        if (entity is PlayerEntity) {
-            // TODO: Put contents in player inventory.
-        } else {
-            // TODO: Drop contents.
+            // TODO: handle entity recursive inventory stuff.
+            when {
+                entity is PlayerEntity -> {
+                    if (!entity.isCreative) {
+                        val stack = ItemStack(TranspositionerItems.TRANSPOSITIONER)
+                        if (!entity.inventory.insertStack(stack)) {
+                            dropStackOnEntity(entity, stack)
+                        }
+                    }
+                }
+                entity != null -> {
+                    dropStackOnEntity(entity, ItemStack(TranspositionerItems.TRANSPOSITIONER))
+                }
+                else -> {
+                    dropItem(TranspositionerItems.TRANSPOSITIONER)
+                }
+            }
         }
     }
 
-    override fun onPlace() {
-        playSound(SoundEvents.BLOCK_PISTON_EXTEND, 1f, 10f)
+    private fun dropStackOnEntity(entity: Entity, stack: ItemStack) {
+        val itemEntity = ItemEntity(world, entity.x, entity.y, entity.z, stack)
+        itemEntity.setToDefaultPickupDelay()
+        world.spawnEntity(itemEntity)
     }
 
-    override fun raycast(maxDistance: Double, tickDelta: Float, includeFluids: Boolean): HitResult {
-        return super.raycast(maxDistance, tickDelta, includeFluids)
+    override fun onPlace() {
+        playSound(SoundEvents.BLOCK_PISTON_EXTEND, 1f, 1f)
     }
 
     override fun tick() {
