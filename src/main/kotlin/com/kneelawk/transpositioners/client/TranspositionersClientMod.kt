@@ -11,7 +11,11 @@ fun init() {
         TranspositionerEntityRenderer(dispatcher)
     }
 
-    ModelLoadingRegistry.INSTANCE.registerModelProvider { _, out -> out.accept(TranspositionerEntityRenderer.MODEL_ID) }
+    ModelLoadingRegistry.INSTANCE.registerModelProvider { _, out ->
+        for (id in TranspositionerEntityRenderer.MODEL_IDS) {
+            out.accept(id)
+        }
+    }
 
     TranspositionerScreens.register()
 }

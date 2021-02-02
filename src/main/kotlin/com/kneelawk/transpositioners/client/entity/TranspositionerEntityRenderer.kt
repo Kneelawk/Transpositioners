@@ -30,7 +30,11 @@ import kotlin.math.max
 class TranspositionerEntityRenderer(dispatcher: EntityRenderDispatcher) :
     EntityRenderer<TranspositionerEntity>(dispatcher) {
     companion object {
-        val MODEL_ID = ModelIdentifier(TranspositionersConstants.identifier("transpositioner"), "")
+        val MODEL_IDS = arrayOf(
+            ModelIdentifier(TranspositionersConstants.identifier("transpositioner_mk1"), ""),
+            ModelIdentifier(TranspositionersConstants.identifier("transpositioner_mk2"), ""),
+            ModelIdentifier(TranspositionersConstants.identifier("transpositioner_mk3"), "")
+        )
 
         private val client by lazy { MinecraftClient.getInstance() }
 
@@ -61,7 +65,7 @@ class TranspositionerEntityRenderer(dispatcher: EntityRenderDispatcher) :
                 matrices.peek(),
                 vertexConsumer,
                 null,
-                bakedModelManager.getModel(MODEL_ID),
+                bakedModelManager.getModel(MODEL_IDS[entity.mk - 1]),
                 1.0f,
                 1.0f,
                 1.0f,

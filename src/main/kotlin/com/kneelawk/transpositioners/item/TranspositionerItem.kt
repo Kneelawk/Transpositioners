@@ -13,7 +13,19 @@ import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
-class TranspositionerItem(settings: Settings) : Item(settings), InteractionCanceler, TranspositionerViewer {
+class TranspositionerItem(val mk: Int, settings: Settings) : Item(settings), InteractionCanceler,
+    TranspositionerViewer {
+    companion object {
+        fun getItem(mk: Int): TranspositionerItem {
+            return when (mk) {
+                1 -> TranspositionerItems.TRANSPOSITIONER_MK1
+                2 -> TranspositionerItems.TRANSPOSITIONER_MK2
+                3 -> TranspositionerItems.TRANSPOSITIONER_MK3
+                else -> throw IllegalArgumentException("Invalid transpositioner mk: $mk")
+            }
+        }
+    }
+
     override fun shouldCancelInteraction(usageContext: ItemUsageContext): Boolean {
         return true
     }
@@ -109,7 +121,7 @@ class TranspositionerItem(settings: Settings) : Item(settings), InteractionCance
             )
         }
 
-        val entity = TranspositionerEntity(world, blockPos.offset(direction), direction)
+        val entity = TranspositionerEntity(world, blockPos.offset(direction), direction, mk)
         stack.tag?.let { EntityType.loadFromEntityTag(world, player, entity, it) }
         return if (entity.canStayAttached()) entity else null
     }

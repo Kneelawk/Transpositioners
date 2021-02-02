@@ -7,7 +7,11 @@ import alexiil.mc.lib.attributes.item.ItemExtractable
 import alexiil.mc.lib.attributes.item.ItemInsertable
 import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable
 import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable
-import com.kneelawk.transpositioners.item.TranspositionerItems
+import alexiil.mc.lib.net.IMsgReadCtx
+import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
+import alexiil.mc.lib.net.impl.McNetworkStack
+import com.kneelawk.transpositioners.TranspositionersConstants
+import com.kneelawk.transpositioners.item.TranspositionerItem
 import com.kneelawk.transpositioners.screen.TranspositionerScreenHandler
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -25,6 +29,8 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundEvents
+import net.minecraft.text.Text
+import net.minecraft.text.TranslatableText
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.math.BlockPos
@@ -35,13 +41,28 @@ import net.minecraft.world.World
 import org.apache.commons.lang3.Validate
 
 class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFactory {
-    constructor(entityType: EntityType<out TranspositionerEntity>, world: World) : super(entityType, world)
-    constructor(world: World, pos: BlockPos, direction: Direction) : super(
+    companion object {
+        val NET_PARENT = McNetworkStack.ENTITY.subType(
+            TranspositionerEntity::class.java,
+            TranspositionersConstants.str("transpositioner_entity")
+        )
+        val ID_CHANGE_MK = NET_PARENT.idData("CHANGE_MK").setReceiver(TranspositionerEntity::receiveMkChange)
+    }
+
+    var mk: Int
+        private set
+
+    constructor(entityType: EntityType<out TranspositionerEntity>, world: World) : super(entityType, world) {
+        mk = 0
+    }
+
+    constructor(world: World, pos: BlockPos, direction: Direction, mk: Int) : super(
         TranspositionerEntityTypes.TRANSPOSITIONER,
         world,
         pos
     ) {
         setFacing(direction)
+        this.mk = mk.coerceIn(1, 3)
     }
 
     override fun setFacing(facing: Direction) {
@@ -57,6 +78,30 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         prevPitch = pitch
         prevYaw = yaw
         updateAttachmentPosition()
+    }
+
+    fun updateMk(mk: Int) {
+        this.mk = mk
+
+        if (!world.isClient) {
+            sendMkChage(mk)
+        }
+
+        // TODO: Inventory re-organization
+    }
+
+    private fun sendMkChage(mk: Int) {
+        for (con in CoreMinecraftNetUtil.getPlayersWatching(world, attachmentPos)) {
+            ID_CHANGE_MK.send(con, this) { _, buf, ctx ->
+                ctx.assertServerSide()
+                buf.writeByte(mk)
+            }
+        }
+    }
+
+    private fun receiveMkChange(buf: PacketByteBuf, ctx: IMsgReadCtx) {
+        ctx.assertClientSide()
+        updateMk(buf.readByte().toInt())
     }
 
     override fun updateAttachmentPosition() {
@@ -114,16 +159,18 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         super.writeCustomDataToTag(tag)
 
         tag.putByte("Facing", facing.id.toByte())
+        tag.putByte("Mk", mk.toByte())
     }
 
     override fun readCustomDataFromTag(tag: CompoundTag) {
         super.readCustomDataFromTag(tag)
 
-        setFacing(Direction.byId(tag.getByte("Facing").toInt()))
+        if (tag.contains("Facing")) setFacing(Direction.byId(tag.getByte("Facing").toInt()))
+        mk = if (tag.contains("Mk")) tag.getByte("Mk").toInt().coerceIn(1, 3) else 1
     }
 
     override fun createSpawnPacket(): Packet<*> {
-        return EntitySpawnS2CPacket(this, type, facing.id, decorationBlockPos)
+        return EntitySpawnS2CPacket(this, type, ((mk and 0x3) shl 3) or (facing.id and 0x7), decorationBlockPos)
     }
 
     override fun getWidthPixels(): Int {
@@ -139,7 +186,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
             playSound(SoundEvents.BLOCK_PISTON_CONTRACT, 1f, 1f)
 
             // TODO: handle entity recursive inventory stuff.
-            dropStacks(entity, listOf(ItemStack(TranspositionerItems.TRANSPOSITIONER)))
+            dropStacks(entity, listOf(ItemStack(TranspositionerItem.getItem(mk))))
         }
     }
 
@@ -210,6 +257,10 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         } else {
             ActionResult.PASS
         }
+    }
+
+    override fun getDefaultName(): Text {
+        return TranslatableText(type.translationKey + ".mk" + mk)
     }
 
     override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler {

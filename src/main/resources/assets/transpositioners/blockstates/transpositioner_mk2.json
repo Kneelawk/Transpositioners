@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "transpositioners:block/transpositioner_mk2"
+    }
+  }
+}

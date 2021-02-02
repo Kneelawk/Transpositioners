@@ -15,11 +15,15 @@ object TranspositionerItems {
 
     val TRANSPOSITIONERS_ITEM_SETTINGS = Item.Settings().group(TRANSPOSITIONER_ITEM_GROUP)
 
-    val TRANSPOSITIONER = TranspositionerItem(TRANSPOSITIONERS_ITEM_SETTINGS)
+    val TRANSPOSITIONER_MK1 = TranspositionerItem(1, TRANSPOSITIONERS_ITEM_SETTINGS)
+    val TRANSPOSITIONER_MK2 = TranspositionerItem(2, TRANSPOSITIONERS_ITEM_SETTINGS)
+    val TRANSPOSITIONER_MK3 = TranspositionerItem(3, TRANSPOSITIONERS_ITEM_SETTINGS)
     val TRANSPOSITIONER_CONFIGURATOR = TranspositionerConfiguratorItem(TRANSPOSITIONERS_ITEM_SETTINGS)
 
     fun register() {
-        register(TRANSPOSITIONER, "transpositioner")
+        register(TRANSPOSITIONER_MK1, "transpositioner_mk1")
+        register(TRANSPOSITIONER_MK2, "transpositioner_mk2")
+        register(TRANSPOSITIONER_MK3, "transpositioner_mk3")
         register(TRANSPOSITIONER_CONFIGURATOR, "transpositioner_configurator")
     }
 
@@ -51,6 +55,6 @@ object TranspositionerItems {
     }
 
     private fun groupItem(): ItemStack {
-        return ItemStack(TRANSPOSITIONER)
+        return ItemStack(TRANSPOSITIONER_MK1)
     }
 }

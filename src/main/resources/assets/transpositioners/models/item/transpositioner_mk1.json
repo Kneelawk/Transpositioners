@@ -1,0 +1,6 @@
+{
+  "parent": "transpositioners:item/transpositioner",
+  "textures": {
+    "transpositioner": "transpositioners:block/transpositioner_mk1"
+  }
+}

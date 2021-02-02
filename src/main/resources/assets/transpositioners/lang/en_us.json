@@ -1,6 +1,10 @@
 {
-  "entity.transpositioners.transpositioner": "Transpositioner",
-  "item.transpositioners.transpositioner": "Transpositioner",
+  "entity.transpositioners.transpositioner.mk1": "Transpositioner Mk1",
+  "entity.transpositioners.transpositioner.mk2": "Transpositioner Mk2",
+  "entity.transpositioners.transpositioner.mk3": "Transpositioner Mk3",
+  "item.transpositioners.transpositioner_mk1": "Transpositioner Mk1",
+  "item.transpositioners.transpositioner_mk2": "Transpositioner Mk2",
+  "item.transpositioners.transpositioner_mk3": "Transpositioner Mk3",
   "item.transpositioners.transpositioner_configurator": "Transpositioner Configurator",
   "itemGroup.transpositioners.transpositioners": "Transpositioners"
 }

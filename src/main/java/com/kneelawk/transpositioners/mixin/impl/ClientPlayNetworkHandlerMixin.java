@@ -26,7 +26,9 @@ public class ClientPlayNetworkHandlerMixin {
                                    Entity entity41, EntityType<?> entityType) {
         Entity newEntity = null;
         if (entityType == TranspositionerEntityTypes.INSTANCE.getTRANSPOSITIONER()) {
-            newEntity = new TranspositionerEntity(world, new BlockPos(x, y, z), Direction.byId(packet.getEntityData()));
+            int entityData = packet.getEntityData();
+            newEntity = new TranspositionerEntity(world, new BlockPos(x, y, z), Direction.byId(entityData & 0x7),
+                    (entityData >> 3) & 0x3);
         }
 
         if (newEntity != null) {

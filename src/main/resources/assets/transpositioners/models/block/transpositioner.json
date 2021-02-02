@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "transpositioner": "transpositioners:block/transpositioner"
+    "transpositioner": "transpositioners:block/transpositioner_mk1"
   },
   "elements": [
     {

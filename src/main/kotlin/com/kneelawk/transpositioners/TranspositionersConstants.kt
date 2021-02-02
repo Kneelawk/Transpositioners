@@ -8,4 +8,8 @@ object TranspositionersConstants {
     fun identifier(name: String): Identifier {
         return Identifier(MOD_ID, name)
     }
+
+    fun str(name: String): String {
+        return "$MOD_ID:$name"
+    }
 }
