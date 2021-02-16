@@ -14,11 +14,12 @@ object TranspositionerItems {
         FabricItemGroupBuilder.build(TranspositionersConstants.identifier("transpositioners"), ::groupItem)
 
     val TRANSPOSITIONERS_ITEM_SETTINGS = Item.Settings().group(TRANSPOSITIONER_ITEM_GROUP)
+    val TOOL_ITEM_SETTINGS = Item.Settings().group(TRANSPOSITIONER_ITEM_GROUP).maxCount(1)
 
     val TRANSPOSITIONER_MK1 = TranspositionerItem(1, TRANSPOSITIONERS_ITEM_SETTINGS)
     val TRANSPOSITIONER_MK2 = TranspositionerItem(2, TRANSPOSITIONERS_ITEM_SETTINGS)
     val TRANSPOSITIONER_MK3 = TranspositionerItem(3, TRANSPOSITIONERS_ITEM_SETTINGS)
-    val TRANSPOSITIONER_CONFIGURATOR = TranspositionerConfiguratorItem(TRANSPOSITIONERS_ITEM_SETTINGS)
+    val TRANSPOSITIONER_CONFIGURATOR = TranspositionerConfiguratorItem(TOOL_ITEM_SETTINGS)
 
     fun register() {
         register(TRANSPOSITIONER_MK1, "transpositioner_mk1")
