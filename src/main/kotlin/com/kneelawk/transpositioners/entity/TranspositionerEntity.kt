@@ -70,7 +70,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
     constructor(entityType: EntityType<out TranspositionerEntity>, world: World) : super(entityType, world) {
         mk = MIN_MK
-        modules = ModuleInventory(moduleCountByMk(mk), this, TranspositionerModules.MOVERS)
+        modules = ModuleInventory(moduleCountByMk(mk), this, ModulePath.ROOT, TranspositionerModules.MOVERS)
     }
 
     constructor(world: World, pos: BlockPos, direction: Direction, mk: Int) : super(
@@ -80,7 +80,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     ) {
         setFacing(direction)
         this.mk = mk.coerceIn(MIN_MK, MAX_MK)
-        modules = ModuleInventory(moduleCountByMk(mk), this, TranspositionerModules.MOVERS)
+        modules = ModuleInventory(moduleCountByMk(mk), this, ModulePath.ROOT, TranspositionerModules.MOVERS)
     }
 
     override fun setFacing(facing: Direction) {
@@ -265,26 +265,6 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         super.tick()
 
         if (!world.isClient) {
-//            val extract = getItemExtractable(attachmentPos.offset(facing.opposite), facing.opposite)
-//            val insert = getItemInsertable(attachmentPos, facing)
-//
-//            val maxAmount = 8
-//
-//            val extractedSim = extract.attemptAnyExtraction(maxAmount, Simulation.SIMULATE)
-//            if (!extractedSim.isEmpty) {
-//                val leftOverSim = insert.attemptInsertion(extractedSim, Simulation.SIMULATE)
-//                val amount = extractedSim.count - leftOverSim.count
-//
-//                if (amount != 0) {
-//                    val leftOver =
-//                        insert.attemptInsertion(
-//                            extract.attemptAnyExtraction(amount, Simulation.ACTION),
-//                            Simulation.ACTION
-//                        )
-//                    assert(leftOver.isEmpty) { "leftOver: $leftOver" }
-//                }
-//            }
-
             modules.forEach { it.move() }
         }
     }

@@ -7,13 +7,12 @@ import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.ActiveMinecraftConnection
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TranspositionersConstants
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.minecraft.entity.Entity
+import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import org.apache.logging.log4j.LogManager
 
-interface TranspositionerModule : ModuleContainer, ExtendedScreenHandlerFactory {
+interface TranspositionerModule : ModuleContainer {
     companion object {
         private val LOGGER = LogManager.getLogger()
 
@@ -46,7 +45,7 @@ interface TranspositionerModule : ModuleContainer, ExtendedScreenHandlerFactory 
 
     val path: ModulePath
 
-    val entity: Entity
+    val entity: TranspositionerEntity
 
     val type: ModuleType<*>
 
@@ -55,6 +54,7 @@ interface TranspositionerModule : ModuleContainer, ExtendedScreenHandlerFactory 
 
     fun writeToTag(tag: CompoundTag)
 
+    // TODO: Evaluate the usefulness of this.
     fun addStacksForDrop(stacks: MutableCollection<ItemStack>)
 
     fun onRemove()
