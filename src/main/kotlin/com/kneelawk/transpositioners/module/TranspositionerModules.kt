@@ -6,6 +6,8 @@ object TranspositionerModules {
     val MOVERS = ModuleRegistry<MoverModule>()
 
     fun register() {
-        MOVERS.register(ItemMoverModuleType, TranspositionerItems.ITEM_MOVER_MODULE)
+        MOVERS.register(ItemMoverMk1Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK1)
+        MOVERS.register(ItemMoverMk2Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK2)
+        MOVERS.register(ItemMoverMk3Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK3)
     }
 }

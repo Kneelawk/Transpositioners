@@ -10,6 +10,8 @@ import com.kneelawk.transpositioners.TranspositionersConstants
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.world.World
 import org.apache.logging.log4j.LogManager
 
 interface TranspositionerModule : ModuleContainer {
@@ -24,22 +26,29 @@ interface TranspositionerModule : ModuleContainer {
         ) {
             override fun readContext(buffer: NetByteBuf, ctx: IMsgReadCtx): TranspositionerModule? {
                 val mcConn = ctx.connection as ActiveMinecraftConnection
-                val player = mcConn.player
-                val entity = player.world.getEntityById(buffer.readInt()) ?: return null
-                val container = entity as? ModuleContainer ?: return null
-
-                val path = ModulePath.readFromBuf(buffer)
-                if (path.isRoot) {
-                    LOGGER.warn("Attempting to get a transpositioner module with an empty path")
-                }
-
-                return path.findModule(container)
+                return readModulePath(mcConn.player.world, buffer)
             }
 
             override fun writeContext(buffer: NetByteBuf, ctx: IMsgWriteCtx, value: TranspositionerModule) {
-                buffer.writeInt(value.entity.entityId)
-                value.path.writeToBuf(buffer)
+                writeModulePath(value, buffer)
             }
+        }
+
+        fun writeModulePath(module: TranspositionerModule, buf: PacketByteBuf) {
+            buf.writeInt(module.entity.entityId)
+            module.path.writeToBuf(buf)
+        }
+
+        fun readModulePath(world: World, buf: PacketByteBuf): TranspositionerModule? {
+            val entity = world.getEntityById(buf.readInt()) ?: return null
+            val container = entity as? ModuleContainer ?: return null
+
+            val path = ModulePath.readFromBuf(buf)
+            if (path.isRoot) {
+                LOGGER.warn("Attempting to get a transpositioner module with an empty path")
+            }
+
+            return path.findModule(container)
         }
     }
 

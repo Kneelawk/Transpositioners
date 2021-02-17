@@ -6,6 +6,8 @@
   "item.transpositioners.transpositioner_mk2": "Transpositioner Mk2",
   "item.transpositioners.transpositioner_mk3": "Transpositioner Mk3",
   "item.transpositioners.transpositioner_configurator": "Transpositioner Configurator",
-  "item.transpositioners.item_mover_module": "Item Mover Module",
+  "item.transpositioners.item_mover_module_mk1": "Item Mover Module Mk1",
+  "item.transpositioners.item_mover_module_mk2": "Item Mover Module Mk2",
+  "item.transpositioners.item_mover_module_mk3": "Item Mover Module Mk3",
   "itemGroup.transpositioners.transpositioners": "Transpositioners"
 }

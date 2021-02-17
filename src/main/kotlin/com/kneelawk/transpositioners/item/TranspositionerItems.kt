@@ -22,14 +22,18 @@ object TranspositionerItems {
     val TRANSPOSITIONER_MK3 = TranspositionerItem(3, TRANSPOSITIONERS_ITEM_SETTINGS)
     val TRANSPOSITIONER_CONFIGURATOR = TranspositionerConfiguratorItem(TOOL_ITEM_SETTINGS)
 
-    val ITEM_MOVER_MODULE = ModuleItem(MODULE_ITEM_SETTINGS)
+    val ITEM_MOVER_MODULE_MK1 = ModuleItem(MODULE_ITEM_SETTINGS)
+    val ITEM_MOVER_MODULE_MK2 = ModuleItem(MODULE_ITEM_SETTINGS)
+    val ITEM_MOVER_MODULE_MK3 = ModuleItem(MODULE_ITEM_SETTINGS)
 
     fun register() {
         register(TRANSPOSITIONER_MK1, "transpositioner_mk1")
         register(TRANSPOSITIONER_MK2, "transpositioner_mk2")
         register(TRANSPOSITIONER_MK3, "transpositioner_mk3")
         register(TRANSPOSITIONER_CONFIGURATOR, "transpositioner_configurator")
-        register(ITEM_MOVER_MODULE, "item_mover_module")
+        register(ITEM_MOVER_MODULE_MK1, "item_mover_module_mk1")
+        register(ITEM_MOVER_MODULE_MK2, "item_mover_module_mk2")
+        register(ITEM_MOVER_MODULE_MK3, "item_mover_module_mk3")
 
         UseBlockCallback.EVENT.register { player, _, hand, hitResult ->
             if (!player.isSpectator) {

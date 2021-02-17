@@ -1,6 +1,5 @@
 package com.kneelawk.transpositioners.item
 
-import com.kneelawk.transpositioners.module.ModuleType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -19,11 +18,13 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
         return context.player?.let { player ->
             if (player.isSneaking) {
                 TranspositionerItemUtils.raycast(player)?.let { entity ->
-                    if (!context.world.isClient) {
-                        // TODO: item insertion
-//                        entity.damage(DamageSource.player(player), 1f)
+                    val stack = context.stack
+                    if (entity.canInsertModule(stack)) {
+                        entity.insertModule(stack)
+                        ActionResult.SUCCESS
+                    } else {
+                        ActionResult.FAIL
                     }
-                    ActionResult.SUCCESS
                 }
             } else {
                 if (
@@ -36,13 +37,13 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
     override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
         val stack = user.getStackInHand(hand)
         return if (user.isSneaking) {
-            // shift-right-click to break
             TranspositionerItemUtils.raycast(user)?.let { entity ->
-                if (!world.isClient) {
-                    // TODO: item insertion
-//                    entity.damage(DamageSource.player(user), 1f)
+                if (entity.canInsertModule(stack)) {
+                    entity.insertModule(stack)
+                    TypedActionResult.success(stack)
+                } else {
+                    TypedActionResult.fail(stack)
                 }
-                TypedActionResult.success(stack)
             } ?: TypedActionResult.fail(stack)
         } else {
             if (

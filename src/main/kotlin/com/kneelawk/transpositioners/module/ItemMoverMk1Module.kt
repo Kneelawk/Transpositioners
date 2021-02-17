@@ -6,21 +6,22 @@ import alexiil.mc.lib.attributes.item.ItemAttributes
 import alexiil.mc.lib.attributes.item.ItemExtractable
 import alexiil.mc.lib.attributes.item.ItemInsertable
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
+import net.minecraft.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 
-class ItemMoverModule(entity: TranspositionerEntity, path: ModulePath) :
-    AbstractTranspositionerModule(ItemMoverModuleType, entity, path), MoverModule {
+class ItemMoverMk1Module(entity: TranspositionerEntity, path: ModulePath) :
+    AbstractTranspositionerModule(Type, entity, path), MoverModule {
+    companion object {
+        const val MAX_STACK_SIZE = 1
+    }
+
     override fun move() {
-        val extract = getItemExtractable(
-            entity.decorationBlockPos.offset(entity.horizontalFacing.opposite),
-            entity.horizontalFacing.opposite
-        )
-        val insert = getItemInsertable(entity.decorationBlockPos, entity.horizontalFacing)
+        val extract = getItemExtractable(attachmentPos.offset(facing.opposite), facing.opposite)
+        val insert = getItemInsertable(attachmentPos, facing)
 
-        val maxAmount = 8
-
-        val extractedSim = extract.attemptAnyExtraction(maxAmount, Simulation.SIMULATE)
+        val extractedSim = extract.attemptAnyExtraction(MAX_STACK_SIZE, Simulation.SIMULATE)
         if (!extractedSim.isEmpty) {
             val leftOverSim = insert.attemptInsertion(extractedSim, Simulation.SIMULATE)
             val amount = extractedSim.count - leftOverSim.count
@@ -42,5 +43,24 @@ class ItemMoverModule(entity: TranspositionerEntity, path: ModulePath) :
 
     private fun getItemExtractable(pos: BlockPos, direction: Direction): ItemExtractable {
         return ItemAttributes.EXTRACTABLE.get(world, pos, SearchOptions.inDirection(direction))
+    }
+
+    object Type : ModuleType<ItemMoverMk1Module> {
+        override fun readFromTag(
+            entity: TranspositionerEntity,
+            path: ModulePath,
+            stack: ItemStack,
+            tag: CompoundTag
+        ): ItemMoverMk1Module {
+            return ItemMoverMk1Module(entity, path)
+        }
+
+        override fun newInstance(
+            entity: TranspositionerEntity,
+            path: ModulePath,
+            stack: ItemStack
+        ): ItemMoverMk1Module {
+            return ItemMoverMk1Module(entity, path)
+        }
     }
 }

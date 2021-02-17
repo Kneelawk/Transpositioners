@@ -28,7 +28,6 @@ import net.minecraft.network.Packet
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket
 import net.minecraft.screen.ScreenHandler
-import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
@@ -44,12 +43,14 @@ import org.apache.commons.lang3.Validate
 
 class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFactory, ModuleContainer {
     companion object {
-        val NET_PARENT: ParentNetIdSingle<TranspositionerEntity> = McNetworkStack.ENTITY.subType(
+        private val NET_PARENT: ParentNetIdSingle<TranspositionerEntity> = McNetworkStack.ENTITY.subType(
             TranspositionerEntity::class.java,
             TranspositionersConstants.str("transpositioner_entity")
         )
-        val ID_CHANGE_MK: NetIdDataK<TranspositionerEntity> =
+        private val ID_CHANGE_MK: NetIdDataK<TranspositionerEntity> =
             NET_PARENT.idData("CHANGE_MK").setReceiver(TranspositionerEntity::receiveMkChange)
+        private val ID_INSERT_MODULE: NetIdDataK<TranspositionerEntity> =
+            NET_PARENT.idData("INSERT_MODULE").setReceiver(TranspositionerEntity::receiveInsertModule)
 
         const val MIN_MK = 1
         const val MAX_MK = 3
@@ -130,6 +131,32 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         ctx.assertClientSide()
         mk = buf.readByte().toInt().coerceIn(MIN_MK, MAX_MK)
         setModuleCount(moduleCountByMk(mk), false)
+    }
+
+    fun canInsertModule(stack: ItemStack): Boolean {
+        return modules.canInsert(stack)
+    }
+
+    fun insertModule(stack: ItemStack) {
+        if (!world.isClient && modules.canInsert(stack)) {
+            val toInsert = stack.split(1)
+            sendInsertModule(toInsert)
+            modules.addStack(toInsert)
+        }
+    }
+
+    private fun sendInsertModule(toInsert: ItemStack) {
+        for (con in CoreMinecraftNetUtil.getPlayersWatching(world, attachmentPos)) {
+            ID_INSERT_MODULE.send(con, this) { _, buf, ctx ->
+                ctx.assertServerSide()
+                buf.writeItemStack(toInsert)
+            }
+        }
+    }
+
+    private fun receiveInsertModule(buf: PacketByteBuf, ctx: IMsgReadCtx) {
+        ctx.assertClientSide()
+        modules.addStack(buf.readItemStack())
     }
 
     override fun updateAttachmentPosition() {
@@ -283,7 +310,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     }
 
     override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler {
-        return TranspositionerScreenHandler(syncId, inv, this, ScreenHandlerContext.EMPTY)
+        return TranspositionerScreenHandler(syncId, inv, this)
     }
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
