@@ -1,7 +1,6 @@
 package com.kneelawk.transpositioners.entity
 
 import alexiil.mc.lib.attributes.SearchOptions
-import alexiil.mc.lib.attributes.Simulation
 import alexiil.mc.lib.attributes.item.ItemAttributes
 import alexiil.mc.lib.attributes.item.ItemExtractable
 import alexiil.mc.lib.attributes.item.ItemInsertable
@@ -14,10 +13,7 @@ import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TranspositionersConstants
 import com.kneelawk.transpositioners.item.TranspositionerItem
-import com.kneelawk.transpositioners.module.ModuleContainer
-import com.kneelawk.transpositioners.module.MoverModule
-import com.kneelawk.transpositioners.module.TranspositionerModule
-import com.kneelawk.transpositioners.module.TranspositionerModules
+import com.kneelawk.transpositioners.module.*
 import com.kneelawk.transpositioners.screen.TranspositionerScreenHandler
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -26,10 +22,8 @@ import net.minecraft.entity.*
 import net.minecraft.entity.decoration.AbstractDecorationEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.inventory.SimpleInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundTag
-import net.minecraft.nbt.ListTag
 import net.minecraft.network.Packet
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket
@@ -41,7 +35,6 @@ import net.minecraft.text.Text
 import net.minecraft.text.TranslatableText
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
-import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
@@ -73,12 +66,11 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
     var mk: Int
         private set
-    val modules = arrayListOf<MoverModule?>()
-    // TODO: add inventory
+    var modules: ModuleInventory<MoverModule>
 
     constructor(entityType: EntityType<out TranspositionerEntity>, world: World) : super(entityType, world) {
         mk = MIN_MK
-        setModuleCount(moduleCountByMk(mk), TranspositionerModule.RemovalType.DELETE)
+        modules = ModuleInventory(moduleCountByMk(mk), this, TranspositionerModules.MOVERS)
     }
 
     constructor(world: World, pos: BlockPos, direction: Direction, mk: Int) : super(
@@ -88,7 +80,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     ) {
         setFacing(direction)
         this.mk = mk.coerceIn(MIN_MK, MAX_MK)
-        setModuleCount(moduleCountByMk(mk), TranspositionerModule.RemovalType.DELETE)
+        modules = ModuleInventory(moduleCountByMk(mk), this, TranspositionerModules.MOVERS)
     }
 
     override fun setFacing(facing: Direction) {
@@ -106,30 +98,23 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         updateAttachmentPosition()
     }
 
-    private fun setModuleCount(count: Int, removalType: TranspositionerModule.RemovalType) {
-        if (count > modules.size) {
-            modules.ensureCapacity(count)
-            for (i in modules.size until count) {
-                modules.add(null)
-            }
-        } else if (count < modules.size) {
-            for (i in (count until modules.size).reversed()) {
-                val module = modules.removeLast()
-                module?.onRemove(removalType)
+    private fun setModuleCount(count: Int, dropItems: Boolean) {
+        val conversion = modules.convertToNewSized(count)
+        modules = conversion.newInventory
+
+        if (dropItems) {
+            for (stack in conversion.remainingStacks) {
+                dropStack(stack)
             }
         }
     }
 
     fun updateMk(mk: Int) {
-        this.mk = mk.coerceIn(MIN_MK, MAX_MK)
-
         if (!world.isClient) {
+            this.mk = mk.coerceIn(MIN_MK, MAX_MK)
             sendMkChage(this.mk)
-
-            // TODO: setModuleCount and stuff
+            setModuleCount(moduleCountByMk(mk), true)
         }
-
-        // TODO: Inventory re-organization
     }
 
     private fun sendMkChage(mk: Int) {
@@ -143,7 +128,8 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
     private fun receiveMkChange(buf: PacketByteBuf, ctx: IMsgReadCtx) {
         ctx.assertClientSide()
-        updateMk(buf.readByte().toInt())
+        mk = buf.readByte().toInt().coerceIn(MIN_MK, MAX_MK)
+        setModuleCount(moduleCountByMk(mk), false)
     }
 
     override fun updateAttachmentPosition() {
@@ -203,20 +189,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         tag.putByte("Facing", facing.id.toByte())
         tag.putByte("Mk", mk.toByte())
 
-        val moduleList = ListTag()
-        for (index in modules.indices) {
-            modules.getOrNull(index)?.let { module ->
-                val holder = CompoundTag()
-                holder.putInt("index", index)
-                holder.putString("type", module.type.id.toString())
-                val moduleTag = CompoundTag()
-                module.writeToTag(moduleTag)
-                holder.put("module", moduleTag)
-                moduleList.add(holder)
-            }
-        }
-
-        tag.put("Modules", moduleList)
+        tag.put("Inventory", modules.getTags())
     }
 
     override fun readCustomDataFromTag(tag: CompoundTag) {
@@ -226,18 +199,8 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         mk = if (tag.contains("Mk")) tag.getByte("Mk").toInt().coerceIn(MIN_MK, MAX_MK) else MIN_MK
 
         modules.clear()
-        setModuleCount(moduleCountByMk(mk), TranspositionerModule.RemovalType.DELETE)
-        for (holderTag in tag.getList("Modules", 10)) {
-            val holder = holderTag as CompoundTag
-            val index = holder.getInt("index")
-            if (index >= 0 && index < modules.size) {
-                val type = TranspositionerModules.getMoverById(Identifier(holder.getString("type")))
-                val moduleTag = holder.getCompound("module")
-                // TODO: Inventory loading
-                val module = type.readFromTag(this, index, ItemStack.EMPTY, moduleTag)
-                modules[index] = module
-            }
-        }
+        setModuleCount(moduleCountByMk(mk), false)
+        if (tag.contains("Inventory")) modules.readTags(tag.getList("Inventory", 10))
     }
 
     override fun createSpawnPacket(): Packet<*> {
@@ -258,17 +221,9 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
             val drops = mutableListOf<ItemStack>()
             drops.add(ItemStack(TranspositionerItem.getItem(mk)))
-            // TODO: drop own inventory
-
-            for (module in modules) {
-                module?.addStacksForDrop(drops)
-            }
+            drops.addAll(modules.clearToList())
 
             dropStacks(entity, drops)
-        }
-
-        for (module in modules) {
-            module?.onRemove(TranspositionerModule.RemovalType.DROP)
         }
     }
 
@@ -310,25 +265,27 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         super.tick()
 
         if (!world.isClient) {
-            val extract = getItemExtractable(attachmentPos.offset(facing.opposite), facing.opposite)
-            val insert = getItemInsertable(attachmentPos, facing)
+//            val extract = getItemExtractable(attachmentPos.offset(facing.opposite), facing.opposite)
+//            val insert = getItemInsertable(attachmentPos, facing)
+//
+//            val maxAmount = 8
+//
+//            val extractedSim = extract.attemptAnyExtraction(maxAmount, Simulation.SIMULATE)
+//            if (!extractedSim.isEmpty) {
+//                val leftOverSim = insert.attemptInsertion(extractedSim, Simulation.SIMULATE)
+//                val amount = extractedSim.count - leftOverSim.count
+//
+//                if (amount != 0) {
+//                    val leftOver =
+//                        insert.attemptInsertion(
+//                            extract.attemptAnyExtraction(amount, Simulation.ACTION),
+//                            Simulation.ACTION
+//                        )
+//                    assert(leftOver.isEmpty) { "leftOver: $leftOver" }
+//                }
+//            }
 
-            val maxAmount = 8
-
-            val extractedSim = extract.attemptAnyExtraction(maxAmount, Simulation.SIMULATE)
-            if (!extractedSim.isEmpty) {
-                val leftOverSim = insert.attemptInsertion(extractedSim, Simulation.SIMULATE)
-                val amount = extractedSim.count - leftOverSim.count
-
-                if (amount != 0) {
-                    val leftOver =
-                        insert.attemptInsertion(
-                            extract.attemptAnyExtraction(amount, Simulation.ACTION),
-                            Simulation.ACTION
-                        )
-                    assert(leftOver.isEmpty) { "leftOver: $leftOver" }
-                }
-            }
+            modules.forEach { it.move() }
         }
     }
 
@@ -354,6 +311,6 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     }
 
     override fun getModule(index: Int): TranspositionerModule? {
-        return modules.getOrNull(index)
+        return modules.getModule(index)
     }
 }

@@ -50,22 +50,12 @@ interface TranspositionerModule : ModuleContainer, ExtendedScreenHandlerFactory 
 
     val type: ModuleType<*>
 
-    fun validate(stack: ItemStack): ValidationResult
+    // TODO: Evaluate the usefulness of this.
+    fun validate(stack: ItemStack): Boolean
 
     fun writeToTag(tag: CompoundTag)
 
     fun addStacksForDrop(stacks: MutableCollection<ItemStack>)
 
-    fun onRemove(type: RemovalType)
-
-    enum class ValidationResult {
-        VALID,
-        DROP,
-        DELETE
-    }
-
-    enum class RemovalType {
-        DELETE,
-        DROP
-    }
+    fun onRemove()
 }
