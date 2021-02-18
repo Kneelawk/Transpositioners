@@ -69,8 +69,11 @@ object TranspositionerModules {
         tooltip: MutableList<Text>,
         context: TooltipContext
     ) {
-        getModuleData(stack)?.let { moduleData ->
+        val moduleData = getModuleData(stack)
+        if (moduleData != null) {
             GLOBAL.maybeGetByItem(stack.item)?.appendTooltip(stack, world, tooltip, context, moduleData)
+        } else {
+            tooltip.add(TranspositionersConstants.tooltip("unconfigured"))
         }
     }
 }

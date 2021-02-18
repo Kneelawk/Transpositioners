@@ -16,5 +16,6 @@
   "gui.transpositioners.backward": "Backward",
   "tooltip.transpositioners.direction": "Direction: %s",
   "tooltip.transpositioners.forward": "Forward",
-  "tooltip.transpositioners.backward": "Backward"
+  "tooltip.transpositioners.backward": "Backward",
+  "tooltip.transpositioners.unconfigured": "Unconfigured"
 }
