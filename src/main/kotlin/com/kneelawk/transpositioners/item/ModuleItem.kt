@@ -32,7 +32,7 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
             } else {
                 if (
                     TranspositionerItemUtils.tryOpenTranspositioner(context.world, player, context.hand)
-                ) ActionResult.SUCCESS else null
+                ) ActionResult.SUCCESS else ActionResult.PASS
             }
         } ?: ActionResult.FAIL
     }
@@ -51,7 +51,7 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
         } else {
             if (
                 TranspositionerItemUtils.tryOpenTranspositioner(world, user, hand)
-            ) TypedActionResult.success(stack) else TypedActionResult.fail(stack)
+            ) TypedActionResult.success(stack) else TypedActionResult.pass(stack)
         }
     }
 

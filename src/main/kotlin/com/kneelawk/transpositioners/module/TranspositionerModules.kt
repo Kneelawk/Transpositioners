@@ -1,7 +1,6 @@
 package com.kneelawk.transpositioners.module
 
 import com.kneelawk.transpositioners.TranspositionersConstants
-import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import com.kneelawk.transpositioners.item.TranspositionerItems
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.item.Item
@@ -9,23 +8,31 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.text.Text
 import net.minecraft.world.World
+import kotlin.reflect.KClass
+import kotlin.reflect.full.isSuperclassOf
 
 object TranspositionerModules {
     private const val MODULE_TAG_NAME = "module"
 
-    // this is a tad janky but it'll work well enough for now
-    internal val globalItemMap = mutableMapOf<Item, ModuleType<*>>()
-
+    // TODO: Figure out a better way to do this.
+    val GLOBAL = ModuleRegistry<TranspositionerModule>()
     val MOVERS = ModuleRegistry<MoverModule>()
 
     fun register() {
-        MOVERS.register(ItemMoverMk1Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK1)
-        MOVERS.register(ItemMoverMk2Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK2)
-        MOVERS.register(ItemMoverMk3Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK3)
+        register(ItemMoverMk1Module::class, ItemMoverMk1Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK1)
+        register(ItemMoverMk2Module::class, ItemMoverMk2Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK2)
+        register(ItemMoverMk3Module::class, ItemMoverMk3Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK3)
     }
 
-    fun getGlobalByItem(item: Item): ModuleType<*>? {
-        return globalItemMap[item]
+    fun <M : TranspositionerModule> register(clazz: KClass<M>, type: ModuleType<M>, item: Item) {
+        if (GLOBAL.containsItem(item)) {
+            throw IllegalStateException("A module type is already registered for the item: $item")
+        }
+        GLOBAL.register(type, item)
+
+        if (MoverModule::class.isSuperclassOf(clazz)) {
+            MOVERS.register(type as ModuleType<out MoverModule>, item)
+        }
     }
 
     fun getModuleData(stack: ItemStack): CompoundTag? {
@@ -35,14 +42,14 @@ object TranspositionerModules {
     fun <M : TranspositionerModule> getModule(
         stack: ItemStack,
         type: ModuleType<out M>,
-        entity: TranspositionerEntity,
+        context: ModuleContext,
         path: ModulePath
     ): M {
         val holder = getModuleData(stack)
         return if (holder == null) {
-            type.newInstance(entity, path, stack)
+            type.newInstance(context, path, stack)
         } else {
-            type.readFromTag(entity, path, stack, holder)
+            type.readFromTag(context, path, stack, holder)
         }
     }
 
@@ -63,7 +70,7 @@ object TranspositionerModules {
         context: TooltipContext
     ) {
         getModuleData(stack)?.let { moduleData ->
-            getGlobalByItem(stack.item)?.appendTooltip(stack, world, tooltip, context, moduleData)
+            GLOBAL.maybeGetByItem(stack.item)?.appendTooltip(stack, world, tooltip, context, moduleData)
         }
     }
 }

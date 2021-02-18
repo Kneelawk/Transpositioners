@@ -1,4 +1,5 @@
 {
+  "block.transpositioners.module_configurator": "Module Configurator",
   "entity.transpositioners.transpositioner.mk1": "Transpositioner Mk1",
   "entity.transpositioners.transpositioner.mk2": "Transpositioner Mk2",
   "entity.transpositioners.transpositioner.mk3": "Transpositioner Mk3",

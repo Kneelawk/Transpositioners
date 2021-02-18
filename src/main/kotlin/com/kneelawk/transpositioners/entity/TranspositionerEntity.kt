@@ -71,7 +71,12 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
     constructor(entityType: EntityType<out TranspositionerEntity>, world: World) : super(entityType, world) {
         mk = MIN_MK
-        modules = ModuleInventory(moduleCountByMk(mk), this, ModulePath.ROOT, TranspositionerModules.MOVERS)
+        modules = ModuleInventory(
+            moduleCountByMk(mk),
+            ModuleContext.Entity(this),
+            ModulePath.ROOT,
+            TranspositionerModules.MOVERS
+        )
     }
 
     constructor(world: World, pos: BlockPos, direction: Direction, mk: Int) : super(
@@ -81,7 +86,12 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     ) {
         setFacing(direction)
         this.mk = mk.coerceIn(MIN_MK, MAX_MK)
-        modules = ModuleInventory(moduleCountByMk(mk), this, ModulePath.ROOT, TranspositionerModules.MOVERS)
+        modules = ModuleInventory(
+            moduleCountByMk(mk),
+            ModuleContext.Entity(this),
+            ModulePath.ROOT,
+            TranspositionerModules.MOVERS
+        )
     }
 
     override fun setFacing(facing: Direction) {

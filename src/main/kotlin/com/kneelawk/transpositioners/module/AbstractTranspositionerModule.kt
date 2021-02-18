@@ -1,6 +1,5 @@
 package com.kneelawk.transpositioners.module
 
-import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.util.math.BlockPos
@@ -9,15 +8,15 @@ import net.minecraft.world.World
 
 abstract class AbstractTranspositionerModule(
     override val type: ModuleType<*>,
-    override val entity: TranspositionerEntity,
+    override val context: ModuleContext,
     override val path: ModulePath
 ) : TranspositionerModule {
     protected val world: World
-        get() = entity.world
+        get() = context.world
     protected val attachmentPos: BlockPos
-        get() = entity.decorationBlockPos
+        get() = context.attachmentPos
     protected val facing: Direction
-        get() = entity.horizontalFacing
+        get() = context.facing
 
     override fun getModule(index: Int): TranspositionerModule? {
         return null

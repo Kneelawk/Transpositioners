@@ -17,13 +17,13 @@ import kotlin.math.min
  *
  * @param M the type of module this inventory holds.
  * @param size the size of this inventory.
- * @param entity the entity in which this inventory is contained.
+ * @param context the entity or configurator in which this inventory is contained.
  * @param path the path of the module containing this inventory.
  * @param registry the registry for this inventory's modules' type.
  */
 class ModuleInventory<M : TranspositionerModule>(
     private val size: Int,
-    private val entity: TranspositionerEntity,
+    private val context: ModuleContext,
     private val path: ModulePath,
     private val registry: ModuleRegistry<M>
 ) : Inventory, ModuleContainer {
@@ -273,7 +273,7 @@ class ModuleInventory<M : TranspositionerModule>(
         type: ModuleType<out M>,
         slot: Int
     ) {
-        modules[slot] = TranspositionerModules.getModule(stack, type, entity, path.child(slot))
+        modules[slot] = TranspositionerModules.getModule(stack, type, context, path.child(slot))
     }
 
     /**
@@ -419,7 +419,7 @@ class ModuleInventory<M : TranspositionerModule>(
      * @return the new module inventory created as well as any items that couldn't fit.
      */
     fun convertToNewSized(size: Int): SizeConversion<M> {
-        val newInv = ModuleInventory(size, entity, path, registry)
+        val newInv = ModuleInventory(size, context, path, registry)
 
         newInv.listeners.addAll(listeners)
         for (i in 0 until min(size, size())) {

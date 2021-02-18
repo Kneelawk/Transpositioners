@@ -23,14 +23,13 @@ class TranspositionerScreenHandler(
     syncId: Int,
     playerInventory: PlayerInventory,
     private val entity: TranspositionerEntity
-) :
-    SyncedGuiDescription(
-        TranspositionerScreenHandlers.TRANSPOSITIONER_TYPE,
-        syncId,
-        playerInventory,
-        entity.modules,
-        null
-    ) {
+) : SyncedGuiDescription(
+    TranspositionerScreenHandlers.TRANSPOSITIONER_TYPE,
+    syncId,
+    playerInventory,
+    entity.modules,
+    null
+) {
 
     companion object {
         private val LOGGER = LogManager.getLogger()

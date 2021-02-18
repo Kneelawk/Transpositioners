@@ -14,6 +14,14 @@ object TranspositionersConstants {
         return "$MOD_ID:$name"
     }
 
+    fun item(name: String, vararg args: Any): TranslatableText {
+        return TranslatableText("item.$MOD_ID.$name", *args)
+    }
+
+    fun block(name: String, vararg args: Any): TranslatableText {
+        return TranslatableText("block.$MOD_ID.$name", *args)
+    }
+
     fun gui(name: String, vararg args: Any): TranslatableText {
         return TranslatableText("gui.$MOD_ID.$name", *args)
     }

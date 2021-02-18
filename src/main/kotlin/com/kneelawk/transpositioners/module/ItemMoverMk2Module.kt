@@ -8,7 +8,6 @@ import alexiil.mc.lib.attributes.item.ItemInsertable
 import alexiil.mc.lib.net.IMsgReadCtx
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import com.kneelawk.transpositioners.TranspositionersConstants
-import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import com.kneelawk.transpositioners.screen.ItemMoverMk2ScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.client.item.TooltipContext
@@ -20,14 +19,13 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.text.TranslatableText
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
-class ItemMoverMk2Module(entity: TranspositionerEntity, path: ModulePath, initialDirection: MovementDirection) :
-    AbstractTranspositionerModule(Type, entity, path), MoverModule, ExtendedScreenHandlerFactory {
+class ItemMoverMk2Module(context: ModuleContext, path: ModulePath, initialDirection: MovementDirection) :
+    AbstractTranspositionerModule(Type, context, path), MoverModule, ExtendedScreenHandlerFactory {
     companion object {
         const val MAX_STACK_SIZE = 1
 
@@ -98,7 +96,7 @@ class ItemMoverMk2Module(entity: TranspositionerEntity, path: ModulePath, initia
     }
 
     override fun getDisplayName(): Text {
-        return TranslatableText("item.transpositioners.item_mover_module_mk2")
+        return TranspositionersConstants.item("item_mover_module_mk2")
     }
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
@@ -111,7 +109,7 @@ class ItemMoverMk2Module(entity: TranspositionerEntity, path: ModulePath, initia
 
     object Type : ModuleType<ItemMoverMk2Module> {
         override fun readFromTag(
-            entity: TranspositionerEntity,
+            context: ModuleContext,
             path: ModulePath,
             stack: ItemStack,
             tag: CompoundTag
@@ -119,15 +117,15 @@ class ItemMoverMk2Module(entity: TranspositionerEntity, path: ModulePath, initia
             val direction = if (tag.contains("direction")) MovementDirection.values()[tag.getByte("direction").toInt()
                 .coerceIn(0, 1)] else MovementDirection.FORWARD
 
-            return ItemMoverMk2Module(entity, path, direction)
+            return ItemMoverMk2Module(context, path, direction)
         }
 
         override fun newInstance(
-            entity: TranspositionerEntity,
+            context: ModuleContext,
             path: ModulePath,
             stack: ItemStack
         ): ItemMoverMk2Module {
-            return ItemMoverMk2Module(entity, path, MovementDirection.FORWARD)
+            return ItemMoverMk2Module(context, path, MovementDirection.FORWARD)
         }
 
         override fun appendTooltip(

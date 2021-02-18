@@ -5,14 +5,13 @@ import alexiil.mc.lib.attributes.Simulation
 import alexiil.mc.lib.attributes.item.ItemAttributes
 import alexiil.mc.lib.attributes.item.ItemExtractable
 import alexiil.mc.lib.attributes.item.ItemInsertable
-import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 
-class ItemMoverMk1Module(entity: TranspositionerEntity, path: ModulePath) :
-    AbstractTranspositionerModule(Type, entity, path), MoverModule {
+class ItemMoverMk1Module(context: ModuleContext, path: ModulePath) :
+    AbstractTranspositionerModule(Type, context, path), MoverModule {
     companion object {
         const val MAX_STACK_SIZE = 1
     }
@@ -47,20 +46,20 @@ class ItemMoverMk1Module(entity: TranspositionerEntity, path: ModulePath) :
 
     object Type : ModuleType<ItemMoverMk1Module> {
         override fun readFromTag(
-            entity: TranspositionerEntity,
+            context: ModuleContext,
             path: ModulePath,
             stack: ItemStack,
             tag: CompoundTag
         ): ItemMoverMk1Module {
-            return ItemMoverMk1Module(entity, path)
+            return ItemMoverMk1Module(context, path)
         }
 
         override fun newInstance(
-            entity: TranspositionerEntity,
+            context: ModuleContext,
             path: ModulePath,
             stack: ItemStack
         ): ItemMoverMk1Module {
-            return ItemMoverMk1Module(entity, path)
+            return ItemMoverMk1Module(context, path)
         }
     }
 }
