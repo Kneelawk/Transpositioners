@@ -1,9 +1,12 @@
 package com.kneelawk.transpositioners.item
 
+import com.kneelawk.transpositioners.module.TranspositionerModules
+import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.ItemUsageContext
+import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
@@ -50,5 +53,14 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
                 TranspositionerItemUtils.tryOpenTranspositioner(world, user, hand)
             ) TypedActionResult.success(stack) else TypedActionResult.fail(stack)
         }
+    }
+
+    override fun appendTooltip(
+        stack: ItemStack,
+        world: World?,
+        tooltip: MutableList<Text>,
+        context: TooltipContext
+    ) {
+        TranspositionerModules.appendTooltip(stack, world, tooltip, context)
     }
 }

@@ -1,7 +1,6 @@
 package com.kneelawk.transpositioners.module
 
 import com.google.common.collect.ImmutableList
-import com.kneelawk.transpositioners.TranspositionersConstants
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
@@ -29,7 +28,6 @@ class ModuleInventory<M : TranspositionerModule>(
     private val registry: ModuleRegistry<M>
 ) : Inventory, ModuleContainer {
     companion object {
-        private const val MODULE_TAG_NAME = "module"
         private val LOGGER: Logger = LogManager.getLogger()
     }
 
@@ -88,9 +86,7 @@ class ModuleInventory<M : TranspositionerModule>(
                     return ItemStack.EMPTY
                 }
 
-                val holder = CompoundTag()
-                module.writeToTag(holder)
-                stack.putSubTag(TranspositionersConstants.str(MODULE_TAG_NAME), holder)
+                TranspositionerModules.putModule(stack, module)
             } else {
                 LOGGER.warn("Encountered item in slot without associated module")
                 setStack(slot, ItemStack.EMPTY)
@@ -277,14 +273,7 @@ class ModuleInventory<M : TranspositionerModule>(
         type: ModuleType<out M>,
         slot: Int
     ) {
-        val holder = stack.getSubTag(TranspositionersConstants.str(MODULE_TAG_NAME))
-        if (holder != null) {
-            val module = type.readFromTag(entity, path.child(slot), stack, holder)
-            modules[slot] = module
-        } else {
-            val module = type.newInstance(entity, path.child(slot), stack)
-            modules[slot] = module
-        }
+        modules[slot] = TranspositionerModules.getModule(stack, type, entity, path.child(slot))
     }
 
     /**

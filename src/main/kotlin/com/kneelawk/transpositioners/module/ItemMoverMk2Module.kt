@@ -5,9 +5,13 @@ import alexiil.mc.lib.attributes.Simulation
 import alexiil.mc.lib.attributes.item.ItemAttributes
 import alexiil.mc.lib.attributes.item.ItemExtractable
 import alexiil.mc.lib.attributes.item.ItemInsertable
+import alexiil.mc.lib.net.IMsgReadCtx
+import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
+import com.kneelawk.transpositioners.TranspositionersConstants
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import com.kneelawk.transpositioners.screen.ItemMoverMk2ScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.ItemStack
@@ -17,13 +21,48 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.text.TranslatableText
+import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
+import net.minecraft.world.World
 
-class ItemMoverMk2Module(entity: TranspositionerEntity, path: ModulePath) :
+class ItemMoverMk2Module(entity: TranspositionerEntity, path: ModulePath, initialDirection: MovementDirection) :
     AbstractTranspositionerModule(Type, entity, path), MoverModule, ExtendedScreenHandlerFactory {
     companion object {
         const val MAX_STACK_SIZE = 1
+
+        private val NET_PARENT = TranspositionerModule.NET_ID.subType(
+            ItemMoverMk2Module::class.java,
+            TranspositionersConstants.str("item_mover_mk2_module")
+        )
+
+        private val ID_DIRECTION_CHANGE =
+            NET_PARENT.idData("DIRECTION_CHANGE").setReceiver(ItemMoverMk2Module::receiveChangeDirection)
+    }
+
+    var direction = initialDirection
+        private set
+
+    fun updateDirection(newDirection: MovementDirection) {
+        direction = newDirection
+        sendChangeDirection(newDirection)
+    }
+
+    private fun sendChangeDirection(newDirection: MovementDirection) {
+        for (con in CoreMinecraftNetUtil.getPlayersWatching(world, attachmentPos)) {
+            ID_DIRECTION_CHANGE.send(con, this) { _, buf, ctx ->
+                ctx.assertServerSide()
+                buf.writeByte(newDirection.ordinal)
+            }
+        }
+    }
+
+    private fun receiveChangeDirection(buf: PacketByteBuf, ctx: IMsgReadCtx) {
+        ctx.assertClientSide()
+        val newDirection = MovementDirection.values()[buf.readByte().toInt()]
+        direction = newDirection
+
+        ModuleUtils.screenHandler<ItemMoverMk2ScreenHandler>(ctx, this) { it.s2cReceiveDirectionChange(newDirection) }
     }
 
     override fun move() {
@@ -66,6 +105,10 @@ class ItemMoverMk2Module(entity: TranspositionerEntity, path: ModulePath) :
         TranspositionerModule.writeModulePath(this, buf)
     }
 
+    override fun writeToTag(tag: CompoundTag) {
+        tag.putByte("direction", direction.ordinal.toByte())
+    }
+
     object Type : ModuleType<ItemMoverMk2Module> {
         override fun readFromTag(
             entity: TranspositionerEntity,
@@ -73,7 +116,10 @@ class ItemMoverMk2Module(entity: TranspositionerEntity, path: ModulePath) :
             stack: ItemStack,
             tag: CompoundTag
         ): ItemMoverMk2Module {
-            return ItemMoverMk2Module(entity, path)
+            val direction = if (tag.contains("direction")) MovementDirection.values()[tag.getByte("direction").toInt()
+                .coerceIn(0, 1)] else MovementDirection.FORWARD
+
+            return ItemMoverMk2Module(entity, path, direction)
         }
 
         override fun newInstance(
@@ -81,7 +127,27 @@ class ItemMoverMk2Module(entity: TranspositionerEntity, path: ModulePath) :
             path: ModulePath,
             stack: ItemStack
         ): ItemMoverMk2Module {
-            return ItemMoverMk2Module(entity, path)
+            return ItemMoverMk2Module(entity, path, MovementDirection.FORWARD)
+        }
+
+        override fun appendTooltip(
+            stack: ItemStack,
+            world: World?,
+            tooltip: MutableList<Text>,
+            tooltipContext: TooltipContext,
+            moduleData: CompoundTag
+        ) {
+            if (moduleData.contains("direction")) {
+                val direction = MovementDirection.values()[moduleData.getByte("direction").toInt().coerceIn(0, 1)]
+                tooltip += TranspositionersConstants.tooltip(
+                    "direction",
+                    TranspositionersConstants.tooltip(direction.name.toLowerCase()).apply {
+                        when (direction) {
+                            MovementDirection.FORWARD -> formatted(Formatting.GREEN)
+                            MovementDirection.BACKWARD -> formatted(Formatting.BLUE)
+                        }
+                    })
+            }
         }
     }
 }
