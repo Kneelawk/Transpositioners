@@ -1,7 +1,7 @@
 package com.kneelawk.transpositioners.mixin.impl;
 
-import com.kneelawk.transpositioners.entity.TranspositionerEntity;
 import com.kneelawk.transpositioners.entity.TPEntityTypes;
+import com.kneelawk.transpositioners.entity.TranspositionerEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;

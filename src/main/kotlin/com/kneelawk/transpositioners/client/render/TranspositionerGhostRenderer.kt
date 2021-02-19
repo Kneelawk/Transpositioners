@@ -93,13 +93,13 @@ object TranspositionerGhostRenderer {
                     val item = stack.item
                     if (item is TranspositionerItem) {
                         val entity = item.getTranspositionerPlacement(
-                                world,
-                                player,
-                                target.blockPos,
-                                target.side,
-                                stack,
-                                target.pos
-                            )
+                            world,
+                            player,
+                            target.blockPos,
+                            target.side,
+                            stack,
+                            target.pos
+                        )
                         if (entity != null) {
                             val cameraPos = camera.pos
                             val entityOffset = TranspositionerEntityRenderer.getPositionOffset(entity, tickDelta)

@@ -1,7 +1,7 @@
 package com.kneelawk.transpositioners.screen
 
-import com.kneelawk.transpositioners.module.ModuleContext
 import com.kneelawk.transpositioners.module.Module
+import com.kneelawk.transpositioners.module.ModuleContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.screen.NamedScreenHandlerFactory
 
