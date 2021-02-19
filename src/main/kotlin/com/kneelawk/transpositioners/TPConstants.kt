@@ -3,7 +3,7 @@ package com.kneelawk.transpositioners
 import net.minecraft.text.TranslatableText
 import net.minecraft.util.Identifier
 
-object TranspositionersConstants {
+object TPConstants {
     const val MOD_ID = "transpositioners"
 
     fun identifier(name: String): Identifier {

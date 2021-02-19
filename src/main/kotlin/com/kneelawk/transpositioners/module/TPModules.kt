@@ -1,7 +1,7 @@
 package com.kneelawk.transpositioners.module
 
-import com.kneelawk.transpositioners.TranspositionersConstants
-import com.kneelawk.transpositioners.item.TranspositionerItems
+import com.kneelawk.transpositioners.TPConstants
+import com.kneelawk.transpositioners.item.TPItems
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -9,26 +9,26 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.text.Text
 import net.minecraft.world.World
 
-object TranspositionerModules {
+object TPModules {
     private const val MODULE_TAG_NAME = "module"
 
     // TODO: Figure out a better way to do this.
-    val GLOBAL = ModuleRegistry<TranspositionerModule>()
+    val GLOBAL = ModuleRegistry<Module>()
     val MOVERS = ModuleRegistry<MoverModule>()
 
     fun register() {
-        register(ItemMoverMk1Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK1)
-        register(ItemMoverMk2Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK2)
-        register(ItemMoverMk3Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK3)
+        register(ItemMoverMk1Module.Type, TPItems.ITEM_MOVER_MODULE_MK1)
+        register(ItemMoverMk2Module.Type, TPItems.ITEM_MOVER_MODULE_MK2)
+        register(ItemMoverMk3Module.Type, TPItems.ITEM_MOVER_MODULE_MK3)
     }
 
     // kotlin interface
-    inline fun <reified M : TranspositionerModule> register(type: ModuleType<M>, item: Item) {
+    inline fun <reified M : Module> register(type: ModuleType<M>, item: Item) {
         register(M::class.java, type, item)
     }
 
     // java interface
-    fun <M : TranspositionerModule> register(clazz: Class<M>, type: ModuleType<M>, item: Item) {
+    fun <M : Module> register(clazz: Class<M>, type: ModuleType<M>, item: Item) {
         if (GLOBAL.containsItem(item)) {
             throw IllegalStateException("A module type is already registered for the item: $item")
         }
@@ -40,10 +40,10 @@ object TranspositionerModules {
     }
 
     fun getModuleData(stack: ItemStack): CompoundTag? {
-        return stack.getSubTag(TranspositionersConstants.str(MODULE_TAG_NAME))
+        return stack.getSubTag(TPConstants.str(MODULE_TAG_NAME))
     }
 
-    fun <M : TranspositionerModule> getModule(
+    fun <M : Module> getModule(
         stack: ItemStack,
         type: ModuleType<out M>,
         context: ModuleContext,
@@ -58,10 +58,10 @@ object TranspositionerModules {
     }
 
     fun putModuleData(stack: ItemStack, data: CompoundTag) {
-        stack.putSubTag(TranspositionersConstants.str(MODULE_TAG_NAME), data)
+        stack.putSubTag(TPConstants.str(MODULE_TAG_NAME), data)
     }
 
-    fun putModule(stack: ItemStack, module: TranspositionerModule) {
+    fun putModule(stack: ItemStack, module: Module) {
         val holder = CompoundTag()
         module.writeToTag(holder)
         putModuleData(stack, holder)
@@ -77,7 +77,7 @@ object TranspositionerModules {
         if (moduleData != null) {
             GLOBAL.maybeGetByItem(stack.item)?.appendTooltip(stack, world, tooltip, context, moduleData)
         } else {
-            tooltip.add(TranspositionersConstants.tooltip("unconfigured"))
+            tooltip.add(TPConstants.tooltip("unconfigured"))
         }
     }
 }

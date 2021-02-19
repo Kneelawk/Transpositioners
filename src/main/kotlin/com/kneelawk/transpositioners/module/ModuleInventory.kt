@@ -1,7 +1,6 @@
 package com.kneelawk.transpositioners.module
 
 import com.google.common.collect.ImmutableList
-import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.inventory.InventoryChangedListener
@@ -21,7 +20,7 @@ import kotlin.math.min
  * @param path the path of the module containing this inventory.
  * @param registry the registry for this inventory's modules' type.
  */
-class ModuleInventory<M : TranspositionerModule>(
+class ModuleInventory<M : Module>(
     private val size: Int,
     private val context: ModuleContext,
     private val path: ModulePath,
@@ -86,7 +85,7 @@ class ModuleInventory<M : TranspositionerModule>(
                     return ItemStack.EMPTY
                 }
 
-                TranspositionerModules.putModule(stack, module)
+                TPModules.putModule(stack, module)
             } else {
                 LOGGER.warn("Encountered item in slot without associated module")
                 setStack(slot, ItemStack.EMPTY)
@@ -103,7 +102,7 @@ class ModuleInventory<M : TranspositionerModule>(
      * @param index the index of the module.
      * @return the module at the specified index if any.
      */
-    override fun getModule(index: Int): TranspositionerModule? {
+    override fun getModule(index: Int): Module? {
         return if (index >= 0 && index < size()) {
             modules[index]
         } else {
@@ -273,7 +272,7 @@ class ModuleInventory<M : TranspositionerModule>(
         type: ModuleType<out M>,
         slot: Int
     ) {
-        modules[slot] = TranspositionerModules.getModule(stack, type, context, path.child(slot))
+        modules[slot] = TPModules.getModule(stack, type, context, path.child(slot))
     }
 
     /**
@@ -443,7 +442,7 @@ class ModuleInventory<M : TranspositionerModule>(
         return SizeConversion(newInv, builder.build())
     }
 
-    data class SizeConversion<M : TranspositionerModule>(
+    data class SizeConversion<M : Module>(
         val newInventory: ModuleInventory<M>,
         val remainingStacks: Collection<ItemStack>
     )

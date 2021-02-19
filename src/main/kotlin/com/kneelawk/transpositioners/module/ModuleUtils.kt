@@ -1,7 +1,7 @@
 package com.kneelawk.transpositioners.module
 
 import alexiil.mc.lib.net.IMsgReadCtx
-import com.kneelawk.transpositioners.TranspositionersConstants
+import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.screen.ModuleScreenHandler
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -10,7 +10,7 @@ import net.minecraft.util.math.Direction
 object ModuleUtils {
     inline fun <reified S : ModuleScreenHandler> screenHandler(
         ctx: IMsgReadCtx,
-        module: TranspositionerModule,
+        module: Module,
         handlerFn: (S) -> Unit
     ) {
         (ctx.connection.player.currentScreenHandler as? S)?.let { handler ->
@@ -21,9 +21,9 @@ object ModuleUtils {
     }
 
     fun movementDirectionTooltip(direction: MovementDirection): Text {
-        return TranspositionersConstants.tooltip(
+        return TPConstants.tooltip(
             "direction",
-            TranspositionersConstants.tooltip(direction.name.toLowerCase()).apply {
+            TPConstants.tooltip(direction.name.toLowerCase()).apply {
                 when (direction) {
                     MovementDirection.FORWARD -> formatted(Formatting.GREEN)
                     MovementDirection.BACKWARD -> formatted(Formatting.BLUE)
@@ -32,7 +32,7 @@ object ModuleUtils {
     }
 
     fun directionTooltip(direction: Direction): Text {
-        return TranspositionersConstants.tooltip(direction.getName()).apply {
+        return TPConstants.tooltip(direction.getName()).apply {
             when (direction) {
                 Direction.DOWN -> formatted(Formatting.GRAY)
                 Direction.UP -> formatted(Formatting.WHITE)

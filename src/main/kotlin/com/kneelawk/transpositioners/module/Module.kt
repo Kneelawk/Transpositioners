@@ -6,34 +6,34 @@ import alexiil.mc.lib.net.NetByteBuf
 import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.ActiveMinecraftConnection
 import alexiil.mc.lib.net.impl.McNetworkStack
-import com.kneelawk.transpositioners.TranspositionersConstants
+import com.kneelawk.transpositioners.TPConstants
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.world.World
 import org.apache.logging.log4j.LogManager
 
-interface TranspositionerModule : ModuleContainer {
+interface Module : ModuleContainer {
     companion object {
         private val LOGGER = LogManager.getLogger()
 
-        val NET_ID = object : ParentNetIdSingle<TranspositionerModule>(
+        val NET_ID = object : ParentNetIdSingle<Module>(
             McNetworkStack.ROOT,
-            TranspositionerModule::class.java,
-            TranspositionersConstants.str("transpositioner_module"),
+            Module::class.java,
+            TPConstants.str("transpositioner_module"),
             -1
         ) {
-            override fun readContext(buffer: NetByteBuf, ctx: IMsgReadCtx): TranspositionerModule? {
+            override fun readContext(buffer: NetByteBuf, ctx: IMsgReadCtx): Module? {
                 val mcConn = ctx.connection as ActiveMinecraftConnection
                 return readModulePath(mcConn.player.world, buffer)
             }
 
-            override fun writeContext(buffer: NetByteBuf, ctx: IMsgWriteCtx, value: TranspositionerModule) {
+            override fun writeContext(buffer: NetByteBuf, ctx: IMsgWriteCtx, value: Module) {
                 writeModulePath(value, buffer)
             }
         }
 
-        fun writeModulePath(module: TranspositionerModule, buf: PacketByteBuf) {
+        fun writeModulePath(module: Module, buf: PacketByteBuf) {
             when (val context = module.context) {
                 is ModuleContext.Configurator -> {
                     buf.writeBoolean(false)
@@ -47,7 +47,7 @@ interface TranspositionerModule : ModuleContainer {
             module.path.writeToBuf(buf)
         }
 
-        fun readModulePath(world: World, buf: PacketByteBuf): TranspositionerModule? {
+        fun readModulePath(world: World, buf: PacketByteBuf): Module? {
             val container = if (buf.readBoolean()) {
                 world.getEntityById(buf.readInt()) as? ModuleContainer ?: return null
             } else {

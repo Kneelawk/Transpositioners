@@ -10,7 +10,7 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import java.util.function.Predicate
 
-object TranspositionerItemUtils {
+object TPItemUtils {
 
     fun tryOpenTranspositioner(world: World, player: PlayerEntity, hand: Hand): Boolean {
         return raycast(player)?.let { entity ->

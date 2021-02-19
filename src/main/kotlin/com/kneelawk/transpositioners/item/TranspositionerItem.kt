@@ -18,9 +18,9 @@ class TranspositionerItem(val mk: Int, settings: Settings) : Item(settings), Int
     companion object {
         fun getItem(mk: Int): TranspositionerItem {
             return when (mk) {
-                1 -> TranspositionerItems.TRANSPOSITIONER_MK1
-                2 -> TranspositionerItems.TRANSPOSITIONER_MK2
-                3 -> TranspositionerItems.TRANSPOSITIONER_MK3
+                1 -> TPItems.TRANSPOSITIONER_MK1
+                2 -> TPItems.TRANSPOSITIONER_MK2
+                3 -> TPItems.TRANSPOSITIONER_MK3
                 else -> throw IllegalArgumentException("Invalid transpositioner mk: $mk")
             }
         }

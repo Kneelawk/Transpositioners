@@ -11,7 +11,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 
 class ItemMoverMk3Module(context: ModuleContext, path: ModulePath) :
-    AbstractTranspositionerModule(Type, context, path), MoverModule {
+    AbstractModule(Type, context, path), MoverModule {
     companion object {
         const val MAX_STACK_SIZE = 1
     }

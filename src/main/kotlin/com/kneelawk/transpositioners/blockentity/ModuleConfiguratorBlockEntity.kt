@@ -1,6 +1,6 @@
 package com.kneelawk.transpositioners.blockentity
 
-import com.kneelawk.transpositioners.block.TranspositionerBlocks
+import com.kneelawk.transpositioners.block.TPBlocks
 import com.kneelawk.transpositioners.module.*
 import com.kneelawk.transpositioners.screen.ModuleConfiguratorScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
@@ -15,7 +15,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.text.TranslatableText
 
-class ModuleConfiguratorBlockEntity : BlockEntity(TranspositionerBlockEntities.MODULE_CONFIGURATOR),
+class ModuleConfiguratorBlockEntity : BlockEntity(TPBlockEntities.MODULE_CONFIGURATOR),
     ExtendedScreenHandlerFactory, ModuleContainer {
     companion object {
         private const val MODULE_INVENTORY_TAG = "Inventory"
@@ -25,7 +25,7 @@ class ModuleConfiguratorBlockEntity : BlockEntity(TranspositionerBlockEntities.M
         1,
         ModuleContext.Configurator(this),
         ModulePath.ROOT,
-        TranspositionerModules.GLOBAL
+        TPModules.GLOBAL
     )
 
     override fun fromTag(state: BlockState, tag: CompoundTag) {
@@ -47,14 +47,14 @@ class ModuleConfiguratorBlockEntity : BlockEntity(TranspositionerBlockEntities.M
     }
 
     override fun getDisplayName(): Text {
-        return TranslatableText(TranspositionerBlocks.MODULE_CONFIGURATOR.translationKey)
+        return TranslatableText(TPBlocks.MODULE_CONFIGURATOR.translationKey)
     }
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeBlockPos(pos)
     }
 
-    override fun getModule(index: Int): TranspositionerModule? {
+    override fun getModule(index: Int): Module? {
         return modules.getModule(index)
     }
 }

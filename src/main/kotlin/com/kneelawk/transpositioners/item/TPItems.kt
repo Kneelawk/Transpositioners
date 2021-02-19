@@ -1,6 +1,6 @@
 package com.kneelawk.transpositioners.item
 
-import com.kneelawk.transpositioners.TranspositionersConstants
+import com.kneelawk.transpositioners.TPConstants
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.item.Item
@@ -9,9 +9,9 @@ import net.minecraft.item.ItemUsageContext
 import net.minecraft.util.ActionResult
 import net.minecraft.util.registry.Registry
 
-object TranspositionerItems {
+object TPItems {
     val TRANSPOSITIONER_ITEM_GROUP =
-        FabricItemGroupBuilder.build(TranspositionersConstants.identifier("transpositioners"), ::groupItem)
+        FabricItemGroupBuilder.build(TPConstants.identifier("transpositioners"), ::groupItem)
 
     val TRANSPOSITIONERS_ITEM_SETTINGS = Item.Settings().group(TRANSPOSITIONER_ITEM_GROUP)
     val TOOL_ITEM_SETTINGS = Item.Settings().group(TRANSPOSITIONER_ITEM_GROUP).maxCount(1)
@@ -60,7 +60,7 @@ object TranspositionerItems {
     }
 
     private fun register(item: Item, name: String) {
-        Registry.register(Registry.ITEM, TranspositionersConstants.identifier(name), item)
+        Registry.register(Registry.ITEM, TPConstants.identifier(name), item)
     }
 
     private fun groupItem(): ItemStack {

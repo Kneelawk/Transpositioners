@@ -1,14 +1,14 @@
 package com.kneelawk.transpositioners.entity
 
-import com.kneelawk.transpositioners.TranspositionersConstants
+import com.kneelawk.transpositioners.TPConstants
 import net.fabricmc.fabric.api.`object`.builder.v1.entity.FabricEntityTypeBuilder
 import net.minecraft.entity.EntityDimensions
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnGroup
 import net.minecraft.util.registry.Registry
 
-object TranspositionerEntityTypes {
-    val TRANSPOSITIONER_ID = TranspositionersConstants.identifier("transpositioner")
+object TPEntityTypes {
+    val TRANSPOSITIONER_ID = TPConstants.identifier("transpositioner")
 
     val TRANSPOSITIONER: EntityType<TranspositionerEntity> =
         FabricEntityTypeBuilder.create(SpawnGroup.MISC, ::TranspositionerEntity)

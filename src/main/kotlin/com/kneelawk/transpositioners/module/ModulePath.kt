@@ -39,15 +39,15 @@ class ModulePath private constructor(val segments: List<Int>) {
         }
     }
 
-    fun findModule(container: ModuleContainer): TranspositionerModule? {
+    fun findModule(container: ModuleContainer): Module? {
         if (isRoot) {
-            return if (container is TranspositionerModule) {
+            return if (container is Module) {
                 container
             } else {
                 null
             }
         } else {
-            var cur: TranspositionerModule? = container.getModule(segments[0])
+            var cur: Module? = container.getModule(segments[0])
             for (segment in segments.subList(1, segments.size)) {
                 if (cur == null) {
                     return null

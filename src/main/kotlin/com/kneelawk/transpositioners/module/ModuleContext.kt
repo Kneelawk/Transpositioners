@@ -19,7 +19,7 @@ sealed class ModuleContext : ModuleContainer {
         override val facing: Direction
             get() = entity.horizontalFacing
 
-        override fun getModule(index: Int): TranspositionerModule? {
+        override fun getModule(index: Int): Module? {
             return entity.getModule(index)
         }
     }
@@ -33,7 +33,7 @@ sealed class ModuleContext : ModuleContainer {
         override val facing: Direction
             get() = throw RuntimeException("Attempted to get the facing direction of a configurator")
 
-        override fun getModule(index: Int): TranspositionerModule? {
+        override fun getModule(index: Int): Module? {
             return configurator.getModule(index)
         }
     }

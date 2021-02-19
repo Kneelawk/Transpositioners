@@ -1,6 +1,6 @@
 package com.kneelawk.transpositioners.item
 
-import com.kneelawk.transpositioners.module.TranspositionerModules
+import com.kneelawk.transpositioners.module.TPModules
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
@@ -20,7 +20,7 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
         return context.player?.let { player ->
             if (player.isSneaking) {
-                TranspositionerItemUtils.raycast(player)?.let { entity ->
+                TPItemUtils.raycast(player)?.let { entity ->
                     val stack = context.stack
                     if (entity.canInsertModule(stack)) {
                         entity.insertModule(stack)
@@ -31,7 +31,7 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
                 }
             } else {
                 if (
-                    TranspositionerItemUtils.tryOpenTranspositioner(context.world, player, context.hand)
+                    TPItemUtils.tryOpenTranspositioner(context.world, player, context.hand)
                 ) ActionResult.SUCCESS else ActionResult.PASS
             }
         } ?: ActionResult.FAIL
@@ -40,7 +40,7 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
     override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
         val stack = user.getStackInHand(hand)
         return if (user.isSneaking) {
-            TranspositionerItemUtils.raycast(user)?.let { entity ->
+            TPItemUtils.raycast(user)?.let { entity ->
                 if (entity.canInsertModule(stack)) {
                     entity.insertModule(stack)
                     TypedActionResult.success(stack)
@@ -50,7 +50,7 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
             } ?: TypedActionResult.fail(stack)
         } else {
             if (
-                TranspositionerItemUtils.tryOpenTranspositioner(world, user, hand)
+                TPItemUtils.tryOpenTranspositioner(world, user, hand)
             ) TypedActionResult.success(stack) else TypedActionResult.pass(stack)
         }
     }
@@ -61,6 +61,6 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
         tooltip: MutableList<Text>,
         context: TooltipContext
     ) {
-        TranspositionerModules.appendTooltip(stack, world, tooltip, context)
+        TPModules.appendTooltip(stack, world, tooltip, context)
     }
 }

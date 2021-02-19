@@ -6,15 +6,15 @@ import alexiil.mc.lib.net.NetIdSignalK
 import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import alexiil.mc.lib.net.impl.McNetworkStack
-import com.kneelawk.transpositioners.TranspositionersConstants.gui
-import com.kneelawk.transpositioners.TranspositionersConstants.identifier
-import com.kneelawk.transpositioners.TranspositionersConstants.str
-import com.kneelawk.transpositioners.item.TranspositionerItems
+import com.kneelawk.transpositioners.TPConstants.gui
+import com.kneelawk.transpositioners.TPConstants.identifier
+import com.kneelawk.transpositioners.TPConstants.str
+import com.kneelawk.transpositioners.item.TPItems
 import com.kneelawk.transpositioners.module.ItemMoverMk2Module
 import com.kneelawk.transpositioners.module.MovementDirection
 import com.kneelawk.transpositioners.proxy.CommonProxy
-import com.kneelawk.transpositioners.screen.TranspositionerScreenHandlerUtils.cycleEnum
-import com.kneelawk.transpositioners.screen.TranspositionerScreenHandlerUtils.openParentScreen
+import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.cycleEnum
+import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.openParentScreen
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WButton
 import io.github.cottonmc.cotton.gui.widget.WLabel
@@ -35,7 +35,7 @@ class ItemMoverMk2ScreenHandler(
     playerInventory: PlayerInventory,
     override val module: ItemMoverMk2Module
 ) :
-    SyncedGuiDescription(TranspositionerScreenHandlers.ITEM_MOVER_MK2_TYPE, syncId, playerInventory),
+    SyncedGuiDescription(TPScreenHandlers.ITEM_MOVER_MK2_TYPE, syncId, playerInventory),
     ModuleScreenHandler {
     companion object {
         val LOGGER = LogManager.getLogger()
@@ -114,7 +114,7 @@ class ItemMoverMk2ScreenHandler(
 
         val tab = WTabPanel.Tab.Builder(buttonPanel)
         tab.tooltip(gui("tab.config"))
-        tab.icon(ItemIcon(TranspositionerItems.TRANSPOSITIONER_CONFIGURATOR))
+        tab.icon(ItemIcon(TPItems.TRANSPOSITIONER_CONFIGURATOR))
         return tab.build()
     }
 

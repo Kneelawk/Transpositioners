@@ -1,9 +1,9 @@
 package com.kneelawk.transpositioners.proxy
 
-import com.kneelawk.transpositioners.client.screen.TranspositionerScreenUtils
+import com.kneelawk.transpositioners.client.screen.TPScreenUtils
 
 object ClientProxy : CommonProxy {
     override fun presetCursorPosition() {
-        TranspositionerScreenUtils.presetCursorPosition()
+        TPScreenUtils.presetCursorPosition()
     }
 }

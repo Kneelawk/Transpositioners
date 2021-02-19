@@ -19,7 +19,7 @@ class TranspositionerConfiguratorItem(settings: Settings) : Item(settings), Inte
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
         return context.player?.let { player ->
             if (player.isSneaking) {
-                TranspositionerItemUtils.raycast(player)?.let { entity ->
+                TPItemUtils.raycast(player)?.let { entity ->
                     if (!context.world.isClient) {
                         entity.damage(DamageSource.player(player), 1f)
                     }
@@ -27,7 +27,7 @@ class TranspositionerConfiguratorItem(settings: Settings) : Item(settings), Inte
                 }
             } else {
                 if (
-                    TranspositionerItemUtils.tryOpenTranspositioner(context.world, player, context.hand)
+                    TPItemUtils.tryOpenTranspositioner(context.world, player, context.hand)
                 ) ActionResult.SUCCESS else null
             }
         } ?: ActionResult.FAIL
@@ -37,7 +37,7 @@ class TranspositionerConfiguratorItem(settings: Settings) : Item(settings), Inte
         val stack = user.getStackInHand(hand)
         return if (user.isSneaking) {
             // shift-right-click to break
-            TranspositionerItemUtils.raycast(user)?.let { entity ->
+            TPItemUtils.raycast(user)?.let { entity ->
                 if (!world.isClient) {
                     entity.damage(DamageSource.player(user), 1f)
                 }
@@ -45,7 +45,7 @@ class TranspositionerConfiguratorItem(settings: Settings) : Item(settings), Inte
             } ?: TypedActionResult.fail(stack)
         } else {
             if (
-                TranspositionerItemUtils.tryOpenTranspositioner(world, user, hand)
+                TPItemUtils.tryOpenTranspositioner(world, user, hand)
             ) TypedActionResult.success(stack) else TypedActionResult.fail(stack)
         }
     }

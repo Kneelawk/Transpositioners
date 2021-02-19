@@ -6,11 +6,11 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
-abstract class AbstractTranspositionerModule(
+abstract class AbstractModule(
     override val type: ModuleType<*>,
     override val context: ModuleContext,
     override val path: ModulePath
-) : TranspositionerModule {
+) : Module {
     protected val world: World
         get() = context.world
     protected val attachmentPos: BlockPos
@@ -18,7 +18,7 @@ abstract class AbstractTranspositionerModule(
     protected val facing: Direction
         get() = context.facing
 
-    override fun getModule(index: Int): TranspositionerModule? {
+    override fun getModule(index: Int): Module? {
         return null
     }
 

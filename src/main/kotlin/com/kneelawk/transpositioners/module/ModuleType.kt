@@ -6,7 +6,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.text.Text
 import net.minecraft.world.World
 
-interface ModuleType<T : TranspositionerModule> {
+interface ModuleType<T : Module> {
     fun readFromTag(context: ModuleContext, path: ModulePath, stack: ItemStack, tag: CompoundTag): T
 
     fun newInstance(context: ModuleContext, path: ModulePath, stack: ItemStack): T

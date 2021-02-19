@@ -11,7 +11,7 @@ import alexiil.mc.lib.net.NetIdDataK
 import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import alexiil.mc.lib.net.impl.McNetworkStack
-import com.kneelawk.transpositioners.TranspositionersConstants
+import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.item.TranspositionerItem
 import com.kneelawk.transpositioners.module.*
 import com.kneelawk.transpositioners.screen.TranspositionerScreenHandler
@@ -45,7 +45,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     companion object {
         private val NET_PARENT: ParentNetIdSingle<TranspositionerEntity> = McNetworkStack.ENTITY.subType(
             TranspositionerEntity::class.java,
-            TranspositionersConstants.str("transpositioner_entity")
+            TPConstants.str("transpositioner_entity")
         )
         private val ID_CHANGE_MK: NetIdDataK<TranspositionerEntity> =
             NET_PARENT.idData("CHANGE_MK").setReceiver(TranspositionerEntity::receiveMkChange)
@@ -75,12 +75,12 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
             moduleCountByMk(mk),
             ModuleContext.Entity(this),
             ModulePath.ROOT,
-            TranspositionerModules.MOVERS
+            TPModules.MOVERS
         )
     }
 
     constructor(world: World, pos: BlockPos, direction: Direction, mk: Int) : super(
-        TranspositionerEntityTypes.TRANSPOSITIONER,
+        TPEntityTypes.TRANSPOSITIONER,
         world,
         pos
     ) {
@@ -90,7 +90,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
             moduleCountByMk(mk),
             ModuleContext.Entity(this),
             ModulePath.ROOT,
-            TranspositionerModules.MOVERS
+            TPModules.MOVERS
         )
     }
 
@@ -327,7 +327,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         buf.writeInt(entityId)
     }
 
-    override fun getModule(index: Int): TranspositionerModule? {
+    override fun getModule(index: Int): Module? {
         return modules.getModule(index)
     }
 }

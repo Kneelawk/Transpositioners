@@ -6,7 +6,7 @@ import alexiil.mc.lib.attributes.item.*
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv
 import alexiil.mc.lib.net.IMsgReadCtx
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
-import com.kneelawk.transpositioners.TranspositionersConstants
+import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.screen.ItemMoverMk2ScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.client.item.TooltipContext
@@ -29,13 +29,13 @@ class ItemMoverMk2Module(
     initialInsertionSide: Direction,
     initialExtractionSide: Direction
 ) :
-    AbstractTranspositionerModule(Type, context, path), MoverModule, ExtendedScreenHandlerFactory {
+    AbstractModule(Type, context, path), MoverModule, ExtendedScreenHandlerFactory {
     companion object {
         const val MAX_STACK_SIZE = 8
 
-        private val NET_PARENT = TranspositionerModule.NET_ID.subType(
+        private val NET_PARENT = Module.NET_ID.subType(
             ItemMoverMk2Module::class.java,
-            TranspositionersConstants.str("item_mover_mk2_module")
+            TPConstants.str("item_mover_mk2_module")
         )
 
         private val ID_DIRECTION_CHANGE =
@@ -202,11 +202,11 @@ class ItemMoverMk2Module(
     }
 
     override fun getDisplayName(): Text {
-        return TranspositionersConstants.item("item_mover_module_mk2")
+        return TPConstants.item("item_mover_module_mk2")
     }
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
-        TranspositionerModule.writeModulePath(this, buf)
+        Module.writeModulePath(this, buf)
     }
 
     override fun writeToTag(tag: CompoundTag) {
@@ -274,7 +274,7 @@ class ItemMoverMk2Module(
 
             if (moduleData.contains("insertionSide")) {
                 val insertionSide = Direction.byId(moduleData.getByte("insertionSide").toInt())
-                tooltip += TranspositionersConstants.tooltip(
+                tooltip += TPConstants.tooltip(
                     "insertion_side",
                     ModuleUtils.directionTooltip(insertionSide)
                 )
@@ -282,7 +282,7 @@ class ItemMoverMk2Module(
 
             if (moduleData.contains("extractionSide")) {
                 val extractionSide = Direction.byId(moduleData.getByte("extractionSide").toInt())
-                tooltip += TranspositionersConstants.tooltip(
+                tooltip += TPConstants.tooltip(
                     "extraction_side",
                     ModuleUtils.directionTooltip(extractionSide)
                 )

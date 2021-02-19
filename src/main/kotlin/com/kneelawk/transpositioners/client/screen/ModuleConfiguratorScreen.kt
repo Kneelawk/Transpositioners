@@ -11,6 +11,6 @@ class ModuleConfiguratorScreen(gui: ModuleConfiguratorScreenHandler, inv: Player
 
     override fun init(client: MinecraftClient?, screenWidth: Int, screenHeight: Int) {
         super.init(client, screenWidth, screenHeight)
-        TranspositionerScreenUtils.applyCursorPosition()
+        TPScreenUtils.applyCursorPosition()
     }
 }

@@ -1,5 +1,5 @@
 package com.kneelawk.transpositioners.module
 
-interface MoverModule : TranspositionerModule {
+interface MoverModule : Module {
     fun move()
 }

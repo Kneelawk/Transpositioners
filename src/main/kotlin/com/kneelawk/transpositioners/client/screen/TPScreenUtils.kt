@@ -5,7 +5,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.util.InputUtil
 import java.util.concurrent.atomic.AtomicReference
 
-object TranspositionerScreenUtils {
+object TPScreenUtils {
     private val cursorPosition = AtomicReference<CursorPosition?>(null)
 
     fun presetCursorPosition() {

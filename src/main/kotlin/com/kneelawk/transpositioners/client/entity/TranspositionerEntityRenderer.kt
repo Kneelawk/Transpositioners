@@ -1,6 +1,6 @@
 package com.kneelawk.transpositioners.client.entity
 
-import com.kneelawk.transpositioners.TranspositionersConstants
+import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.client.render.TranspositionerGhostRenderer
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import com.kneelawk.transpositioners.item.TranspositionerViewer
@@ -31,9 +31,9 @@ class TranspositionerEntityRenderer(dispatcher: EntityRenderDispatcher) :
     EntityRenderer<TranspositionerEntity>(dispatcher) {
     companion object {
         val MODEL_IDS = arrayOf(
-            ModelIdentifier(TranspositionersConstants.identifier("transpositioner_mk1"), ""),
-            ModelIdentifier(TranspositionersConstants.identifier("transpositioner_mk2"), ""),
-            ModelIdentifier(TranspositionersConstants.identifier("transpositioner_mk3"), "")
+            ModelIdentifier(TPConstants.identifier("transpositioner_mk1"), ""),
+            ModelIdentifier(TPConstants.identifier("transpositioner_mk2"), ""),
+            ModelIdentifier(TPConstants.identifier("transpositioner_mk3"), "")
         )
 
         private val client by lazy { MinecraftClient.getInstance() }

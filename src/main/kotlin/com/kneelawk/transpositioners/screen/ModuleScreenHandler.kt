@@ -1,7 +1,7 @@
 package com.kneelawk.transpositioners.screen
 
-import com.kneelawk.transpositioners.module.TranspositionerModule
+import com.kneelawk.transpositioners.module.Module
 
 interface ModuleScreenHandler {
-    val module: TranspositionerModule
+    val module: Module
 }

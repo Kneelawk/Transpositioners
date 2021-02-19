@@ -5,7 +5,7 @@ import alexiil.mc.lib.net.NetIdDataK
 import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import alexiil.mc.lib.net.impl.McNetworkStack
-import com.kneelawk.transpositioners.TranspositionersConstants
+import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import com.kneelawk.transpositioners.proxy.CommonProxy
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
@@ -24,7 +24,7 @@ class TranspositionerScreenHandler(
     playerInventory: PlayerInventory,
     private val entity: TranspositionerEntity
 ) : SyncedGuiDescription(
-    TranspositionerScreenHandlers.TRANSPOSITIONER_TYPE,
+    TPScreenHandlers.TRANSPOSITIONER_TYPE,
     syncId,
     playerInventory,
     entity.modules,
@@ -36,7 +36,7 @@ class TranspositionerScreenHandler(
 
         private val NET_PARENT: ParentNetIdSingle<TranspositionerScreenHandler> = McNetworkStack.SCREEN_HANDLER.subType(
             TranspositionerScreenHandler::class.java,
-            TranspositionersConstants.str("transpositioner_screen_handler")
+            TPConstants.str("transpositioner_screen_handler")
         )
 
         private val ID_OPEN_MODULE: NetIdDataK<TranspositionerScreenHandler> =
