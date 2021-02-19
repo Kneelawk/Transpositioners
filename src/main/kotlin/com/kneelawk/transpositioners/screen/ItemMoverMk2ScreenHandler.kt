@@ -7,7 +7,9 @@ import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TranspositionersConstants.gui
+import com.kneelawk.transpositioners.TranspositionersConstants.identifier
 import com.kneelawk.transpositioners.TranspositionersConstants.str
+import com.kneelawk.transpositioners.item.TranspositionerItems
 import com.kneelawk.transpositioners.module.ItemMoverMk2Module
 import com.kneelawk.transpositioners.module.MovementDirection
 import com.kneelawk.transpositioners.proxy.CommonProxy
@@ -15,10 +17,13 @@ import com.kneelawk.transpositioners.screen.TranspositionerScreenHandlerUtils.cy
 import com.kneelawk.transpositioners.screen.TranspositionerScreenHandlerUtils.openParentScreen
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WButton
-import io.github.cottonmc.cotton.gui.widget.WGridPanel
 import io.github.cottonmc.cotton.gui.widget.WLabel
+import io.github.cottonmc.cotton.gui.widget.WPlainPanel
+import io.github.cottonmc.cotton.gui.widget.WTabPanel
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
 import io.github.cottonmc.cotton.gui.widget.data.VerticalAlignment
+import io.github.cottonmc.cotton.gui.widget.icon.ItemIcon
+import io.github.cottonmc.cotton.gui.widget.icon.TextureIcon
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.LiteralText
@@ -50,50 +55,78 @@ class ItemMoverMk2ScreenHandler(
             .setReceiver(ItemMoverMk2ScreenHandler::c2sReceiveExtractionSideChange)
     }
 
-    private val directionButton: WButton
-    private val insertionSideButton: WButton
-    private val extractionSideButton: WButton
+    private lateinit var directionButton: WButton
+    private lateinit var insertionSideButton: WButton
+    private lateinit var extractionSideButton: WButton
 
     init {
         setTitleAlignment(HorizontalAlignment.RIGHT)
 
-        val root = WGridPanel()
+        val root = WPlainPanel()
         setRootPanel(root)
+        root.setSize(13 * 18, 0)
 
-        root.add(createPlayerInventoryPanel(), 0, 7)
+        root.add(createPlayerInventoryPanel(), 2 * 18, 12 * 18)
 
         val backButton = WButton(LiteralText("<-"))
         root.add(backButton, 0, 0)
         backButton.setOnClick { sendOpenParent() }
 
-        root.add(WLabel(gui("direction")).apply {
+        val tabs = WTabPanel()
+        root.add(tabs, 1, 26)
+
+        tabs.add(buildConfigPanel())
+        tabs.add(buildFilterPanel())
+
+        root.validate(this)
+    }
+
+    private fun buildConfigPanel(): WTabPanel.Tab {
+        val buttonPanel = WRectGridPanel(cellHeight = 20)
+        buttonPanel.setSize(12 * 18, 7 * 20)
+
+        buttonPanel.add(WLabel(gui("direction")).apply {
             verticalAlignment = VerticalAlignment.CENTER
-        }, 0, 1)
+        }, 0, 0)
         directionButton = WButton(gui(module.direction.name.toLowerCase()))
-        root.add(directionButton, 5, 1, 4, 1)
+        buttonPanel.add(directionButton, 7, 0, 5, 1)
         directionButton.setOnClick {
             c2sSendDirectionChange(cycleEnum(module.direction))
         }
 
-        root.add(WLabel(gui("insertion_side")).apply {
+        buttonPanel.add(WLabel(gui("insertion_side")).apply {
             verticalAlignment = VerticalAlignment.CENTER
-        }, 0, 3)
+        }, 0, 1)
         insertionSideButton = WButton(gui(module.insertionSide.getName()))
-        root.add(insertionSideButton, 5, 3, 4, 1)
+        buttonPanel.add(insertionSideButton, 7, 1, 5, 1)
         insertionSideButton.setOnClick {
             c2sSendInsertionSideChange(cycleEnum(module.insertionSide))
         }
 
-        root.add(WLabel(gui("extraction_side")).apply {
+        buttonPanel.add(WLabel(gui("extraction_side")).apply {
             verticalAlignment = VerticalAlignment.CENTER
-        }, 0, 5)
+        }, 0, 2)
         extractionSideButton = WButton(gui(module.extractionSide.getName()))
-        root.add(extractionSideButton, 5, 5, 4, 1)
+        buttonPanel.add(extractionSideButton, 7, 2, 5, 1)
         extractionSideButton.setOnClick {
             c2sSendExtractionSideChange(cycleEnum(module.extractionSide))
         }
 
-        root.validate(this)
+        val tab = WTabPanel.Tab.Builder(buttonPanel)
+        tab.tooltip(gui("tab.config"))
+        tab.icon(ItemIcon(TranspositionerItems.TRANSPOSITIONER_CONFIGURATOR))
+        return tab.build()
+    }
+
+    private fun buildFilterPanel(): WTabPanel.Tab {
+        val filterPanel = WRectGridPanel(cellHeight = 20)
+
+        filterPanel.setSize(12 * 18, 7 * 20)
+
+        val tab = WTabPanel.Tab.Builder(filterPanel)
+        tab.tooltip(gui("tab.filters"))
+        tab.icon(TextureIcon(identifier("textures/gui/filter.png")))
+        return tab.build()
     }
 
     private fun sendOpenParent() {
