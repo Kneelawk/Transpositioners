@@ -8,8 +8,6 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.text.Text
 import net.minecraft.world.World
-import kotlin.reflect.KClass
-import kotlin.reflect.full.isSuperclassOf
 
 object TranspositionerModules {
     private const val MODULE_TAG_NAME = "module"
@@ -19,18 +17,24 @@ object TranspositionerModules {
     val MOVERS = ModuleRegistry<MoverModule>()
 
     fun register() {
-        register(ItemMoverMk1Module::class, ItemMoverMk1Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK1)
-        register(ItemMoverMk2Module::class, ItemMoverMk2Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK2)
-        register(ItemMoverMk3Module::class, ItemMoverMk3Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK3)
+        register(ItemMoverMk1Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK1)
+        register(ItemMoverMk2Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK2)
+        register(ItemMoverMk3Module.Type, TranspositionerItems.ITEM_MOVER_MODULE_MK3)
     }
 
-    fun <M : TranspositionerModule> register(clazz: KClass<M>, type: ModuleType<M>, item: Item) {
+    // kotlin interface
+    inline fun <reified M : TranspositionerModule> register(type: ModuleType<M>, item: Item) {
+        register(M::class.java, type, item)
+    }
+
+    // java interface
+    fun <M : TranspositionerModule> register(clazz: Class<M>, type: ModuleType<M>, item: Item) {
         if (GLOBAL.containsItem(item)) {
             throw IllegalStateException("A module type is already registered for the item: $item")
         }
         GLOBAL.register(type, item)
 
-        if (MoverModule::class.isSuperclassOf(clazz)) {
+        if (MoverModule::class.java.isAssignableFrom(clazz)) {
             MOVERS.register(type as ModuleType<out MoverModule>, item)
         }
     }

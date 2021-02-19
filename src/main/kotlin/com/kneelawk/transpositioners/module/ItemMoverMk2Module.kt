@@ -2,9 +2,8 @@ package com.kneelawk.transpositioners.module
 
 import alexiil.mc.lib.attributes.SearchOptions
 import alexiil.mc.lib.attributes.Simulation
-import alexiil.mc.lib.attributes.item.ItemAttributes
-import alexiil.mc.lib.attributes.item.ItemExtractable
-import alexiil.mc.lib.attributes.item.ItemInsertable
+import alexiil.mc.lib.attributes.item.*
+import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv
 import alexiil.mc.lib.net.IMsgReadCtx
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import com.kneelawk.transpositioners.TranspositionersConstants
@@ -19,15 +18,20 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
-class ItemMoverMk2Module(context: ModuleContext, path: ModulePath, initialDirection: MovementDirection) :
+class ItemMoverMk2Module(
+    context: ModuleContext,
+    path: ModulePath,
+    initialDirection: MovementDirection,
+    initialInsertionSide: Direction,
+    initialExtractionSide: Direction
+) :
     AbstractTranspositionerModule(Type, context, path), MoverModule, ExtendedScreenHandlerFactory {
     companion object {
-        const val MAX_STACK_SIZE = 1
+        const val MAX_STACK_SIZE = 8
 
         private val NET_PARENT = TranspositionerModule.NET_ID.subType(
             ItemMoverMk2Module::class.java,
@@ -36,10 +40,20 @@ class ItemMoverMk2Module(context: ModuleContext, path: ModulePath, initialDirect
 
         private val ID_DIRECTION_CHANGE =
             NET_PARENT.idData("DIRECTION_CHANGE").setReceiver(ItemMoverMk2Module::receiveChangeDirection)
+        private val ID_INSERTION_SIDE_CHANGE =
+            NET_PARENT.idData("INSERTION_SIDE_CHANGE").setReceiver(ItemMoverMk2Module::receiveChangeInsertionSide)
+        private val ID_EXTRACTION_SIDE_CHANGE =
+            NET_PARENT.idData("EXTRACTION_SIDE_CHANGE").setReceiver(ItemMoverMk2Module::receiveChangeExtractionSide)
     }
 
     var direction = initialDirection
         private set
+    var insertionSide = initialInsertionSide
+        private set
+    var extractionSide = initialExtractionSide
+        private set
+
+    private val ignoreStacks = mutableSetOf<StackContainer>()
 
     fun updateDirection(newDirection: MovementDirection) {
         direction = newDirection
@@ -63,12 +77,93 @@ class ItemMoverMk2Module(context: ModuleContext, path: ModulePath, initialDirect
         ModuleUtils.screenHandler<ItemMoverMk2ScreenHandler>(ctx, this) { it.s2cReceiveDirectionChange(newDirection) }
     }
 
-    override fun move() {
-        val extract = getItemExtractable(attachmentPos.offset(facing.opposite), facing.opposite)
-        val insert = getItemInsertable(attachmentPos, facing)
+    fun updateInsertionSide(newInsertionSide: Direction) {
+        insertionSide = newInsertionSide
+        sendChangeInsertionSide(newInsertionSide)
+    }
 
-        val extractedSim = extract.attemptAnyExtraction(MAX_STACK_SIZE, Simulation.SIMULATE)
-        if (!extractedSim.isEmpty) {
+    private fun sendChangeInsertionSide(newInsertionSide: Direction) {
+        for (con in CoreMinecraftNetUtil.getPlayersWatching(world, attachmentPos)) {
+            ID_INSERTION_SIDE_CHANGE.send(con, this) { _, buf, ctx ->
+                ctx.assertServerSide()
+                buf.writeByte(newInsertionSide.id)
+            }
+        }
+    }
+
+    private fun receiveChangeInsertionSide(buf: PacketByteBuf, ctx: IMsgReadCtx) {
+        ctx.assertClientSide()
+        val newSide = Direction.byId(buf.readByte().toInt())
+        insertionSide = newSide
+
+        ModuleUtils.screenHandler<ItemMoverMk2ScreenHandler>(ctx, this) { it.s2cReceiveInsertionSideChange(newSide) }
+    }
+
+    fun updateExtractionSide(newExtractionSide: Direction) {
+        extractionSide = newExtractionSide
+        sendChangeExtractionSide(newExtractionSide)
+    }
+
+    private fun sendChangeExtractionSide(newExtractionSide: Direction) {
+        for (con in CoreMinecraftNetUtil.getPlayersWatching(world, attachmentPos)) {
+            ID_EXTRACTION_SIDE_CHANGE.send(con, this) { _, buf, ctx ->
+                ctx.assertServerSide()
+                buf.writeByte(newExtractionSide.id)
+            }
+        }
+    }
+
+    private fun receiveChangeExtractionSide(buf: PacketByteBuf, ctx: IMsgReadCtx) {
+        ctx.assertClientSide()
+        val newSide = Direction.byId(buf.readByte().toInt())
+        extractionSide = newSide
+
+        ModuleUtils.screenHandler<ItemMoverMk2ScreenHandler>(ctx, this) { it.s2cReceiveExtractionSideChange(newSide) }
+    }
+
+    override fun move() {
+        ignoreStacks.clear()
+
+        val insert = getItemInsertable(
+            when (direction) {
+                MovementDirection.FORWARD -> attachmentPos
+                MovementDirection.BACKWARD -> attachmentPos.offset(facing.opposite)
+            }, insertionSide.opposite
+        )
+        val extractInv = getFixedItemInv(
+            when (direction) {
+                MovementDirection.FORWARD -> attachmentPos.offset(facing.opposite)
+                MovementDirection.BACKWARD -> attachmentPos
+            }, extractionSide.opposite
+        )
+
+        if (extractInv != EmptyFixedItemInv.INSTANCE) {
+            var remaining = MAX_STACK_SIZE
+            for (slot in 0 until extractInv.slotCount) {
+                val extract = extractInv.getSlot(slot)
+                remaining = attemptTransfer(remaining, extract, insert, ignoreStacks)
+                if (remaining == 0) break
+            }
+        } else {
+            val extract = getItemExtractable(
+                when (direction) {
+                    MovementDirection.FORWARD -> attachmentPos.offset(facing.opposite)
+                    MovementDirection.BACKWARD -> attachmentPos
+                }, extractionSide.opposite
+            )
+
+            attemptTransfer(MAX_STACK_SIZE, extract, insert, ignoreStacks)
+        }
+    }
+
+    private fun attemptTransfer(
+        remaining: Int,
+        extract: ItemExtractable,
+        insert: ItemInsertable,
+        ignore: MutableSet<StackContainer>
+    ): Int {
+        val extractedSim = extract.attemptAnyExtraction(remaining, Simulation.SIMULATE)
+        if (!extractedSim.isEmpty && !ignore.contains(StackContainer.of(extractedSim))) {
             val leftOverSim = insert.attemptInsertion(extractedSim, Simulation.SIMULATE)
             val amount = extractedSim.count - leftOverSim.count
 
@@ -79,12 +174,23 @@ class ItemMoverMk2Module(context: ModuleContext, path: ModulePath, initialDirect
                         Simulation.ACTION
                     )
                 assert(leftOver.isEmpty) { "leftOver: $leftOver" }
+            } else {
+                // If an inventory won't accept a kind of item, don't try and insert it a second time
+                ignore.add(StackContainer.of(extractedSim))
             }
+
+            return remaining - amount
         }
+
+        return remaining
     }
 
     private fun getItemInsertable(pos: BlockPos, direction: Direction): ItemInsertable {
         return ItemAttributes.INSERTABLE.get(world, pos, SearchOptions.inDirection(direction))
+    }
+
+    private fun getFixedItemInv(pos: BlockPos, direction: Direction): FixedItemInv {
+        return ItemAttributes.FIXED_INV.get(world, pos, SearchOptions.inDirection(direction))
     }
 
     private fun getItemExtractable(pos: BlockPos, direction: Direction): ItemExtractable {
@@ -105,6 +211,8 @@ class ItemMoverMk2Module(context: ModuleContext, path: ModulePath, initialDirect
 
     override fun writeToTag(tag: CompoundTag) {
         tag.putByte("direction", direction.ordinal.toByte())
+        tag.putByte("insertionSide", insertionSide.id.toByte())
+        tag.putByte("extractionSide", extractionSide.id.toByte())
     }
 
     object Type : ModuleType<ItemMoverMk2Module> {
@@ -116,8 +224,24 @@ class ItemMoverMk2Module(context: ModuleContext, path: ModulePath, initialDirect
         ): ItemMoverMk2Module {
             val direction = if (tag.contains("direction")) MovementDirection.values()[tag.getByte("direction").toInt()
                 .coerceIn(0, 1)] else MovementDirection.FORWARD
+            val insertionSide = if (tag.contains("insertionSide")) {
+                Direction.byId(tag.getByte("insertionSide").toInt())
+            } else {
+                when (context) {
+                    is ModuleContext.Configurator -> Direction.UP
+                    is ModuleContext.Entity -> context.facing.opposite
+                }
+            }
+            val extractionSide = if (tag.contains("extractionSide")) {
+                Direction.byId(tag.getByte("extractionSide").toInt())
+            } else {
+                when (context) {
+                    is ModuleContext.Configurator -> Direction.DOWN
+                    is ModuleContext.Entity -> context.facing
+                }
+            }
 
-            return ItemMoverMk2Module(context, path, direction)
+            return ItemMoverMk2Module(context, path, direction, insertionSide, extractionSide)
         }
 
         override fun newInstance(
@@ -125,7 +249,15 @@ class ItemMoverMk2Module(context: ModuleContext, path: ModulePath, initialDirect
             path: ModulePath,
             stack: ItemStack
         ): ItemMoverMk2Module {
-            return ItemMoverMk2Module(context, path, MovementDirection.FORWARD)
+            return ItemMoverMk2Module(
+                context, path, MovementDirection.FORWARD, when (context) {
+                    is ModuleContext.Configurator -> Direction.UP
+                    is ModuleContext.Entity -> context.facing.opposite
+                }, when (context) {
+                    is ModuleContext.Configurator -> Direction.DOWN
+                    is ModuleContext.Entity -> context.facing
+                }
+            )
         }
 
         override fun appendTooltip(
@@ -137,15 +269,51 @@ class ItemMoverMk2Module(context: ModuleContext, path: ModulePath, initialDirect
         ) {
             if (moduleData.contains("direction")) {
                 val direction = MovementDirection.values()[moduleData.getByte("direction").toInt().coerceIn(0, 1)]
-                tooltip += TranspositionersConstants.tooltip(
-                    "direction",
-                    TranspositionersConstants.tooltip(direction.name.toLowerCase()).apply {
-                        when (direction) {
-                            MovementDirection.FORWARD -> formatted(Formatting.GREEN)
-                            MovementDirection.BACKWARD -> formatted(Formatting.BLUE)
-                        }
-                    })
+                tooltip += ModuleUtils.movementDirectionTooltip(direction)
             }
+
+            if (moduleData.contains("insertionSide")) {
+                val insertionSide = Direction.byId(moduleData.getByte("insertionSide").toInt())
+                tooltip += TranspositionersConstants.tooltip(
+                    "insertion_side",
+                    ModuleUtils.directionTooltip(insertionSide)
+                )
+            }
+
+            if (moduleData.contains("extractionSide")) {
+                val extractionSide = Direction.byId(moduleData.getByte("extractionSide").toInt())
+                tooltip += TranspositionersConstants.tooltip(
+                    "extraction_side",
+                    ModuleUtils.directionTooltip(extractionSide)
+                )
+            }
+        }
+    }
+
+    class StackContainer private constructor(val stack: ItemStack) {
+        companion object {
+            fun of(stack: ItemStack): StackContainer {
+                if (stack.isEmpty)
+                    throw IllegalArgumentException("Contained stack cannot be empty")
+                return StackContainer(stack.copy())
+            }
+        }
+
+        override fun equals(other: Any?): Boolean {
+            return when {
+                this === other -> true
+                javaClass != other?.javaClass -> false
+                else -> ItemStackUtil.areEqualIgnoreAmounts(stack, (other as StackContainer).stack)
+            }
+        }
+
+        override fun hashCode(): Int {
+            // shouldn't be needed because we shouldn't be keeping track of empty stacks anyways, but just in case
+            if (stack.isEmpty) return 0
+
+            var result = stack.item.hashCode()
+            result = 31 * result + stack.tag.hashCode()
+            return result
         }
     }
 }

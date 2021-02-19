@@ -15,4 +15,9 @@ object TranspositionerScreenHandlerUtils {
                 }
         )
     }
+
+    inline fun <reified E : Enum<E>> cycleEnum(currentValue: E): E {
+        val values = E::class.java.enumConstants
+        return values[(currentValue.ordinal + 1) % values.size]
+    }
 }
