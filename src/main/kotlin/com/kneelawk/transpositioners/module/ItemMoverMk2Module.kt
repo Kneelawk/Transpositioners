@@ -27,7 +27,8 @@ class ItemMoverMk2Module(
     path: ModulePath,
     initialDirection: MovementDirection,
     initialInsertionSide: Direction,
-    initialExtractionSide: Direction
+    initialExtractionSide: Direction,
+    val filters: ModuleInventory<ItemFilterModule>
 ) :
     AbstractModule(Type, context, path), MoverModule, ExtendedScreenHandlerFactory {
     companion object {
@@ -130,6 +131,7 @@ class ItemMoverMk2Module(
                 MovementDirection.BACKWARD -> attachmentPos.offset(facing.opposite)
             }, insertionSide.opposite
         )
+        // TODO: Use ItemInsertableFilter
         val extractInv = getFixedItemInv(
             when (direction) {
                 MovementDirection.FORWARD -> attachmentPos.offset(facing.opposite)
@@ -213,6 +215,11 @@ class ItemMoverMk2Module(
         tag.putByte("direction", direction.ordinal.toByte())
         tag.putByte("insertionSide", insertionSide.id.toByte())
         tag.putByte("extractionSide", extractionSide.id.toByte())
+        tag.put("filters", filters.getTags())
+    }
+
+    override fun getModule(index: Int): Module? {
+        return filters.getModule(index)
     }
 
     object Type : ModuleType<ItemMoverMk2Module> {
@@ -241,7 +248,12 @@ class ItemMoverMk2Module(
                 }
             }
 
-            return ItemMoverMk2Module(context, path, direction, insertionSide, extractionSide)
+            val filters = ModuleInventory(2, context, path, TPModules.ITEM_FILTERS)
+            if (tag.contains("filters")) {
+                filters.readTags(tag.getList("filters", 10))
+            }
+
+            return ItemMoverMk2Module(context, path, direction, insertionSide, extractionSide, filters)
         }
 
         override fun newInstance(
@@ -256,7 +268,7 @@ class ItemMoverMk2Module(
                 }, when (context) {
                     is ModuleContext.Configurator -> Direction.DOWN
                     is ModuleContext.Entity -> context.facing
-                }
+                }, ModuleInventory(2, context, path, TPModules.ITEM_FILTERS)
             )
         }
 
@@ -286,6 +298,13 @@ class ItemMoverMk2Module(
                     "extraction_side",
                     ModuleUtils.directionTooltip(extractionSide)
                 )
+            }
+
+            if (moduleData.contains("filters")) {
+                val filters = moduleData.getList("filters", 10)
+                if (!filters.isEmpty()) {
+                    tooltip += TPConstants.tooltip("filters", filters.size)
+                }
             }
         }
     }

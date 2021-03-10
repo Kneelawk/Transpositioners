@@ -8,6 +8,7 @@ import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import com.kneelawk.transpositioners.proxy.CommonProxy
+import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.addSlots
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WButton
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
@@ -74,7 +75,7 @@ class TranspositionerScreenHandler(
                 root.add(createPlayerInventoryPanel(), 0, 4)
 
                 val slots = WPlainPanel()
-                addSlots(slots, 0, moduleCount, 45, 0)
+                addSlots(slots, entity.modules, ::sendOpenModule, 0, moduleCount, 45, 0)
 
                 root.add(slots, 0, 1, 9, 2)
             }
@@ -82,8 +83,8 @@ class TranspositionerScreenHandler(
                 root.add(createPlayerInventoryPanel(), 0, 7)
 
                 val slots = WPlainPanel()
-                addSlots(slots, 0, moduleCount / 2, 9, 0)
-                addSlots(slots, moduleCount / 2, moduleCount / 2, 9, 18 * 3)
+                addSlots(slots, entity.modules, ::sendOpenModule, 0, moduleCount / 2, 9, 0)
+                addSlots(slots, entity.modules, ::sendOpenModule, moduleCount / 2, moduleCount / 2, 9, 18 * 3)
 
                 root.add(slots, 0, 1, 9, 2)
             }
@@ -91,32 +92,6 @@ class TranspositionerScreenHandler(
         }
 
         root.validate(this)
-    }
-
-    private fun addSlots(
-        panel: WPlainPanel,
-        startIndex: Int,
-        count: Int,
-        x: Int,
-        y: Int
-    ) {
-        val slots = WItemSlot.of(entity.modules, startIndex, count, 1)
-        panel.add(slots, x, y)
-        val buttons = mutableListOf<WButton>()
-        for (i in 0 until count) {
-            val button = WButton(LiteralText("..."))
-            button.isEnabled = entity.modules.getModule(i) is NamedScreenHandlerFactory
-            // buttons are 20 px tall
-            panel.add(button, x + i * 18, y + 18 + 9 - 1)
-            buttons.add(button)
-            button.setOnClick {
-                sendOpenModule(i)
-            }
-        }
-
-        slots.addChangeListener { _, _, index, _ ->
-            buttons[index - startIndex].isEnabled = entity.modules.getModule(index) is NamedScreenHandlerFactory
-        }
     }
 
     private fun sendOpenModule(index: Int) {

@@ -13,6 +13,7 @@ import com.kneelawk.transpositioners.item.TPItems
 import com.kneelawk.transpositioners.module.ItemMoverMk2Module
 import com.kneelawk.transpositioners.module.MovementDirection
 import com.kneelawk.transpositioners.proxy.CommonProxy
+import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.addSlots
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.cycleEnum
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.openParentScreen
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
@@ -26,6 +27,7 @@ import io.github.cottonmc.cotton.gui.widget.icon.ItemIcon
 import io.github.cottonmc.cotton.gui.widget.icon.TextureIcon
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.text.LiteralText
 import net.minecraft.util.math.Direction
 import org.apache.logging.log4j.LogManager
@@ -47,6 +49,8 @@ class ItemMoverMk2ScreenHandler(
 
         private val ID_OPEN_PARENT: NetIdSignalK<ItemMoverMk2ScreenHandler> =
             NET_PARENT.idSignal("OPEN_PARENT").setReceiver(ItemMoverMk2ScreenHandler::receiveOpenParent)
+        private val ID_OPEN_MODULE: NetIdDataK<ItemMoverMk2ScreenHandler> =
+            NET_PARENT.idData("OPEN_MODULE").setReceiver(ItemMoverMk2ScreenHandler::receiveOpenModule)
         private val ID_DIRECTION_CHANGE: NetIdDataK<ItemMoverMk2ScreenHandler> =
             NET_PARENT.idData("DIRECTION_CHANGE", 1).setReceiver(ItemMoverMk2ScreenHandler::c2sReceiveDirectionChange)
         private val ID_INSERTION_SIDE_CHANGE = NET_PARENT.idData("INSERTION_SIDE_CHANGE", 1)
@@ -66,7 +70,7 @@ class ItemMoverMk2ScreenHandler(
         setRootPanel(root)
         root.setSize(13 * 18, 0)
 
-        root.add(createPlayerInventoryPanel(), 2 * 18, 12 * 18)
+        root.add(createPlayerInventoryPanel(), 2 * 18, 8 * 18)
 
         val backButton = WButton(LiteralText("<-"))
         root.add(backButton, 0, 0)
@@ -83,7 +87,7 @@ class ItemMoverMk2ScreenHandler(
 
     private fun buildConfigPanel(): WTabPanel.Tab {
         val buttonPanel = WRectGridPanel(cellHeight = 20)
-        buttonPanel.setSize(12 * 18, 7 * 20)
+        buttonPanel.setSize(12 * 18, 3 * 20)
 
         buttonPanel.add(WLabel(gui("direction")).apply {
             verticalAlignment = VerticalAlignment.CENTER
@@ -119,9 +123,10 @@ class ItemMoverMk2ScreenHandler(
     }
 
     private fun buildFilterPanel(): WTabPanel.Tab {
-        val filterPanel = WRectGridPanel(cellHeight = 20)
+        val filterPanel = WPlainPanel()
+        filterPanel.setSize(12 * 18, 3 * 20)
 
-        filterPanel.setSize(12 * 18, 7 * 20)
+        addSlots(filterPanel, module.filters, ::sendOpenModule, 0, 2, 5 * 18, 0)
 
         val tab = WTabPanel.Tab.Builder(filterPanel)
         tab.tooltip(gui("tab.filters"))
@@ -137,6 +142,19 @@ class ItemMoverMk2ScreenHandler(
     private fun receiveOpenParent(ctx: IMsgReadCtx) {
         ctx.assertServerSide()
         openParentScreen(module, playerInventory.player)
+    }
+
+    private fun sendOpenModule(index: Int) {
+        CommonProxy.INSTANCE.presetCursorPosition()
+        ID_OPEN_MODULE.send(CoreMinecraftNetUtil.getClientConnection(), this) { _, buf, ctx ->
+            ctx.assertClientSide()
+            buf.writeVarInt(index)
+        }
+    }
+
+    private fun receiveOpenModule(buf: PacketByteBuf, ctx: IMsgReadCtx) {
+        ctx.assertServerSide()
+        (module.filters.getModule(buf.readVarInt()) as? NamedScreenHandlerFactory)?.let(playerInventory.player::openHandledScreen)
     }
 
     private fun c2sSendDirectionChange(direction: MovementDirection) {
