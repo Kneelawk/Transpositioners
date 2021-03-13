@@ -1,10 +1,6 @@
 package com.kneelawk.transpositioners.screen
 
-import alexiil.mc.lib.net.IMsgReadCtx
-import alexiil.mc.lib.net.NetIdDataK
-import alexiil.mc.lib.net.NetIdSignalK
 import alexiil.mc.lib.net.ParentNetIdSingle
-import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants.gui
 import com.kneelawk.transpositioners.TPConstants.identifier
@@ -12,10 +8,12 @@ import com.kneelawk.transpositioners.TPConstants.str
 import com.kneelawk.transpositioners.item.TPItems
 import com.kneelawk.transpositioners.module.ItemMoverMk2Module
 import com.kneelawk.transpositioners.module.MovementDirection
-import com.kneelawk.transpositioners.proxy.CommonProxy
+import com.kneelawk.transpositioners.net.OpenModulePacketHandler
+import com.kneelawk.transpositioners.net.OpenParentPacketHandler
+import com.kneelawk.transpositioners.net.sendToServer
+import com.kneelawk.transpositioners.net.setServerReceiver
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.addSlots
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.cycleEnum
-import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.openParentScreen
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WButton
 import io.github.cottonmc.cotton.gui.widget.WLabel
@@ -26,8 +24,6 @@ import io.github.cottonmc.cotton.gui.widget.data.VerticalAlignment
 import io.github.cottonmc.cotton.gui.widget.icon.ItemIcon
 import io.github.cottonmc.cotton.gui.widget.icon.TextureIcon
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.network.PacketByteBuf
-import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.text.LiteralText
 import net.minecraft.util.math.Direction
 import org.apache.logging.log4j.LogManager
@@ -47,16 +43,16 @@ class ItemMoverMk2ScreenHandler(
             str("item_mover_mk2_screen_handler")
         )
 
-        private val ID_OPEN_PARENT: NetIdSignalK<ItemMoverMk2ScreenHandler> =
-            NET_PARENT.idSignal("OPEN_PARENT").setReceiver(ItemMoverMk2ScreenHandler::receiveOpenParent)
-        private val ID_OPEN_MODULE: NetIdDataK<ItemMoverMk2ScreenHandler> =
-            NET_PARENT.idData("OPEN_MODULE").setReceiver(ItemMoverMk2ScreenHandler::receiveOpenModule)
-        private val ID_DIRECTION_CHANGE: NetIdDataK<ItemMoverMk2ScreenHandler> =
-            NET_PARENT.idData("DIRECTION_CHANGE", 1).setReceiver(ItemMoverMk2ScreenHandler::c2sReceiveDirectionChange)
+        private val OPEN_PARENT = OpenParentPacketHandler(
+            NET_PARENT.idSignal("OPEN_PARENT")) { playerInventory.player }
+        private val OPEN_MODULE = OpenModulePacketHandler(NET_PARENT.idData("OPEN_MODULE"), { module.filters },
+            { playerInventory.player })
+        private val ID_DIRECTION_CHANGE = NET_PARENT.idData("DIRECTION_CHANGE", 1)
+            .setServerReceiver { module.updateDirection(MovementDirection.byId(it.readByte().toInt())) }
         private val ID_INSERTION_SIDE_CHANGE = NET_PARENT.idData("INSERTION_SIDE_CHANGE", 1)
-            .setReceiver(ItemMoverMk2ScreenHandler::c2sReceiveInsertionSideChange)
+            .setServerReceiver { module.updateInsertionSide(Direction.byId(it.readByte().toInt())) }
         private val ID_EXTRACTION_SIDE_CHANGE = NET_PARENT.idData("EXTRACTION_SIDE_CHANGE", 1)
-            .setReceiver(ItemMoverMk2ScreenHandler::c2sReceiveExtractionSideChange)
+            .setServerReceiver { module.updateExtractionSide(Direction.byId(it.readByte().toInt())) }
     }
 
     private lateinit var directionButton: WButton
@@ -74,7 +70,7 @@ class ItemMoverMk2ScreenHandler(
 
         val backButton = WButton(LiteralText("<-"))
         root.add(backButton, 0, 0)
-        backButton.setOnClick { sendOpenParent() }
+        backButton.setOnClick { OPEN_PARENT.send(this) }
 
         val tabs = WTabPanel()
         root.add(tabs, 1, 26)
@@ -95,7 +91,8 @@ class ItemMoverMk2ScreenHandler(
         directionButton = WButton(gui(module.direction.name.toLowerCase()))
         buttonPanel.add(directionButton, 7, 0, 5, 1)
         directionButton.setOnClick {
-            c2sSendDirectionChange(cycleEnum(module.direction))
+            val direction = cycleEnum(module.direction)
+            ID_DIRECTION_CHANGE.sendToServer(this) { it.writeByte(direction.id) }
         }
 
         buttonPanel.add(WLabel(gui("insertion_side")).apply {
@@ -104,7 +101,8 @@ class ItemMoverMk2ScreenHandler(
         insertionSideButton = WButton(gui(module.insertionSide.getName()))
         buttonPanel.add(insertionSideButton, 7, 1, 5, 1)
         insertionSideButton.setOnClick {
-            c2sSendInsertionSideChange(cycleEnum(module.insertionSide))
+            val side = cycleEnum(module.insertionSide)
+            ID_INSERTION_SIDE_CHANGE.sendToServer(this) { it.writeByte(side.id) }
         }
 
         buttonPanel.add(WLabel(gui("extraction_side")).apply {
@@ -113,7 +111,8 @@ class ItemMoverMk2ScreenHandler(
         extractionSideButton = WButton(gui(module.extractionSide.getName()))
         buttonPanel.add(extractionSideButton, 7, 2, 5, 1)
         extractionSideButton.setOnClick {
-            c2sSendExtractionSideChange(cycleEnum(module.extractionSide))
+            val side = cycleEnum(module.extractionSide)
+            ID_EXTRACTION_SIDE_CHANGE.sendToServer(this) { it.writeByte(side.id) }
         }
 
         val tab = WTabPanel.Tab.Builder(buttonPanel)
@@ -126,7 +125,7 @@ class ItemMoverMk2ScreenHandler(
         val filterPanel = WPlainPanel()
         filterPanel.setSize(12 * 18, 3 * 20)
 
-        addSlots(filterPanel, module.filters, ::sendOpenModule, 0, 2, 5 * 18, 0)
+        addSlots(filterPanel, module.filters, { OPEN_MODULE.send(this, it) }, 0, 2, 5 * 18, 0)
 
         val tab = WTabPanel.Tab.Builder(filterPanel)
         tab.tooltip(gui("tab.filters"))
@@ -134,74 +133,12 @@ class ItemMoverMk2ScreenHandler(
         return tab.build()
     }
 
-    private fun sendOpenParent() {
-        CommonProxy.INSTANCE.presetCursorPosition()
-        ID_OPEN_PARENT.send(CoreMinecraftNetUtil.getClientConnection(), this)
-    }
-
-    private fun receiveOpenParent(ctx: IMsgReadCtx) {
-        ctx.assertServerSide()
-        openParentScreen(module, playerInventory.player)
-    }
-
-    private fun sendOpenModule(index: Int) {
-        CommonProxy.INSTANCE.presetCursorPosition()
-        ID_OPEN_MODULE.send(CoreMinecraftNetUtil.getClientConnection(), this) { _, buf, ctx ->
-            ctx.assertClientSide()
-            buf.writeVarInt(index)
-        }
-    }
-
-    private fun receiveOpenModule(buf: PacketByteBuf, ctx: IMsgReadCtx) {
-        ctx.assertServerSide()
-        (module.filters.getModule(buf.readVarInt()) as? NamedScreenHandlerFactory)?.let(playerInventory.player::openHandledScreen)
-    }
-
-    private fun c2sSendDirectionChange(direction: MovementDirection) {
-        ID_DIRECTION_CHANGE.send(CoreMinecraftNetUtil.getClientConnection(), this) { _, buf, ctx ->
-            ctx.assertClientSide()
-            buf.writeByte(direction.ordinal)
-        }
-    }
-
-    private fun c2sReceiveDirectionChange(buf: PacketByteBuf, ctx: IMsgReadCtx) {
-        ctx.assertServerSide()
-        val direction = MovementDirection.values()[buf.readByte().toInt()]
-        module.updateDirection(direction)
-    }
-
     fun s2cReceiveDirectionChange(direction: MovementDirection) {
         directionButton.label = gui(direction.name.toLowerCase())
     }
 
-    private fun c2sSendInsertionSideChange(side: Direction) {
-        ID_INSERTION_SIDE_CHANGE.send(CoreMinecraftNetUtil.getClientConnection(), this) { _, buf, ctx ->
-            ctx.assertClientSide()
-            buf.writeByte(side.id)
-        }
-    }
-
-    private fun c2sReceiveInsertionSideChange(buf: PacketByteBuf, ctx: IMsgReadCtx) {
-        ctx.assertServerSide()
-        val side = Direction.byId(buf.readByte().toInt())
-        module.updateInsertionSide(side)
-    }
-
     fun s2cReceiveInsertionSideChange(side: Direction) {
         insertionSideButton.label = gui(side.getName())
-    }
-
-    private fun c2sSendExtractionSideChange(side: Direction) {
-        ID_EXTRACTION_SIDE_CHANGE.send(CoreMinecraftNetUtil.getClientConnection(), this) { _, buf, ctx ->
-            ctx.assertClientSide()
-            buf.writeByte(side.id)
-        }
-    }
-
-    private fun c2sReceiveExtractionSideChange(buf: PacketByteBuf, ctx: IMsgReadCtx) {
-        ctx.assertServerSide()
-        val side = Direction.byId(buf.readByte().toInt())
-        module.updateExtractionSide(side)
     }
 
     fun s2cReceiveExtractionSideChange(side: Direction) {

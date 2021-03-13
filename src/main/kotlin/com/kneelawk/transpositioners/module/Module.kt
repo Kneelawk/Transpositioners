@@ -70,11 +70,13 @@ interface Module : ModuleContainer {
     val type: ModuleType<*>
 
     // TODO: Evaluate the usefulness of this.
+    @Deprecated("This api is unused and likely to be removed.")
     fun validate(stack: ItemStack): Boolean
 
     fun writeToTag(tag: CompoundTag)
 
     // TODO: Evaluate the usefulness of this.
+    @Deprecated("This api is unused and likely to be removed.")
     fun addStacksForDrop(stacks: MutableCollection<ItemStack>)
 
     fun onRemove()

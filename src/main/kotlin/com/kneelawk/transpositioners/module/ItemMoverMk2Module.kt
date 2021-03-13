@@ -4,9 +4,8 @@ import alexiil.mc.lib.attributes.SearchOptions
 import alexiil.mc.lib.attributes.Simulation
 import alexiil.mc.lib.attributes.item.*
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv
-import alexiil.mc.lib.net.IMsgReadCtx
-import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import com.kneelawk.transpositioners.TPConstants
+import com.kneelawk.transpositioners.net.ModuleDataPacketHandler
 import com.kneelawk.transpositioners.screen.ItemMoverMk2ScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.client.item.TooltipContext
@@ -39,12 +38,18 @@ class ItemMoverMk2Module(
             TPConstants.str("item_mover_mk2_module")
         )
 
-        private val ID_DIRECTION_CHANGE =
-            NET_PARENT.idData("DIRECTION_CHANGE").setReceiver(ItemMoverMk2Module::receiveChangeDirection)
-        private val ID_INSERTION_SIDE_CHANGE =
-            NET_PARENT.idData("INSERTION_SIDE_CHANGE").setReceiver(ItemMoverMk2Module::receiveChangeInsertionSide)
-        private val ID_EXTRACTION_SIDE_CHANGE =
-            NET_PARENT.idData("EXTRACTION_SIDE_CHANGE").setReceiver(ItemMoverMk2Module::receiveChangeExtractionSide)
+        private val DIRECTION_CHANGE = ModuleDataPacketHandler(NET_PARENT.idData("DIRECTION_CHANGE"),
+            ItemMoverMk2ScreenHandler::class, { it.writeByte(direction.id) },
+            { direction = MovementDirection.byId(it.readByte().toInt()) },
+            { it.s2cReceiveDirectionChange(direction) })
+        private val INSERTION_SIDE_CHANGE = ModuleDataPacketHandler(NET_PARENT.idData("INSERTION_SIDE_CHANGE"),
+            ItemMoverMk2ScreenHandler::class, { it.writeByte(insertionSide.id) },
+            { insertionSide = Direction.byId(it.readByte().toInt()) },
+            { it.s2cReceiveInsertionSideChange(insertionSide) })
+        private val EXTRACTION_SIDE_CHANGE = ModuleDataPacketHandler(NET_PARENT.idData("EXTRACTION_SIDE_CHANGE"),
+            ItemMoverMk2ScreenHandler::class, { it.writeByte(extractionSide.id) },
+            { extractionSide = Direction.byId(it.readByte().toInt()) },
+            { it.s2cReceiveExtractionSideChange(extractionSide) })
     }
 
     var direction = initialDirection
@@ -58,68 +63,17 @@ class ItemMoverMk2Module(
 
     fun updateDirection(newDirection: MovementDirection) {
         direction = newDirection
-        sendChangeDirection(newDirection)
-    }
-
-    private fun sendChangeDirection(newDirection: MovementDirection) {
-        for (con in CoreMinecraftNetUtil.getPlayersWatching(world, attachmentPos)) {
-            ID_DIRECTION_CHANGE.send(con, this) { _, buf, ctx ->
-                ctx.assertServerSide()
-                buf.writeByte(newDirection.ordinal)
-            }
-        }
-    }
-
-    private fun receiveChangeDirection(buf: PacketByteBuf, ctx: IMsgReadCtx) {
-        ctx.assertClientSide()
-        val newDirection = MovementDirection.values()[buf.readByte().toInt()]
-        direction = newDirection
-
-        ModuleUtils.screenHandler<ItemMoverMk2ScreenHandler>(ctx, this) { it.s2cReceiveDirectionChange(newDirection) }
+        DIRECTION_CHANGE.sendToClients(this)
     }
 
     fun updateInsertionSide(newInsertionSide: Direction) {
         insertionSide = newInsertionSide
-        sendChangeInsertionSide(newInsertionSide)
-    }
-
-    private fun sendChangeInsertionSide(newInsertionSide: Direction) {
-        for (con in CoreMinecraftNetUtil.getPlayersWatching(world, attachmentPos)) {
-            ID_INSERTION_SIDE_CHANGE.send(con, this) { _, buf, ctx ->
-                ctx.assertServerSide()
-                buf.writeByte(newInsertionSide.id)
-            }
-        }
-    }
-
-    private fun receiveChangeInsertionSide(buf: PacketByteBuf, ctx: IMsgReadCtx) {
-        ctx.assertClientSide()
-        val newSide = Direction.byId(buf.readByte().toInt())
-        insertionSide = newSide
-
-        ModuleUtils.screenHandler<ItemMoverMk2ScreenHandler>(ctx, this) { it.s2cReceiveInsertionSideChange(newSide) }
+        INSERTION_SIDE_CHANGE.sendToClients(this)
     }
 
     fun updateExtractionSide(newExtractionSide: Direction) {
         extractionSide = newExtractionSide
-        sendChangeExtractionSide(newExtractionSide)
-    }
-
-    private fun sendChangeExtractionSide(newExtractionSide: Direction) {
-        for (con in CoreMinecraftNetUtil.getPlayersWatching(world, attachmentPos)) {
-            ID_EXTRACTION_SIDE_CHANGE.send(con, this) { _, buf, ctx ->
-                ctx.assertServerSide()
-                buf.writeByte(newExtractionSide.id)
-            }
-        }
-    }
-
-    private fun receiveChangeExtractionSide(buf: PacketByteBuf, ctx: IMsgReadCtx) {
-        ctx.assertClientSide()
-        val newSide = Direction.byId(buf.readByte().toInt())
-        extractionSide = newSide
-
-        ModuleUtils.screenHandler<ItemMoverMk2ScreenHandler>(ctx, this) { it.s2cReceiveExtractionSideChange(newSide) }
+        EXTRACTION_SIDE_CHANGE.sendToClients(this)
     }
 
     override fun move() {
@@ -127,14 +81,14 @@ class ItemMoverMk2Module(
 
         val insert = getItemInsertable(
             when (direction) {
-                MovementDirection.FORWARD -> attachmentPos
+                MovementDirection.FORWARD  -> attachmentPos
                 MovementDirection.BACKWARD -> attachmentPos.offset(facing.opposite)
             }, insertionSide.opposite
         )
         // TODO: Use ItemInsertableFilter
         val extractInv = getFixedItemInv(
             when (direction) {
-                MovementDirection.FORWARD -> attachmentPos.offset(facing.opposite)
+                MovementDirection.FORWARD  -> attachmentPos.offset(facing.opposite)
                 MovementDirection.BACKWARD -> attachmentPos
             }, extractionSide.opposite
         )
@@ -149,7 +103,7 @@ class ItemMoverMk2Module(
         } else {
             val extract = getItemExtractable(
                 when (direction) {
-                    MovementDirection.FORWARD -> attachmentPos.offset(facing.opposite)
+                    MovementDirection.FORWARD  -> attachmentPos.offset(facing.opposite)
                     MovementDirection.BACKWARD -> attachmentPos
                 }, extractionSide.opposite
             )
@@ -236,7 +190,7 @@ class ItemMoverMk2Module(
             } else {
                 when (context) {
                     is ModuleContext.Configurator -> Direction.UP
-                    is ModuleContext.Entity -> context.facing.opposite
+                    is ModuleContext.Entity       -> context.facing.opposite
                 }
             }
             val extractionSide = if (tag.contains("extractionSide")) {
@@ -244,7 +198,7 @@ class ItemMoverMk2Module(
             } else {
                 when (context) {
                     is ModuleContext.Configurator -> Direction.DOWN
-                    is ModuleContext.Entity -> context.facing
+                    is ModuleContext.Entity       -> context.facing
                 }
             }
 
@@ -263,12 +217,12 @@ class ItemMoverMk2Module(
         ): ItemMoverMk2Module {
             return ItemMoverMk2Module(
                 context, path, MovementDirection.FORWARD, when (context) {
-                    is ModuleContext.Configurator -> Direction.UP
-                    is ModuleContext.Entity -> context.facing.opposite
-                }, when (context) {
-                    is ModuleContext.Configurator -> Direction.DOWN
-                    is ModuleContext.Entity -> context.facing
-                }, ModuleInventory(2, context, path, TPModules.ITEM_FILTERS)
+                is ModuleContext.Configurator -> Direction.UP
+                is ModuleContext.Entity       -> context.facing.opposite
+            }, when (context) {
+                is ModuleContext.Configurator -> Direction.DOWN
+                is ModuleContext.Entity       -> context.facing
+            }, ModuleInventory(2, context, path, TPModules.ITEM_FILTERS)
             )
         }
 
@@ -320,9 +274,10 @@ class ItemMoverMk2Module(
 
         override fun equals(other: Any?): Boolean {
             return when {
-                this === other -> true
+                this === other                -> true
                 javaClass != other?.javaClass -> false
-                else -> ItemStackUtil.areEqualIgnoreAmounts(stack, (other as StackContainer).stack)
+                else                          -> ItemStackUtil.areEqualIgnoreAmounts(stack,
+                    (other as StackContainer).stack)
             }
         }
 

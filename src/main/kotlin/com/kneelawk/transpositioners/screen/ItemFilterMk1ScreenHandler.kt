@@ -1,11 +1,9 @@
 package com.kneelawk.transpositioners.screen
 
-import alexiil.mc.lib.net.IMsgReadCtx
-import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants.str
 import com.kneelawk.transpositioners.module.ItemFilterMk1Module
-import com.kneelawk.transpositioners.proxy.CommonProxy
+import com.kneelawk.transpositioners.net.OpenParentPacketHandler
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WButton
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
@@ -31,8 +29,7 @@ class ItemFilterMk1ScreenHandler(
             str("item_filter_mk1_screen_handler")
         )
 
-        private val ID_OPEN_PARENT =
-            NET_PARENT.idSignal("OPEN_PARENT").setReceiver(ItemFilterMk1ScreenHandler::receiveOpenParent)
+        private val OPEN_PARENT = OpenParentPacketHandler(NET_PARENT.idSignal("OPEN_PARENT")) { playerInventory.player }
     }
 
     init {
@@ -45,18 +42,8 @@ class ItemFilterMk1ScreenHandler(
 
         val backButton = WButton(LiteralText("<-"))
         root.add(backButton, 0, 0)
-        backButton.setOnClick { sendOpenParent() }
+        backButton.setOnClick { OPEN_PARENT.send(this) }
 
         root.validate(this)
-    }
-
-    private fun sendOpenParent() {
-        CommonProxy.INSTANCE.presetCursorPosition()
-        ID_OPEN_PARENT.send(CoreMinecraftNetUtil.getClientConnection(), this)
-    }
-
-    private fun receiveOpenParent(ctx: IMsgReadCtx) {
-        ctx.assertServerSide()
-        TPScreenHandlerUtils.openParentScreen(module, playerInventory.player)
     }
 }
