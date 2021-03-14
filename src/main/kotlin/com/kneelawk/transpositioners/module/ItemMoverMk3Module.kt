@@ -17,8 +17,8 @@ class ItemMoverMk3Module(context: ModuleContext, path: ModulePath) :
     }
 
     override fun move() {
-        val extract = getItemExtractable(attachmentPos.offset(facing.opposite), facing.opposite)
-        val insert = getItemInsertable(attachmentPos, facing)
+        val extract = getItemExtractable(backPos, facing.opposite)
+        val insert = getItemInsertable(frontPos, facing)
 
         val extractedSim = extract.attemptAnyExtraction(MAX_STACK_SIZE, Simulation.SIMULATE)
         if (!extractedSim.isEmpty) {

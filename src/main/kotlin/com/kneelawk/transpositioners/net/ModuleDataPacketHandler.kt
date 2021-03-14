@@ -35,7 +35,8 @@ class ModuleDataPacketHandler<M : Module, S : ModuleScreenHandler>(private val n
     }
 
     fun sendToClients(module: M) {
-        for (con in CoreMinecraftNetUtil.getPlayersWatching(module.context.world, module.context.attachmentPos)) {
+        // Using frontPos because that's the actual location of the transpositioner.
+        for (con in CoreMinecraftNetUtil.getPlayersWatching(module.context.world, module.context.frontPos)) {
             netId.send(con, module)
         }
     }

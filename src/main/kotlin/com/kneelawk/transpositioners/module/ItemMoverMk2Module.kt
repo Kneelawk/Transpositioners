@@ -81,15 +81,15 @@ class ItemMoverMk2Module(
 
         val insert = getItemInsertable(
             when (direction) {
-                MovementDirection.FORWARD  -> attachmentPos
-                MovementDirection.BACKWARD -> attachmentPos.offset(facing.opposite)
+                MovementDirection.FORWARD  -> frontPos
+                MovementDirection.BACKWARD -> backPos
             }, insertionSide.opposite
         )
         // TODO: Use ItemInsertableFilter
         val extractInv = getFixedItemInv(
             when (direction) {
-                MovementDirection.FORWARD  -> attachmentPos.offset(facing.opposite)
-                MovementDirection.BACKWARD -> attachmentPos
+                MovementDirection.FORWARD  -> backPos
+                MovementDirection.BACKWARD -> frontPos
             }, extractionSide.opposite
         )
 
@@ -103,8 +103,8 @@ class ItemMoverMk2Module(
         } else {
             val extract = getItemExtractable(
                 when (direction) {
-                    MovementDirection.FORWARD  -> attachmentPos.offset(facing.opposite)
-                    MovementDirection.BACKWARD -> attachmentPos
+                    MovementDirection.FORWARD  -> backPos
+                    MovementDirection.BACKWARD -> frontPos
                 }, extractionSide.opposite
             )
 

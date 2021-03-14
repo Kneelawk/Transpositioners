@@ -13,8 +13,10 @@ abstract class AbstractModule(
 ) : Module {
     protected val world: World
         get() = context.world
-    protected val attachmentPos: BlockPos
-        get() = context.attachmentPos
+    protected val frontPos: BlockPos
+        get() = context.frontPos
+    protected val backPos: BlockPos
+        get() = context.backPos
     protected val facing: Direction
         get() = context.facing
 

@@ -7,13 +7,18 @@ import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
 sealed class ModuleContext : ModuleContainer {
-    abstract val attachmentPos: BlockPos
+    abstract val frontPos: BlockPos
+    abstract val backPos: BlockPos
     abstract val world: World
     abstract val facing: Direction
 
     data class Entity(val entity: TranspositionerEntity) : ModuleContext() {
-        override val attachmentPos: BlockPos
+        // I am moving away from the property attachmentPos because it is misleading. The attachmentPos is actually in
+        // front of the transpositioner.
+        override val frontPos: BlockPos
             get() = entity.decorationBlockPos
+        override val backPos: BlockPos
+            get() = entity.decorationBlockPos.offset(entity.horizontalFacing.opposite)
         override val world: World
             get() = entity.world
         override val facing: Direction
@@ -25,13 +30,15 @@ sealed class ModuleContext : ModuleContainer {
     }
 
     data class Configurator(val configurator: ModuleConfiguratorBlockEntity) : ModuleContext() {
-        override val attachmentPos: BlockPos
+        override val frontPos: BlockPos
+            get() = configurator.pos.up()
+        override val backPos: BlockPos
             get() = configurator.pos
         override val world: World
             get() = configurator.world
                 ?: throw RuntimeException("Attempted to get the world from a world-less configurator")
         override val facing: Direction
-            get() = throw RuntimeException("Attempted to get the facing direction of a configurator")
+            get() = Direction.UP
 
         override fun getModule(index: Int): Module? {
             return configurator.getModule(index)
