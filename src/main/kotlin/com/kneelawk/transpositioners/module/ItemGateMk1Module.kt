@@ -1,8 +1,8 @@
 package com.kneelawk.transpositioners.module
 
 import alexiil.mc.lib.attributes.item.filter.ItemFilter
-import com.kneelawk.transpositioners.TPConstants
-import com.kneelawk.transpositioners.screen.ItemFilterMk1ScreenHandler
+import com.kneelawk.transpositioners.item.TPItems
+import com.kneelawk.transpositioners.screen.ItemGateMk1ScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -13,8 +13,8 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 
-class ItemFilterMk1Module(context: ModuleContext, path: ModulePath) : AbstractModule(Type, context, path),
-    ItemFilterModule, ExtendedScreenHandlerFactory {
+class ItemGateMk1Module(context: ModuleContext, path: ModulePath) : AbstractModule(Type, context, path),
+    ItemGateModule, ExtendedScreenHandlerFactory {
     override val itemFilter = ItemFilter { true }
 
     override fun shouldMove(): Boolean {
@@ -25,29 +25,29 @@ class ItemFilterMk1Module(context: ModuleContext, path: ModulePath) : AbstractMo
     }
 
     override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler? {
-        return ItemFilterMk1ScreenHandler(syncId, inv, this)
+        return ItemGateMk1ScreenHandler(syncId, inv, this)
     }
 
     override fun getDisplayName(): Text {
-        return TPConstants.item("item_filter_module_mk1")
+        return TPItems.ITEM_GATE_MODULE_MK1.name
     }
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         Module.writeModulePath(this, buf)
     }
 
-    object Type : ModuleType<ItemFilterMk1Module> {
+    object Type : ModuleType<ItemGateMk1Module> {
         override fun readFromTag(
             context: ModuleContext,
             path: ModulePath,
             stack: ItemStack,
             tag: CompoundTag
-        ): ItemFilterMk1Module {
-            return ItemFilterMk1Module(context, path)
+        ): ItemGateMk1Module {
+            return ItemGateMk1Module(context, path)
         }
 
-        override fun newInstance(context: ModuleContext, path: ModulePath, stack: ItemStack): ItemFilterMk1Module {
-            return ItemFilterMk1Module(context, path)
+        override fun newInstance(context: ModuleContext, path: ModulePath, stack: ItemStack): ItemGateMk1Module {
+            return ItemGateMk1Module(context, path)
         }
     }
 }

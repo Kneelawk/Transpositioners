@@ -15,13 +15,13 @@ object TPModules {
     // TODO: Figure out a better way to do this.
     val GLOBAL = ModuleRegistry<Module>()
     val MOVERS = ModuleRegistry<MoverModule>()
-    val ITEM_FILTERS = ModuleRegistry<ItemFilterModule>()
+    val ITEM_GATES = ModuleRegistry<ItemGateModule>()
 
     fun register() {
         register(ItemMoverMk1Module.Type, TPItems.ITEM_MOVER_MODULE_MK1)
         register(ItemMoverMk2Module.Type, TPItems.ITEM_MOVER_MODULE_MK2)
         register(ItemMoverMk3Module.Type, TPItems.ITEM_MOVER_MODULE_MK3)
-        register(ItemFilterMk1Module.Type, TPItems.ITEM_FILTER_MODULE_MK1)
+        register(ItemGateMk1Module.Type, TPItems.ITEM_GATE_MODULE_MK1)
     }
 
     // kotlin interface
@@ -40,8 +40,8 @@ object TPModules {
             MOVERS.register(type as ModuleType<out MoverModule>, item)
         }
 
-        if (ItemFilterModule::class.java.isAssignableFrom(clazz)) {
-            ITEM_FILTERS.register(type as ModuleType<out ItemFilterModule>, item)
+        if (ItemGateModule::class.java.isAssignableFrom(clazz)) {
+            ITEM_GATES.register(type as ModuleType<out ItemGateModule>, item)
         }
     }
 

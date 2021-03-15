@@ -3,7 +3,7 @@ package com.kneelawk.transpositioners.screen
 import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.blockentity.ModuleConfiguratorBlockEntity
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
-import com.kneelawk.transpositioners.module.ItemFilterMk1Module
+import com.kneelawk.transpositioners.module.ItemGateMk1Module
 import com.kneelawk.transpositioners.module.ItemMoverMk2Module
 import com.kneelawk.transpositioners.module.Module
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry
@@ -11,11 +11,11 @@ import net.minecraft.screen.ScreenHandlerType
 
 object TPScreenHandlers {
     val MODULE_CONFIGURATOR_ID = TPConstants.identifier("module_configurator")
-    val ITEM_FILTER_MK1_ID = TPConstants.identifier("item_filter_mk1")
+    val ITEM_GATE_MK1_ID = TPConstants.identifier("item_gate_mk1")
     val ITEM_MOVER_MK2_ID = TPConstants.identifier("item_mover_mk2")
     val TRANSPOSITIONER_ID = TPConstants.identifier("transpositioner")
     lateinit var MODULE_CONFIGURATOR_TYPE: ScreenHandlerType<ModuleConfiguratorScreenHandler>
-    lateinit var ITEM_FILTER_MK1_TYPE: ScreenHandlerType<ItemFilterMk1ScreenHandler>
+    lateinit var ITEM_GATE_MK1_TYPE: ScreenHandlerType<ItemGateMk1ScreenHandler>
     lateinit var ITEM_MOVER_MK2_TYPE: ScreenHandlerType<ItemMoverMk2ScreenHandler>
     lateinit var TRANSPOSITIONER_TYPE: ScreenHandlerType<TranspositionerScreenHandler>
 
@@ -29,14 +29,14 @@ object TPScreenHandlers {
 
                 ModuleConfiguratorScreenHandler(syncId, playerInventory, entity)
             }
-        ITEM_FILTER_MK1_TYPE =
-            ScreenHandlerRegistry.registerExtended(ITEM_FILTER_MK1_ID) { syncId, playerInventory, buf ->
+        ITEM_GATE_MK1_TYPE =
+            ScreenHandlerRegistry.registerExtended(ITEM_GATE_MK1_ID) { syncId, playerInventory, buf ->
                 val module = Module.readModulePath(playerInventory.player.world, buf)
-                if (module !is ItemFilterMk1Module) {
-                    throw IllegalStateException("Received open-ItemFilterMk1Module packet from server but target module was not an ItemFilterMk1Module")
+                if (module !is ItemGateMk1Module) {
+                    throw IllegalStateException("Received open-ItemGateMk1Module packet from server but target module was not an ItemGateMk1Module")
                 }
 
-                ItemFilterMk1ScreenHandler(syncId, playerInventory, module)
+                ItemGateMk1ScreenHandler(syncId, playerInventory, module)
             }
         ITEM_MOVER_MK2_TYPE =
             ScreenHandlerRegistry.registerExtended(ITEM_MOVER_MK2_ID) { syncId, playerInventory, buf ->

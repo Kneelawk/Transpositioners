@@ -7,11 +7,11 @@
   "item.transpositioners.transpositioner_mk2": "Transpositioner Mk2",
   "item.transpositioners.transpositioner_mk3": "Transpositioner Mk3",
   "item.transpositioners.transpositioner_configurator": "Transpositioner Configurator",
+  "item.transpositioners.item_gate_module_mk1": "Item Gate Module Mk1",
+  "item.transpositioners.item_gate_module_mk2": "Item Gate Module Mk2",
   "item.transpositioners.item_mover_module_mk1": "Item Mover Module Mk1",
   "item.transpositioners.item_mover_module_mk2": "Item Mover Module Mk2",
   "item.transpositioners.item_mover_module_mk3": "Item Mover Module Mk3",
-  "item.transpositioners.item_filter_module_mk1": "Item Filter Module Mk1",
-  "item.transpositioners.item_filter_module_mk2": "Item Filter Module Mk2",
   "itemGroup.transpositioners.transpositioners": "Transpositioners",
   "gui.transpositioners.direction": "Direction:",
   "gui.transpositioners.forward": "Forward",
@@ -25,7 +25,7 @@
   "gui.transpositioners.west": "West",
   "gui.transpositioners.east": "East",
   "gui.transpositioners.tab.config": "Config",
-  "gui.transpositioners.tab.filters": "Filters",
+  "gui.transpositioners.tab.gates": "Gates",
   "tooltip.transpositioners.direction": "Direction: %s",
   "tooltip.transpositioners.forward": "Forward",
   "tooltip.transpositioners.backward": "Backward",
@@ -38,5 +38,5 @@
   "tooltip.transpositioners.south": "South",
   "tooltip.transpositioners.west": "West",
   "tooltip.transpositioners.east": "East",
-  "tooltip.transpositioners.filters": "Filters: %d"
+  "tooltip.transpositioners.gates": "Gates: %d"
 }

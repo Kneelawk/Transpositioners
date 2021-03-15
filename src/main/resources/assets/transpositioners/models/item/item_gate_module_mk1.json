@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "transpositioners:item/item_filter_module_mk1"
+    "layer0": "transpositioners:item/item_gate_module_mk1"
   }
 }

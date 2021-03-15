@@ -24,6 +24,7 @@ import io.github.cottonmc.cotton.gui.widget.data.VerticalAlignment
 import io.github.cottonmc.cotton.gui.widget.icon.ItemIcon
 import io.github.cottonmc.cotton.gui.widget.icon.TextureIcon
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.item.Items
 import net.minecraft.text.LiteralText
 import net.minecraft.util.math.Direction
 import org.apache.logging.log4j.LogManager
@@ -45,7 +46,7 @@ class ItemMoverMk2ScreenHandler(
 
         private val OPEN_PARENT = OpenParentPacketHandler(
             NET_PARENT.idSignal("OPEN_PARENT")) { playerInventory.player }
-        private val OPEN_MODULE = OpenModulePacketHandler(NET_PARENT.idData("OPEN_MODULE"), { module.filters },
+        private val OPEN_MODULE = OpenModulePacketHandler(NET_PARENT.idData("OPEN_MODULE"), { module.gates },
             { playerInventory.player })
         private val ID_DIRECTION_CHANGE = NET_PARENT.idData("DIRECTION_CHANGE", 1)
             .setServerReceiver { module.updateDirection(MovementDirection.byId(it.readByte().toInt())) }
@@ -76,7 +77,7 @@ class ItemMoverMk2ScreenHandler(
         root.add(tabs, 1, 26)
 
         tabs.add(buildConfigPanel())
-        tabs.add(buildFilterPanel())
+        tabs.add(buildGatePanel())
 
         root.validate(this)
     }
@@ -121,15 +122,15 @@ class ItemMoverMk2ScreenHandler(
         return tab.build()
     }
 
-    private fun buildFilterPanel(): WTabPanel.Tab {
-        val filterPanel = WPlainPanel()
-        filterPanel.setSize(12 * 18, 3 * 20)
+    private fun buildGatePanel(): WTabPanel.Tab {
+        val gatePanel = WPlainPanel()
+        gatePanel.setSize(12 * 18, 3 * 20)
 
-        addSlots(filterPanel, module.filters, { OPEN_MODULE.send(this, it) }, 0, 2, 5 * 18, 0)
+        addSlots(gatePanel, module.gates, { OPEN_MODULE.send(this, it) }, 0, 2, 5 * 18, 0)
 
-        val tab = WTabPanel.Tab.Builder(filterPanel)
-        tab.tooltip(gui("tab.filters"))
-        tab.icon(TextureIcon(identifier("textures/gui/filter.png")))
+        val tab = WTabPanel.Tab.Builder(gatePanel)
+        tab.tooltip(gui("tab.gates"))
+        tab.icon(ItemIcon(Items.OAK_FENCE_GATE))
         return tab.build()
     }
 

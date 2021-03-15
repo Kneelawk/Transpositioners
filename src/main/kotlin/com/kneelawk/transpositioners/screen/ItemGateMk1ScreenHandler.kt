@@ -2,7 +2,7 @@ package com.kneelawk.transpositioners.screen
 
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants.str
-import com.kneelawk.transpositioners.module.ItemFilterMk1Module
+import com.kneelawk.transpositioners.module.ItemGateMk1Module
 import com.kneelawk.transpositioners.net.OpenParentPacketHandler
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WButton
@@ -12,12 +12,12 @@ import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.LiteralText
 import org.apache.logging.log4j.LogManager
 
-class ItemFilterMk1ScreenHandler(
+class ItemGateMk1ScreenHandler(
     syncId: Int,
     playerInventory: PlayerInventory,
-    override val module: ItemFilterMk1Module
+    override val module: ItemGateMk1Module
 ) : SyncedGuiDescription(
-    TPScreenHandlers.ITEM_FILTER_MK1_TYPE,
+    TPScreenHandlers.ITEM_GATE_MK1_TYPE,
     syncId,
     playerInventory
 ), ModuleScreenHandler {
@@ -25,8 +25,8 @@ class ItemFilterMk1ScreenHandler(
         val LOGGER = LogManager.getLogger()
 
         private val NET_PARENT = McNetworkStack.SCREEN_HANDLER.subType(
-            ItemFilterMk1ScreenHandler::class.java,
-            str("item_filter_mk1_screen_handler")
+            ItemGateMk1ScreenHandler::class.java,
+            str("item_gate_mk1_screen_handler")
         )
 
         private val OPEN_PARENT = OpenParentPacketHandler(NET_PARENT.idSignal("OPEN_PARENT")) { playerInventory.player }

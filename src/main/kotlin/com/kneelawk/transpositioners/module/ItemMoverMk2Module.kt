@@ -5,6 +5,7 @@ import alexiil.mc.lib.attributes.Simulation
 import alexiil.mc.lib.attributes.item.*
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv
 import com.kneelawk.transpositioners.TPConstants
+import com.kneelawk.transpositioners.item.TPItems
 import com.kneelawk.transpositioners.net.ModuleDataPacketHandler
 import com.kneelawk.transpositioners.screen.ItemMoverMk2ScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
@@ -27,7 +28,7 @@ class ItemMoverMk2Module(
     initialDirection: MovementDirection,
     initialInsertionSide: Direction,
     initialExtractionSide: Direction,
-    val filters: ModuleInventory<ItemFilterModule>
+    val gates: ModuleInventory<ItemGateModule>
 ) :
     AbstractModule(Type, context, path), MoverModule, ExtendedScreenHandlerFactory {
     companion object {
@@ -158,7 +159,7 @@ class ItemMoverMk2Module(
     }
 
     override fun getDisplayName(): Text {
-        return TPConstants.item("item_mover_module_mk2")
+        return TPItems.ITEM_MOVER_MODULE_MK2.name
     }
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
@@ -169,11 +170,11 @@ class ItemMoverMk2Module(
         tag.putByte("direction", direction.ordinal.toByte())
         tag.putByte("insertionSide", insertionSide.id.toByte())
         tag.putByte("extractionSide", extractionSide.id.toByte())
-        tag.put("filters", filters.getTags())
+        tag.put("gates", gates.getTags())
     }
 
     override fun getModule(index: Int): Module? {
-        return filters.getModule(index)
+        return gates.getModule(index)
     }
 
     object Type : ModuleType<ItemMoverMk2Module> {
@@ -202,12 +203,12 @@ class ItemMoverMk2Module(
                 }
             }
 
-            val filters = ModuleInventory(2, context, path, TPModules.ITEM_FILTERS)
-            if (tag.contains("filters")) {
-                filters.readTags(tag.getList("filters", 10))
+            val gates = ModuleInventory(2, context, path, TPModules.ITEM_GATES)
+            if (tag.contains("gates")) {
+                gates.readTags(tag.getList("gates", 10))
             }
 
-            return ItemMoverMk2Module(context, path, direction, insertionSide, extractionSide, filters)
+            return ItemMoverMk2Module(context, path, direction, insertionSide, extractionSide, gates)
         }
 
         override fun newInstance(
@@ -222,7 +223,7 @@ class ItemMoverMk2Module(
             }, when (context) {
                 is ModuleContext.Configurator -> Direction.DOWN
                 is ModuleContext.Entity       -> context.facing
-            }, ModuleInventory(2, context, path, TPModules.ITEM_FILTERS)
+            }, ModuleInventory(2, context, path, TPModules.ITEM_GATES)
             )
         }
 
@@ -254,10 +255,10 @@ class ItemMoverMk2Module(
                 )
             }
 
-            if (moduleData.contains("filters")) {
-                val filters = moduleData.getList("filters", 10)
-                if (!filters.isEmpty()) {
-                    tooltip += TPConstants.tooltip("filters", filters.size)
+            if (moduleData.contains("gates")) {
+                val gates = moduleData.getList("gates", 10)
+                if (!gates.isEmpty()) {
+                    tooltip += TPConstants.tooltip("gates", gates.size)
                 }
             }
         }
