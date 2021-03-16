@@ -3,6 +3,7 @@ package com.kneelawk.transpositioners.module
 import alexiil.mc.lib.net.IMsgReadCtx
 import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.screen.ModuleScreenHandler
+import com.kneelawk.transpositioners.util.MovementDirection
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.Direction
@@ -25,7 +26,7 @@ object ModuleUtils {
             "direction",
             TPConstants.tooltip(direction.name.toLowerCase()).apply {
                 when (direction) {
-                    MovementDirection.FORWARD -> formatted(Formatting.GREEN)
+                    MovementDirection.FORWARD  -> formatted(Formatting.GREEN)
                     MovementDirection.BACKWARD -> formatted(Formatting.BLUE)
                 }
             })

@@ -3,11 +3,10 @@ package com.kneelawk.transpositioners.screen
 import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants.gui
-import com.kneelawk.transpositioners.TPConstants.identifier
 import com.kneelawk.transpositioners.TPConstants.str
 import com.kneelawk.transpositioners.item.TPItems
 import com.kneelawk.transpositioners.module.ItemMoverMk2Module
-import com.kneelawk.transpositioners.module.MovementDirection
+import com.kneelawk.transpositioners.util.MovementDirection
 import com.kneelawk.transpositioners.net.OpenModulePacketHandler
 import com.kneelawk.transpositioners.net.OpenParentPacketHandler
 import com.kneelawk.transpositioners.net.sendToServer
@@ -22,7 +21,6 @@ import io.github.cottonmc.cotton.gui.widget.WTabPanel
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
 import io.github.cottonmc.cotton.gui.widget.data.VerticalAlignment
 import io.github.cottonmc.cotton.gui.widget.icon.ItemIcon
-import io.github.cottonmc.cotton.gui.widget.icon.TextureIcon
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.Items
 import net.minecraft.text.LiteralText

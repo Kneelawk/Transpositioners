@@ -102,7 +102,7 @@ class ModuleInventory<M : Module>(
      * @param index the index of the module.
      * @return the module at the specified index if any.
      */
-    override fun getModule(index: Int): Module? {
+    override fun getModule(index: Int): M? {
         return if (index >= 0 && index < size()) {
             modules[index]
         } else {
@@ -115,9 +115,9 @@ class ModuleInventory<M : Module>(
      *
      * @param fn the function that is called on each module.
      */
-    fun forEach(fn: (M) -> Unit) {
-        for (module in modules) {
-            module?.let(fn)
+    inline fun forEach(fn: (M) -> Unit) {
+        for (i in 0 until size()) {
+            getModule(i)?.let(fn)
         }
     }
 

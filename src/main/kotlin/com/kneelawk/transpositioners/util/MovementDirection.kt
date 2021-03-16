@@ -1,4 +1,4 @@
-package com.kneelawk.transpositioners.module
+package com.kneelawk.transpositioners.util
 
 enum class MovementDirection {
     FORWARD,

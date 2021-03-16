@@ -2,12 +2,18 @@ package com.kneelawk.transpositioners.module
 
 import alexiil.mc.lib.attributes.SearchOptions
 import alexiil.mc.lib.attributes.Simulation
-import alexiil.mc.lib.attributes.item.*
+import alexiil.mc.lib.attributes.item.FixedItemInv
+import alexiil.mc.lib.attributes.item.ItemAttributes
+import alexiil.mc.lib.attributes.item.ItemExtractable
+import alexiil.mc.lib.attributes.item.ItemInsertable
+import alexiil.mc.lib.attributes.item.filter.ItemFilter
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv
 import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.item.TPItems
 import com.kneelawk.transpositioners.net.ModuleDataPacketHandler
 import com.kneelawk.transpositioners.screen.ItemMoverMk2ScreenHandler
+import com.kneelawk.transpositioners.util.ExactStackContainer
+import com.kneelawk.transpositioners.util.MovementDirection
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
@@ -60,7 +66,7 @@ class ItemMoverMk2Module(
     var extractionSide = initialExtractionSide
         private set
 
-    private val ignoreStacks = mutableSetOf<StackContainer>()
+    private val ignoreStacks = mutableSetOf<ExactStackContainer>()
 
     fun updateDirection(newDirection: MovementDirection) {
         direction = newDirection
@@ -86,7 +92,6 @@ class ItemMoverMk2Module(
                 MovementDirection.BACKWARD -> backPos
             }, insertionSide.opposite
         )
-        // TODO: Use ItemInsertableFilter
         val extractInv = getFixedItemInv(
             when (direction) {
                 MovementDirection.FORWARD  -> backPos
@@ -94,11 +99,28 @@ class ItemMoverMk2Module(
             }, extractionSide.opposite
         )
 
+        var itemFilter: ItemFilter? = null
+        gates.forEach { module ->
+            // Every gate module has the ability to stop the process entirely
+            if (!module.shouldMove()) {
+                return
+            }
+
+            itemFilter = if (itemFilter == null) {
+                module.getItemFilter()
+            } else {
+                itemFilter!!.and(module.getItemFilter())
+            }
+        }
+        if (itemFilter == null) {
+            itemFilter = ItemFilter { true }
+        }
+
         if (extractInv != EmptyFixedItemInv.INSTANCE) {
             var remaining = MAX_STACK_SIZE
             for (slot in 0 until extractInv.slotCount) {
                 val extract = extractInv.getSlot(slot)
-                remaining = attemptTransfer(remaining, extract, insert, ignoreStacks)
+                remaining = attemptTransfer(remaining, extract, insert, ignoreStacks, itemFilter!!)
                 if (remaining == 0) break
             }
         } else {
@@ -109,7 +131,7 @@ class ItemMoverMk2Module(
                 }, extractionSide.opposite
             )
 
-            attemptTransfer(MAX_STACK_SIZE, extract, insert, ignoreStacks)
+            attemptTransfer(MAX_STACK_SIZE, extract, insert, ignoreStacks, itemFilter!!)
         }
     }
 
@@ -117,23 +139,24 @@ class ItemMoverMk2Module(
         remaining: Int,
         extract: ItemExtractable,
         insert: ItemInsertable,
-        ignore: MutableSet<StackContainer>
+        ignore: MutableSet<ExactStackContainer>,
+        filter: ItemFilter
     ): Int {
-        val extractedSim = extract.attemptAnyExtraction(remaining, Simulation.SIMULATE)
-        if (!extractedSim.isEmpty && !ignore.contains(StackContainer.of(extractedSim))) {
+        val extractedSim = extract.attemptExtraction(filter, remaining, Simulation.SIMULATE)
+        if (!extractedSim.isEmpty && !ignore.contains(ExactStackContainer.of(extractedSim))) {
             val leftOverSim = insert.attemptInsertion(extractedSim, Simulation.SIMULATE)
             val amount = extractedSim.count - leftOverSim.count
 
             if (amount != 0) {
                 val leftOver =
                     insert.attemptInsertion(
-                        extract.attemptAnyExtraction(amount, Simulation.ACTION),
+                        extract.attemptExtraction(filter, amount, Simulation.ACTION),
                         Simulation.ACTION
                     )
                 assert(leftOver.isEmpty) { "leftOver: $leftOver" }
             } else {
                 // If an inventory won't accept a kind of item, don't try and insert it a second time
-                ignore.add(StackContainer.of(extractedSim))
+                ignore.add(ExactStackContainer.of(extractedSim))
             }
 
             return remaining - amount
@@ -218,12 +241,12 @@ class ItemMoverMk2Module(
         ): ItemMoverMk2Module {
             return ItemMoverMk2Module(
                 context, path, MovementDirection.FORWARD, when (context) {
-                is ModuleContext.Configurator -> Direction.UP
-                is ModuleContext.Entity       -> context.facing.opposite
-            }, when (context) {
-                is ModuleContext.Configurator -> Direction.DOWN
-                is ModuleContext.Entity       -> context.facing
-            }, ModuleInventory(2, context, path, TPModules.ITEM_GATES)
+                    is ModuleContext.Configurator -> Direction.UP
+                    is ModuleContext.Entity       -> context.facing.opposite
+                }, when (context) {
+                    is ModuleContext.Configurator -> Direction.DOWN
+                    is ModuleContext.Entity       -> context.facing
+                }, ModuleInventory(2, context, path, TPModules.ITEM_GATES)
             )
         }
 
@@ -264,31 +287,4 @@ class ItemMoverMk2Module(
         }
     }
 
-    class StackContainer private constructor(val stack: ItemStack) {
-        companion object {
-            fun of(stack: ItemStack): StackContainer {
-                if (stack.isEmpty)
-                    throw IllegalArgumentException("Contained stack cannot be empty")
-                return StackContainer(stack.copy())
-            }
-        }
-
-        override fun equals(other: Any?): Boolean {
-            return when {
-                this === other                -> true
-                javaClass != other?.javaClass -> false
-                else                          -> ItemStackUtil.areEqualIgnoreAmounts(stack,
-                    (other as StackContainer).stack)
-            }
-        }
-
-        override fun hashCode(): Int {
-            // shouldn't be needed because we shouldn't be keeping track of empty stacks anyways, but just in case
-            if (stack.isEmpty) return 0
-
-            var result = stack.item.hashCode()
-            result = 31 * result + stack.tag.hashCode()
-            return result
-        }
-    }
 }

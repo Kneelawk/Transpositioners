@@ -7,8 +7,12 @@ import com.kneelawk.transpositioners.net.OpenParentPacketHandler
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WButton
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
+import io.github.cottonmc.cotton.gui.widget.WItemSlot
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.item.ItemStack
+import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.text.LiteralText
 import org.apache.logging.log4j.LogManager
 
@@ -38,12 +42,20 @@ class ItemGateMk1ScreenHandler(
         val root = WGridPanel()
         setRootPanel(root)
 
-        root.add(createPlayerInventoryPanel(), 0, 3)
+        root.add(createPlayerInventoryPanel(), 0, 4)
 
         val backButton = WButton(LiteralText("<-"))
         root.add(backButton, 0, 0)
         backButton.setOnClick { OPEN_PARENT.send(this) }
 
+        val slots = WItemSlot.of(module.items, 0, 3, 3)
+        root.add(slots, 3, 1)
+
         root.validate(this)
+    }
+
+    override fun onSlotClick(slotNumber: Int, button: Int, action: SlotActionType, player: PlayerEntity): ItemStack {
+        return TPScreenHandlerUtils.handleGhostSlots(slotNumber, player, action, button, this, module.items)
+            ?: super.onSlotClick(slotNumber, button, action, player)
     }
 }
