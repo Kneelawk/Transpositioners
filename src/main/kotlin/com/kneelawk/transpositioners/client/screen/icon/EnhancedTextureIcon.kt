@@ -7,7 +7,6 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.Matrix4f
 
 class EnhancedTextureIcon(
     val texture: Texture, override val baseWidth: Int, override val baseHeight: Int, var opacity: Float = 1f,
@@ -18,9 +17,11 @@ class EnhancedTextureIcon(
     ) : this(Texture(texture), baseWidth, baseHeight, opacity, color)
 
     @Environment(EnvType.CLIENT)
-    override fun paint(model: Matrix4f, consumers: VertexConsumerProvider, x: Int, y: Int, width: Int, height: Int) {
+    override fun paint(
+        matrices: MatrixStack, consumers: VertexConsumerProvider, x: Int, y: Int, width: Int, height: Int
+    ) {
         IconRenderingUtils.texturedRect(
-            model, consumers, x, y, width, height, texture.image, texture.u1, texture.v1, texture.u2, texture.v2, color,
+            matrices.peek().model, consumers, x, y, width, height, texture.image, texture.u1, texture.v1, texture.u2, texture.v2, color,
             opacity
         )
     }

@@ -138,7 +138,7 @@ object TPScreenUtils {
             matrices.translate(0.0, 0.0, 400.0)
             for (s in lines.indices) {
                 val line = lines[s]
-                line.render(matrix4f, immediate, adjX, adjY)
+                line.render(matrices, immediate, adjX, adjY)
 
                 if (s == 0 && separateFirst) {
                     adjY += 2
@@ -168,15 +168,15 @@ object TPScreenUtils {
         abstract val width: Int
         abstract val height: Int
 
-        abstract fun render(model: Matrix4f, provider: VertexConsumerProvider, x: Int, y: Int)
+        abstract fun render(matrices: MatrixStack, provider: VertexConsumerProvider, x: Int, y: Int)
 
         class TextLine(private val text: OrderedText) : TooltipLine() {
             override val width = MinecraftClient.getInstance().textRenderer.getWidth(text)
             override val height = 8
 
-            override fun render(model: Matrix4f, provider: VertexConsumerProvider, x: Int, y: Int) {
+            override fun render(matrices: MatrixStack, provider: VertexConsumerProvider, x: Int, y: Int) {
                 MinecraftClient.getInstance().textRenderer.draw(
-                    text, x.toFloat(), y.toFloat(), -1, true, model, provider,
+                    text, x.toFloat(), y.toFloat(), -1, true, matrices.peek().model, provider,
                     false, 0,
                     15728880
                 )
@@ -187,8 +187,8 @@ object TPScreenUtils {
             override val width = icon.baseWidth
             override val height = icon.baseHeight
 
-            override fun render(model: Matrix4f, provider: VertexConsumerProvider, x: Int, y: Int) {
-                icon.paint(model, provider, x, y, width, height)
+            override fun render(matrices: MatrixStack, provider: VertexConsumerProvider, x: Int, y: Int) {
+                icon.paint(matrices, provider, x, y, width, height)
             }
         }
 
@@ -196,7 +196,7 @@ object TPScreenUtils {
             override val width = 0
             override val height = 8
 
-            override fun render(model: Matrix4f, provider: VertexConsumerProvider, x: Int, y: Int) {
+            override fun render(matrices: MatrixStack, provider: VertexConsumerProvider, x: Int, y: Int) {
             }
         }
     }

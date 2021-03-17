@@ -30,6 +30,7 @@ object IconRenderingUtils {
             .transparency(ICON_TRANSPARENCY)
             .build(true)
 
+        @Suppress("INACCESSIBLE_TYPE")
         return RenderLayer.of(
             str("icon"), VertexFormats.POSITION_COLOR_TEXTURE, 7, 256, true, false,
             multiPhaseParameters

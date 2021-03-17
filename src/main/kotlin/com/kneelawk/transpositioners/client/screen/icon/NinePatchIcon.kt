@@ -6,7 +6,6 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.Matrix4f
 import kotlin.math.min
 
 /**
@@ -54,9 +53,11 @@ class NinePatchIcon(
     override val minHeight = topHeight + bottomHeight
 
     @Environment(EnvType.CLIENT)
-    override fun paint(model: Matrix4f, consumers: VertexConsumerProvider, x: Int, y: Int, width: Int, height: Int) {
+    override fun paint(
+        matrices: MatrixStack, consumers: VertexConsumerProvider, x: Int, y: Int, width: Int, height: Int
+    ) {
         paint(x, y, width, height) { x, y, width, height, texture, u1, v1, u2, v2 ->
-            IconRenderingUtils.texturedRect(model, consumers, x, y, width, height, texture, u1, v1, u2, v2, -1, 1f)
+            IconRenderingUtils.texturedRect(matrices.peek().model, consumers, x, y, width, height, texture, u1, v1, u2, v2, -1, 1f)
         }
     }
 
