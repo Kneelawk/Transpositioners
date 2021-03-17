@@ -18,8 +18,8 @@ import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 
 class WScalableButton(
-    private var label: Text? = null,
-    private var icon: Icon? = null,
+    var label: Text? = null,
+    var icon: Icon? = null,
 ) : WWidget() {
     companion object {
         private val DISABLED_ICON =
@@ -30,12 +30,12 @@ class WScalableButton(
             NinePatchIcon(AbstractButtonWidget.WIDGETS_LOCATION, 256, 256, 0, 46 + 40, 200, 20, 3, 3, 3, 3, true)
     }
 
-    private var enabled = true
-    private var alignment = HorizontalAlignment.CENTER
-    private var padding = 1
+    var enabled = true
+    var alignment = HorizontalAlignment.CENTER
+    var padding = 1
 
-    private var onClick: Runnable? = null
-    private var tooltip: Text? = null
+    var onClick: (((Int)) -> Unit)? = null
+    var tooltip: Text? = null
 
     override fun canResize(): Boolean {
         return true
@@ -102,7 +102,7 @@ class WScalableButton(
                     1.0f
                 )
             )
-            onClick?.run()
+            onClick?.invoke(button)
         }
     }
 
@@ -115,93 +115,5 @@ class WScalableButton(
 
     override fun addTooltip(builder: TooltipBuilder) {
         tooltip?.let { builder.add(it) }
-    }
-
-    /**
-     * Gets the click handler of this button.
-     *
-     * @return the click handler
-     * @since 2.2.0
-     */
-    fun getOnClick(): Runnable? {
-        return onClick
-    }
-
-    /**
-     * Sets the click handler of this button.
-     *
-     * @param onClick the new click handler
-     * @return this button
-     */
-    fun setOnClick(onClick: Runnable?): WScalableButton {
-        this.onClick = onClick
-        return this
-    }
-
-    fun isEnabled(): Boolean {
-        return enabled
-    }
-
-    fun setEnabled(enabled: Boolean): WScalableButton {
-        this.enabled = enabled
-        return this
-    }
-
-    fun getLabel(): Text? {
-        return label
-    }
-
-    fun setLabel(label: Text?): WScalableButton {
-        this.label = label
-        return this
-    }
-
-    fun getAlignment(): HorizontalAlignment {
-        return alignment
-    }
-
-    fun setAlignment(alignment: HorizontalAlignment): WScalableButton {
-        this.alignment = alignment
-        return this
-    }
-
-    fun getPadding(): Int {
-        return padding
-    }
-
-    fun setPadding(padding: Int): WScalableButton {
-        this.padding = padding
-        return this
-    }
-
-    fun getTooltip(): Text? {
-        return tooltip
-    }
-
-    fun setTooltip(tooltip: Text?): WScalableButton {
-        this.tooltip = tooltip
-        return this
-    }
-
-    /**
-     * Gets the icon of this button.
-     *
-     * @return the icon
-     * @since 2.2.0
-     */
-    fun getIcon(): Icon? {
-        return icon
-    }
-
-    /**
-     * Sets the icon of this button.
-     *
-     * @param icon the new icon
-     * @return this button
-     * @since 2.2.0
-     */
-    fun setIcon(icon: Icon?): WScalableButton {
-        this.icon = icon
-        return this
     }
 }

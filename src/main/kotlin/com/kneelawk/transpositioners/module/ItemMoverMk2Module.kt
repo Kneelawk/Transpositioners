@@ -14,6 +14,9 @@ import com.kneelawk.transpositioners.net.ModuleDataPacketHandler
 import com.kneelawk.transpositioners.screen.ItemMoverMk2ScreenHandler
 import com.kneelawk.transpositioners.util.ExactStackContainer
 import com.kneelawk.transpositioners.util.MovementDirection
+import com.kneelawk.transpositioners.util.TooltipUtils.extractionSide
+import com.kneelawk.transpositioners.util.TooltipUtils.insertionSide
+import com.kneelawk.transpositioners.util.TooltipUtils.movementDirection
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
@@ -259,23 +262,17 @@ class ItemMoverMk2Module(
         ) {
             if (moduleData.contains("direction")) {
                 val direction = MovementDirection.values()[moduleData.getByte("direction").toInt().coerceIn(0, 1)]
-                tooltip += ModuleUtils.movementDirectionTooltip(direction)
+                tooltip += movementDirection(direction)
             }
 
             if (moduleData.contains("insertionSide")) {
                 val insertionSide = Direction.byId(moduleData.getByte("insertionSide").toInt())
-                tooltip += TPConstants.tooltip(
-                    "insertion_side",
-                    ModuleUtils.directionTooltip(insertionSide)
-                )
+                tooltip += insertionSide(insertionSide)
             }
 
             if (moduleData.contains("extractionSide")) {
                 val extractionSide = Direction.byId(moduleData.getByte("extractionSide").toInt())
-                tooltip += TPConstants.tooltip(
-                    "extraction_side",
-                    ModuleUtils.directionTooltip(extractionSide)
-                )
+                tooltip += extractionSide(extractionSide)
             }
 
             if (moduleData.contains("gates")) {

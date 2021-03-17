@@ -45,48 +45,47 @@ class TranspositionerScreenHandler(
     }
 
     init {
-        val root = WGridPanel()
+        val root = WPlainPanel()
         setRootPanel(root)
 
         val moduleCount = TranspositionerEntity.moduleCountByMk(entity.mk)
 
         when (entity.mk) {
             1 -> {
-                root.add(createPlayerInventoryPanel(), 0, 3)
+                root.add(createPlayerInventoryPanel(), 0, 2 * 18 + 9)
 
                 val slots = WPlainPanel()
                 val slot = WItemSlot.of(entity.modules, 0)
-                // buttons are 20 px tall
-                slots.add(slot, 54, 1)
-                val button = WButton(LiteralText("..."))
-                button.isEnabled = entity.modules.getModule(0) is NamedScreenHandlerFactory
-                slots.add(button, 90, 0)
-                button.setOnClick {
+                slots.add(slot, 3 * 18 + 9, 0)
+                val button = WScalableButton(LiteralText("..."))
+                button.enabled = entity.modules.getModule(0) is NamedScreenHandlerFactory
+                slots.add(button, 4 * 18 + 9, 0)
+                button.onClick = {
                     sendOpenModule(0)
                 }
 
                 slot.addChangeListener { _, _, _, _ ->
-                    button.isEnabled = entity.modules.getModule(0) is NamedScreenHandlerFactory
+                    button.enabled = entity.modules.getModule(0) is NamedScreenHandlerFactory
                 }
 
-                root.add(slots, 0, 1, 9, 2)
+                root.add(slots, 0, 18, 9 * 18, 18)
             }
             2 -> {
-                root.add(createPlayerInventoryPanel(), 0, 4)
+                root.add(createPlayerInventoryPanel(), 0, 3 * 18 + 9)
 
                 val slots = WPlainPanel()
                 addSlots(slots, entity.modules, ::sendOpenModule, 0, moduleCount, 45, 0)
 
-                root.add(slots, 0, 1, 9, 2)
+                root.add(slots, 0, 18, 9 * 18, 2 * 18)
             }
             3 -> {
-                root.add(createPlayerInventoryPanel(), 0, 7)
+                root.add(createPlayerInventoryPanel(), 0, 6 * 18 + 9)
 
                 val slots = WPlainPanel()
                 addSlots(slots, entity.modules, ::sendOpenModule, 0, moduleCount / 2, 9, 0)
                 addSlots(slots, entity.modules, ::sendOpenModule, moduleCount / 2, moduleCount / 2, 9, 18 * 3)
 
-                root.add(slots, 0, 1, 9, 2)
+                root.add(slots, 0, 18, 9 * 18, 5 * 18)
             }
             else -> LOGGER.warn("Opened GUI for transpositioner with invalid mk: ${entity.mk}")
         }

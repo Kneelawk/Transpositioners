@@ -43,27 +43,26 @@ class ModuleConfiguratorScreenHandler(
     }
 
     init {
-        val root = WGridPanel()
+        val root = WPlainPanel()
         setRootPanel(root)
 
-        root.add(createPlayerInventoryPanel(), 0, 3)
+        root.add(createPlayerInventoryPanel(), 0, 2 * 18 + 9)
 
         val slots = WPlainPanel()
         val slot = WItemSlot.of(configurator.modules, 0)
-        // buttons are 20 px tall
-        slots.add(slot, 54, 1)
-        val button = WButton(LiteralText("..."))
-        button.isEnabled = configurator.modules.getModule(0) is NamedScreenHandlerFactory
-        slots.add(button, 90, 0)
-        button.setOnClick {
+        slots.add(slot, 3 * 18 + 9, 0)
+        val button = WScalableButton(LiteralText("..."))
+        button.enabled = configurator.modules.getModule(0) is NamedScreenHandlerFactory
+        slots.add(button, 4 * 18 + 9, 0)
+        button.onClick = {
             sendOpenModule()
         }
 
         slot.addChangeListener { _, _, _, _ ->
-            button.isEnabled = configurator.modules.getModule(0) is NamedScreenHandlerFactory
+            button.enabled = configurator.modules.getModule(0) is NamedScreenHandlerFactory
         }
 
-        root.add(slots, 0, 1, 9, 2)
+        root.add(slots, 0, 18, 9 * 18, 18)
 
         root.validate(this)
     }

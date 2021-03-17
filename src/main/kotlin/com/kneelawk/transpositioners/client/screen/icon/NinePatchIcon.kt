@@ -1,6 +1,8 @@
 package com.kneelawk.transpositioners.client.screen.icon
 
 import io.github.cottonmc.cotton.gui.client.ScreenDrawing.texturedRect
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Identifier
 import kotlin.math.min
@@ -49,6 +51,7 @@ class NinePatchIcon(
     override val minWidth = leftWidth + rightWidth
     override val minHeight = topHeight + bottomHeight
 
+    @Environment(EnvType.CLIENT)
     override fun paint(matrices: MatrixStack, x: Int, y: Int, width: Int, height: Int) {
         val centerWidth = width - leftWidth - rightWidth
         val centerHeight = height - topHeight - bottomHeight

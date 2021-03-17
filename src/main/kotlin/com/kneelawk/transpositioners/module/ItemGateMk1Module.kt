@@ -8,6 +8,7 @@ import com.kneelawk.transpositioners.net.ModuleDataPacketHandler
 import com.kneelawk.transpositioners.screen.ItemGateMk1ScreenHandler
 import com.kneelawk.transpositioners.util.BasicStackContainer
 import com.kneelawk.transpositioners.util.ListGateType
+import com.kneelawk.transpositioners.util.TooltipUtils.listGateType
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
@@ -119,7 +120,7 @@ class ItemGateMk1Module(
             if (moduleData.contains("gate_type")) {
                 tooltip += TPConstants.tooltip(
                     "list_gate_type",
-                    ModuleUtils.listGateTypeTooltip(ListGateType.byId(moduleData.getByte("gate_type").toInt()))
+                    listGateType(ListGateType.byId(moduleData.getByte("gate_type").toInt()))
                 )
             }
         }

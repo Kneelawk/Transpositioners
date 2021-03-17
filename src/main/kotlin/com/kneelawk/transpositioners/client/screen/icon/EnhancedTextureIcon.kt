@@ -2,6 +2,8 @@ package com.kneelawk.transpositioners.client.screen.icon
 
 import io.github.cottonmc.cotton.gui.client.ScreenDrawing
 import io.github.cottonmc.cotton.gui.widget.data.Texture
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Identifier
 
@@ -13,6 +15,7 @@ class EnhancedTextureIcon(
         texture: Identifier, baseWidth: Int, baseHeight: Int, opacity: Float = 1f, color: Int = 0xFF_FFFFFF.toInt()
     ) : this(Texture(texture), baseWidth, baseHeight, opacity, color)
 
+    @Environment(EnvType.CLIENT)
     override fun paint(matrices: MatrixStack, x: Int, y: Int, width: Int, height: Int) {
         ScreenDrawing.texturedRect(x, y, width, height, texture, color, opacity)
     }

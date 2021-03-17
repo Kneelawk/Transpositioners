@@ -4,7 +4,6 @@ import com.kneelawk.transpositioners.module.Module
 import com.kneelawk.transpositioners.module.ModuleContext
 import com.kneelawk.transpositioners.module.ModuleInventory
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
-import io.github.cottonmc.cotton.gui.widget.WButton
 import io.github.cottonmc.cotton.gui.widget.WItemSlot
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
 import net.minecraft.entity.player.PlayerEntity
@@ -14,6 +13,7 @@ import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.text.LiteralText
+import java.lang.Math.floorMod
 
 object TPScreenHandlerUtils {
     fun openParentScreen(module: Module, player: PlayerEntity) {
@@ -26,9 +26,22 @@ object TPScreenHandlerUtils {
         )
     }
 
+    inline fun <reified E : Enum<E>> buttonCycleEnum(currentValue: E, button: Int): E {
+        val amount = when (button) {
+            0    -> 1
+            1    -> -1
+            else -> return E::class.java.enumConstants[0]
+        }
+        return cycleEnum(currentValue, amount)
+    }
+
     inline fun <reified E : Enum<E>> cycleEnum(currentValue: E): E {
+        return cycleEnum(currentValue, 1)
+    }
+
+    inline fun <reified E : Enum<E>> cycleEnum(currentValue: E, amount: Int): E {
         val values = E::class.java.enumConstants
-        return values[(currentValue.ordinal + 1) % values.size]
+        return values[floorMod(currentValue.ordinal + amount, values.size)]
     }
 
     fun addSlots(
@@ -42,20 +55,19 @@ object TPScreenHandlerUtils {
     ) {
         val slots = WItemSlot.of(modules, startIndex, count, 1)
         panel.add(slots, x, y)
-        val buttons = mutableListOf<WButton>()
+        val buttons = mutableListOf<WScalableButton>()
         for (i in 0 until count) {
-            val button = WButton(LiteralText("..."))
-            button.isEnabled = modules.getModule(i) is NamedScreenHandlerFactory
-            // buttons are 20 px tall
-            panel.add(button, x + i * 18, y + 18 + 9 - 1)
+            val button = WScalableButton(LiteralText("..."))
+            button.enabled = modules.getModule(i) is NamedScreenHandlerFactory
+            panel.add(button, x + i * 18, y + 18)
             buttons.add(button)
-            button.setOnClick {
+            button.onClick = {
                 sendOpenModule(i)
             }
         }
 
         slots.addChangeListener { _, _, index, _ ->
-            buttons[index - startIndex].isEnabled = modules.getModule(index) is NamedScreenHandlerFactory
+            buttons[index - startIndex].enabled = modules.getModule(index) is NamedScreenHandlerFactory
         }
     }
 

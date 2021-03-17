@@ -2,30 +2,29 @@ package com.kneelawk.transpositioners.screen
 
 import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.McNetworkStack
-import com.kneelawk.transpositioners.TPConstants.gui
 import com.kneelawk.transpositioners.TPConstants.str
-import com.kneelawk.transpositioners.item.TPItems
 import com.kneelawk.transpositioners.module.ItemMoverMk2Module
-import com.kneelawk.transpositioners.util.MovementDirection
 import com.kneelawk.transpositioners.net.OpenModulePacketHandler
 import com.kneelawk.transpositioners.net.OpenParentPacketHandler
 import com.kneelawk.transpositioners.net.sendToServer
 import com.kneelawk.transpositioners.net.setServerReceiver
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.addSlots
+import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.buttonCycleEnum
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.cycleEnum
+import com.kneelawk.transpositioners.util.MovementDirection
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
-import io.github.cottonmc.cotton.gui.widget.WButton
-import io.github.cottonmc.cotton.gui.widget.WLabel
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
-import io.github.cottonmc.cotton.gui.widget.WTabPanel
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
-import io.github.cottonmc.cotton.gui.widget.data.VerticalAlignment
-import io.github.cottonmc.cotton.gui.widget.icon.ItemIcon
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.item.Items
 import net.minecraft.text.LiteralText
 import net.minecraft.util.math.Direction
 import org.apache.logging.log4j.LogManager
+import com.kneelawk.transpositioners.util.IconUtils.extractionSide as extractionSideI
+import com.kneelawk.transpositioners.util.IconUtils.insertionSide as insertionSideI
+import com.kneelawk.transpositioners.util.IconUtils.movementDirection as movementDirectionI
+import com.kneelawk.transpositioners.util.TooltipUtils.extractionSide as extractionSideT
+import com.kneelawk.transpositioners.util.TooltipUtils.insertionSide as insertionSideT
+import com.kneelawk.transpositioners.util.TooltipUtils.movementDirection as movementDirectionT
 
 class ItemMoverMk2ScreenHandler(
     syncId: Int,
@@ -43,7 +42,8 @@ class ItemMoverMk2ScreenHandler(
         )
 
         private val OPEN_PARENT = OpenParentPacketHandler(
-            NET_PARENT.idSignal("OPEN_PARENT")) { playerInventory.player }
+            NET_PARENT.idSignal("OPEN_PARENT")
+        ) { playerInventory.player }
         private val OPEN_MODULE = OpenModulePacketHandler(NET_PARENT.idData("OPEN_MODULE"), { module.gates },
             { playerInventory.player })
         private val ID_DIRECTION_CHANGE = NET_PARENT.idData("DIRECTION_CHANGE", 1)
@@ -54,93 +54,63 @@ class ItemMoverMk2ScreenHandler(
             .setServerReceiver { module.updateExtractionSide(Direction.byId(it.readByte().toInt())) }
     }
 
-    private lateinit var directionButton: WButton
-    private lateinit var insertionSideButton: WButton
-    private lateinit var extractionSideButton: WButton
+    private val directionButton: WScalableButton
+    private val insertionSideButton: WScalableButton
+    private val extractionSideButton: WScalableButton
 
     init {
         setTitleAlignment(HorizontalAlignment.RIGHT)
 
         val root = WPlainPanel()
         setRootPanel(root)
-        root.setSize(13 * 18, 0)
 
-        root.add(createPlayerInventoryPanel(), 2 * 18, 8 * 18)
+        root.add(createPlayerInventoryPanel(), 0, 3 * 18 + 9)
 
-        val backButton = WButton(LiteralText("<-"))
+        val backButton = WScalableButton(LiteralText("<-"))
         root.add(backButton, 0, 0)
-        backButton.setOnClick { OPEN_PARENT.send(this) }
+        backButton.onClick = { OPEN_PARENT.send(this) }
 
-        val tabs = WTabPanel()
-        root.add(tabs, 1, 26)
-
-        tabs.add(buildConfigPanel())
-        tabs.add(buildGatePanel())
-
-        root.validate(this)
-    }
-
-    private fun buildConfigPanel(): WTabPanel.Tab {
-        val buttonPanel = WRectGridPanel(cellHeight = 20)
-        buttonPanel.setSize(12 * 18, 3 * 20)
-
-        buttonPanel.add(WLabel(gui("direction")).apply {
-            verticalAlignment = VerticalAlignment.CENTER
-        }, 0, 0)
-        directionButton = WButton(gui(module.direction.name.toLowerCase()))
-        buttonPanel.add(directionButton, 7, 0, 5, 1)
-        directionButton.setOnClick {
+        directionButton = WScalableButton(icon = movementDirectionI(module.direction))
+        root.add(directionButton, 2 * 18, 18)
+        directionButton.tooltip = movementDirectionT(module.direction)
+        directionButton.onClick = {
             val direction = cycleEnum(module.direction)
             ID_DIRECTION_CHANGE.sendToServer(this) { it.writeByte(direction.id) }
         }
 
-        buttonPanel.add(WLabel(gui("insertion_side")).apply {
-            verticalAlignment = VerticalAlignment.CENTER
-        }, 0, 1)
-        insertionSideButton = WButton(gui(module.insertionSide.getName()))
-        buttonPanel.add(insertionSideButton, 7, 1, 5, 1)
-        insertionSideButton.setOnClick {
-            val side = cycleEnum(module.insertionSide)
+        insertionSideButton = WScalableButton(icon = insertionSideI(module.insertionSide))
+        root.add(insertionSideButton, 2 * 18, 2 * 18)
+        insertionSideButton.tooltip = insertionSideT(module.insertionSide)
+        insertionSideButton.onClick = { button ->
+            val side = buttonCycleEnum(module.insertionSide, button)
             ID_INSERTION_SIDE_CHANGE.sendToServer(this) { it.writeByte(side.id) }
         }
 
-        buttonPanel.add(WLabel(gui("extraction_side")).apply {
-            verticalAlignment = VerticalAlignment.CENTER
-        }, 0, 2)
-        extractionSideButton = WButton(gui(module.extractionSide.getName()))
-        buttonPanel.add(extractionSideButton, 7, 2, 5, 1)
-        extractionSideButton.setOnClick {
-            val side = cycleEnum(module.extractionSide)
+        extractionSideButton = WScalableButton(icon = extractionSideI(module.extractionSide))
+        root.add(extractionSideButton, 3 * 18, 2 * 18)
+        extractionSideButton.tooltip = extractionSideT(module.extractionSide)
+        extractionSideButton.onClick = { button ->
+            val side = buttonCycleEnum(module.extractionSide, button)
             ID_EXTRACTION_SIDE_CHANGE.sendToServer(this) { it.writeByte(side.id) }
         }
 
-        val tab = WTabPanel.Tab.Builder(buttonPanel)
-        tab.tooltip(gui("tab.config"))
-        tab.icon(ItemIcon(TPItems.TRANSPOSITIONER_CONFIGURATOR))
-        return tab.build()
-    }
+        addSlots(root, module.gates, { OPEN_MODULE.send(this, it) }, 0, 2, 5 * 18, 1 * 18)
 
-    private fun buildGatePanel(): WTabPanel.Tab {
-        val gatePanel = WPlainPanel()
-        gatePanel.setSize(12 * 18, 3 * 20)
-
-        addSlots(gatePanel, module.gates, { OPEN_MODULE.send(this, it) }, 0, 2, 5 * 18, 0)
-
-        val tab = WTabPanel.Tab.Builder(gatePanel)
-        tab.tooltip(gui("tab.gates"))
-        tab.icon(ItemIcon(Items.OAK_FENCE_GATE))
-        return tab.build()
+        root.validate(this)
     }
 
     fun s2cReceiveDirectionChange(direction: MovementDirection) {
-        directionButton.label = gui(direction.name.toLowerCase())
+        directionButton.icon = movementDirectionI(direction)
+        directionButton.tooltip = movementDirectionT(module.direction)
     }
 
     fun s2cReceiveInsertionSideChange(side: Direction) {
-        insertionSideButton.label = gui(side.getName())
+        insertionSideButton.icon = insertionSideI(side)
+        insertionSideButton.tooltip = insertionSideT(module.insertionSide)
     }
 
     fun s2cReceiveExtractionSideChange(side: Direction) {
-        extractionSideButton.label = gui(side.getName())
+        extractionSideButton.icon = extractionSideI(side)
+        extractionSideButton.tooltip = extractionSideT(module.extractionSide)
     }
 }
