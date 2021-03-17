@@ -23,8 +23,8 @@ object IconUtils {
     private val FORWARD_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/forward.png"), 16, 16)
     private val BACKWARD_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/backward.png"), 16, 16)
 
-    private val CHECK_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/check2.png"), 16, 16)
-    private val DENY_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/deny2.png"), 16, 16)
+    val CHECK_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/check2.png"), 16, 16)
+    val DENY_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/deny2.png"), 16, 16)
 
     fun insertionSide(direction: Direction): EnhancedIcon {
         return when (direction) {

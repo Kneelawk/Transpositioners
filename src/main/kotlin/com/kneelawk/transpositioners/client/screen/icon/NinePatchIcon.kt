@@ -1,10 +1,12 @@
 package com.kneelawk.transpositioners.client.screen.icon
 
-import io.github.cottonmc.cotton.gui.client.ScreenDrawing.texturedRect
+import io.github.cottonmc.cotton.gui.client.ScreenDrawing
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.Matrix4f
 import kotlin.math.min
 
 /**
@@ -52,7 +54,23 @@ class NinePatchIcon(
     override val minHeight = topHeight + bottomHeight
 
     @Environment(EnvType.CLIENT)
+    override fun paint(model: Matrix4f, consumers: VertexConsumerProvider, x: Int, y: Int, width: Int, height: Int) {
+        paint(x, y, width, height) { x, y, width, height, texture, u1, v1, u2, v2 ->
+            IconRenderingUtils.texturedRect(model, consumers, x, y, width, height, texture, u1, v1, u2, v2, -1, 1f)
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
     override fun paint(matrices: MatrixStack, x: Int, y: Int, width: Int, height: Int) {
+        paint(x, y, width, height) { x, y, width, height, texture, u1, v1, u2, v2 ->
+            ScreenDrawing.texturedRect(x, y, width, height, texture, u1, v1, u2, v2, -1)
+        }
+    }
+
+    private inline fun paint(
+        x: Int, y: Int, width: Int, height: Int,
+        texturedRect: (Int, Int, Int, Int, Identifier, Float, Float, Float, Float) -> Unit
+    ) {
         val centerWidth = width - leftWidth - rightWidth
         val centerHeight = height - topHeight - bottomHeight
         val rightLeft = x + width - rightWidth
@@ -60,19 +78,16 @@ class NinePatchIcon(
 
         // draw the 4 corners
         texturedRect(
-            x, y, leftWidth, topHeight, textureId, pieceU1, pieceV1, leftRightU, topBottomV, 0xFF_FFFFFF.toInt()
+            x, y, leftWidth, topHeight, textureId, pieceU1, pieceV1, leftRightU, topBottomV
         )
         texturedRect(
-            rightLeft, y, rightWidth, topHeight, textureId, rightLeftU, pieceV1, pieceU2, topBottomV,
-            0xFF_FFFFFF.toInt()
+            rightLeft, y, rightWidth, topHeight, textureId, rightLeftU, pieceV1, pieceU2, topBottomV
         )
         texturedRect(
-            x, bottomTop, leftWidth, bottomHeight, textureId, pieceU1, bottomTopV, leftRightU, pieceV2,
-            0xFF_FFFFFF.toInt()
+            x, bottomTop, leftWidth, bottomHeight, textureId, pieceU1, bottomTopV, leftRightU, pieceV2
         )
         texturedRect(
-            rightLeft, bottomTop, rightWidth, bottomHeight, textureId, rightLeftU, bottomTopV, pieceU2, pieceV2,
-            0xFF_FFFFFF.toInt()
+            rightLeft, bottomTop, rightWidth, bottomHeight, textureId, rightLeftU, bottomTopV, pieceU2, pieceV2
         )
 
         if (tiling) {
@@ -85,11 +100,11 @@ class NinePatchIcon(
                 val curTileU2 = (pieceX + leftWidth + curTileWidth).toFloat() / imageWidth.toFloat()
                 texturedRect(
                     leftWidth + localTileX + x, y, curTileWidth, topHeight, textureId, leftRightU, pieceV1, curTileU2,
-                    topBottomV, 0xFF_FFFFFF.toInt()
+                    topBottomV
                 )
                 texturedRect(
                     leftWidth + localTileX + x, bottomTop, curTileWidth, bottomHeight, textureId, leftRightU,
-                    bottomTopV, curTileU2, pieceV2, 0xFF_FFFFFF.toInt()
+                    bottomTopV, curTileU2, pieceV2
                 )
             }
 
@@ -99,11 +114,11 @@ class NinePatchIcon(
                 val curTileV2 = (pieceY + topHeight + curTileHeight).toFloat() / imageHeight.toFloat()
                 texturedRect(
                     x, topHeight + localTileY + y, leftWidth, curTileHeight, textureId, pieceU1, topBottomV, leftRightU,
-                    curTileV2, 0xFF_FFFFFF.toInt()
+                    curTileV2
                 )
                 texturedRect(
                     rightLeft, topHeight + localTileY + y, rightWidth, curTileHeight, textureId, rightLeftU, topBottomV,
-                    pieceU2, curTileV2, 0xFF_FFFFFF.toInt()
+                    pieceU2, curTileV2
                 )
 
                 for (tileXIndex in 0 until tilesX) {
@@ -112,36 +127,34 @@ class NinePatchIcon(
                     val curTileU2 = (pieceX + leftWidth + curTileWidth).toFloat() / imageWidth.toFloat()
                     texturedRect(
                         leftWidth + localTileX + x, topHeight + localTileY + y, curTileWidth, curTileHeight, textureId,
-                        leftRightU, topBottomV, curTileU2, curTileV2, 0xFF_FFFFFF.toInt()
+                        leftRightU, topBottomV, curTileU2, curTileV2
                     )
                 }
             }
         } else {
             if (centerWidth > 0) {
                 texturedRect(
-                    leftWidth + x, y, centerWidth, topHeight, textureId, leftRightU, pieceV1, rightLeftU, topBottomV,
-                    0xFF_FFFFFF.toInt()
+                    leftWidth + x, y, centerWidth, topHeight, textureId, leftRightU, pieceV1, rightLeftU, topBottomV
                 )
                 texturedRect(
                     leftWidth + x, bottomTop, centerWidth, bottomHeight, textureId, leftRightU, bottomTopV, rightLeftU,
-                    pieceV2, 0xFF_FFFFFF.toInt()
+                    pieceV2
                 )
             }
 
             if (centerHeight > 0) {
                 texturedRect(
-                    x, topHeight + y, leftWidth, centerHeight, textureId, pieceU1, topBottomV, leftRightU, bottomTopV,
-                    0xFF_FFFFFF.toInt()
+                    x, topHeight + y, leftWidth, centerHeight, textureId, pieceU1, topBottomV, leftRightU, bottomTopV
                 )
                 texturedRect(
                     rightLeft, topHeight + y, rightWidth, centerHeight, textureId, rightLeftU, topBottomV, pieceU2,
-                    bottomTopV, 0xFF_FFFFFF.toInt()
+                    bottomTopV
                 )
 
                 if (centerWidth > 0) {
                     texturedRect(
                         leftWidth + x, topHeight + y, centerWidth, centerHeight, textureId, leftRightU, topBottomV,
-                        rightLeftU, bottomTopV, 0xFF_FFFFFF.toInt()
+                        rightLeftU, bottomTopV
                     )
                 }
             }

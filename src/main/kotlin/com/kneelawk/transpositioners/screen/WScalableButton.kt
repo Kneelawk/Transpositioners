@@ -1,16 +1,17 @@
 package com.kneelawk.transpositioners.screen
 
+import com.kneelawk.transpositioners.client.screen.TPScreenUtils
 import com.kneelawk.transpositioners.client.screen.icon.EnhancedIcon
 import com.kneelawk.transpositioners.client.screen.icon.NinePatchIcon
 import com.kneelawk.transpositioners.client.screen.icon.ResizableIcon
 import io.github.cottonmc.cotton.gui.client.ScreenDrawing
-import io.github.cottonmc.cotton.gui.widget.TooltipBuilder
 import io.github.cottonmc.cotton.gui.widget.WWidget
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
 import io.github.cottonmc.cotton.gui.widget.icon.Icon
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.AbstractButtonWidget
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.util.math.MatrixStack
@@ -35,7 +36,7 @@ class WScalableButton(
     var padding = 1
 
     var onClick: (((Int)) -> Unit)? = null
-    var tooltip: Text? = null
+    var tooltip: List<TPScreenUtils.TooltipLine>? = null
 
     override fun canResize(): Boolean {
         return true
@@ -113,7 +114,12 @@ class WScalableButton(
         }
     }
 
-    override fun addTooltip(builder: TooltipBuilder) {
-        tooltip?.let { builder.add(it) }
+    @Environment(EnvType.CLIENT)
+    override fun renderTooltip(matrices: MatrixStack, x: Int, y: Int, tX: Int, tY: Int) {
+        val tooltip = tooltip ?: return
+
+        val screen = MinecraftClient.getInstance().currentScreen
+        screen as Screen
+        TPScreenUtils.renderOrderedTooltip(matrices, tooltip, screen.width, screen.height, tX + x, tY + y, false)
     }
 }

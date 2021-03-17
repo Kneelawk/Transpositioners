@@ -3,6 +3,7 @@ package com.kneelawk.transpositioners.screen
 import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants.str
+import com.kneelawk.transpositioners.client.screen.TPScreenUtils.tooltipLine
 import com.kneelawk.transpositioners.module.ItemMoverMk2Module
 import com.kneelawk.transpositioners.net.OpenModulePacketHandler
 import com.kneelawk.transpositioners.net.OpenParentPacketHandler
@@ -72,7 +73,7 @@ class ItemMoverMk2ScreenHandler(
 
         directionButton = WScalableButton(icon = movementDirectionI(module.direction))
         root.add(directionButton, 2 * 18, 18)
-        directionButton.tooltip = movementDirectionT(module.direction)
+        directionButton.tooltip = listOf(tooltipLine(movementDirectionT(module.direction)))
         directionButton.onClick = {
             val direction = cycleEnum(module.direction)
             ID_DIRECTION_CHANGE.sendToServer(this) { it.writeByte(direction.id) }
@@ -80,7 +81,7 @@ class ItemMoverMk2ScreenHandler(
 
         insertionSideButton = WScalableButton(icon = insertionSideI(module.insertionSide))
         root.add(insertionSideButton, 2 * 18, 2 * 18)
-        insertionSideButton.tooltip = insertionSideT(module.insertionSide)
+        insertionSideButton.tooltip = listOf(tooltipLine(insertionSideT(module.insertionSide)))
         insertionSideButton.onClick = { button ->
             val side = buttonCycleEnum(module.insertionSide, button)
             ID_INSERTION_SIDE_CHANGE.sendToServer(this) { it.writeByte(side.id) }
@@ -88,7 +89,7 @@ class ItemMoverMk2ScreenHandler(
 
         extractionSideButton = WScalableButton(icon = extractionSideI(module.extractionSide))
         root.add(extractionSideButton, 3 * 18, 2 * 18)
-        extractionSideButton.tooltip = extractionSideT(module.extractionSide)
+        extractionSideButton.tooltip = listOf(tooltipLine(extractionSideT(module.extractionSide)))
         extractionSideButton.onClick = { button ->
             val side = buttonCycleEnum(module.extractionSide, button)
             ID_EXTRACTION_SIDE_CHANGE.sendToServer(this) { it.writeByte(side.id) }
@@ -101,16 +102,16 @@ class ItemMoverMk2ScreenHandler(
 
     fun s2cReceiveDirectionChange(direction: MovementDirection) {
         directionButton.icon = movementDirectionI(direction)
-        directionButton.tooltip = movementDirectionT(module.direction)
+        directionButton.tooltip = listOf(tooltipLine(movementDirectionT(module.direction)))
     }
 
     fun s2cReceiveInsertionSideChange(side: Direction) {
         insertionSideButton.icon = insertionSideI(side)
-        insertionSideButton.tooltip = insertionSideT(module.insertionSide)
+        insertionSideButton.tooltip = listOf(tooltipLine(insertionSideT(module.insertionSide)))
     }
 
     fun s2cReceiveExtractionSideChange(side: Direction) {
         extractionSideButton.icon = extractionSideI(side)
-        extractionSideButton.tooltip = extractionSideT(module.extractionSide)
+        extractionSideButton.tooltip = listOf(tooltipLine(extractionSideT(module.extractionSide)))
     }
 }
