@@ -38,6 +38,9 @@
   "tooltip.transpositioners.south": "South",
   "tooltip.transpositioners.west": "West",
   "tooltip.transpositioners.east": "East",
+  "tooltip.transpositioners.allow": "Allow",
+  "tooltip.transpositioners.deny": "Deny",
   "tooltip.transpositioners.gates": "Gates: %d",
-  "tooltip.transpositioners.items": "Items: %d"
+  "tooltip.transpositioners.items": "Items: %d",
+  "tooltip.transpositioners.list_gate_type": "Gate Type: %s"
 }
