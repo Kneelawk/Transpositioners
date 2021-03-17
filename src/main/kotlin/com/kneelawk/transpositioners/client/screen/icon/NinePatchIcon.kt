@@ -79,7 +79,7 @@ class NinePatchIcon(
             for (tileXIndex in 0 until tilesX) {
                 val localTileX = tileXIndex * tileWidth
                 val curTileWidth = min(tileWidth, centerWidth - localTileX)
-                val curTileU2 = (pieceX + curTileWidth).toFloat() / imageWidth.toFloat()
+                val curTileU2 = (pieceX + leftWidth + curTileWidth).toFloat() / imageWidth.toFloat()
                 texturedRect(
                     leftWidth + localTileX + x, y, curTileWidth, topHeight, textureId, leftRightU, pieceV1, curTileU2,
                     topBottomV, 0xFF_FFFFFF.toInt()
@@ -93,7 +93,7 @@ class NinePatchIcon(
             for (tileYIndex in 0 until tilesY) {
                 val localTileY = tileYIndex * tileHeight
                 val curTileHeight = min(tileHeight, centerHeight - localTileY)
-                val curTileV2 = (pieceY + curTileHeight).toFloat() / imageHeight.toFloat()
+                val curTileV2 = (pieceY + topHeight + curTileHeight).toFloat() / imageHeight.toFloat()
                 texturedRect(
                     x, topHeight + localTileY + y, leftWidth, curTileHeight, textureId, pieceU1, topBottomV, leftRightU,
                     curTileV2, 0xFF_FFFFFF.toInt()
@@ -106,10 +106,10 @@ class NinePatchIcon(
                 for (tileXIndex in 0 until tilesX) {
                     val localTileX = tileXIndex * tileWidth
                     val curTileWidth = min(tileWidth, centerWidth - localTileX)
-                    val curTileU2 = (pieceX + curTileWidth).toFloat() / imageWidth.toFloat()
+                    val curTileU2 = (pieceX + leftWidth + curTileWidth).toFloat() / imageWidth.toFloat()
                     texturedRect(
                         leftWidth + localTileX + x, topHeight + localTileY + y, curTileWidth, curTileHeight, textureId,
-                        leftRightU, bottomTopV, curTileU2, curTileV2, 0xFF_FFFFFF.toInt()
+                        leftRightU, topBottomV, curTileU2, curTileV2, 0xFF_FFFFFF.toInt()
                     )
                 }
             }
