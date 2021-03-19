@@ -2,6 +2,7 @@ package com.kneelawk.transpositioners.screen
 
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants.str
+import com.kneelawk.transpositioners.client.screen.TPScreenUtils.tooltipLine
 import com.kneelawk.transpositioners.module.ItemGateMk1Module
 import com.kneelawk.transpositioners.net.OpenParentPacketHandler
 import com.kneelawk.transpositioners.net.sendToServer
@@ -65,7 +66,7 @@ class ItemGateMk1ScreenHandler(
             icon = listGateTypeI(module.gateType)
         )
         root.add(gateType, 7 * 18, 2 * 18)
-        gateType.tooltip = listGateTypeT(module.gateType)
+        gateType.tooltip = listOf(tooltipLine(listGateTypeT(module.gateType)))
         gateType.onClick = {
             val gateType = cycleEnum(module.gateType)
             ID_GATE_TYPE_GHANGE.sendToServer(this) { it.writeByte(gateType.id) }
@@ -81,6 +82,6 @@ class ItemGateMk1ScreenHandler(
 
     fun s2cReceiveGateTypeChange(type: ListGateType) {
         gateType.icon = listGateTypeI(module.gateType)
-        gateType.tooltip = listGateTypeT(type)
+        gateType.tooltip = listOf(tooltipLine(listGateTypeT(type)))
     }
 }

@@ -3,7 +3,10 @@ package com.kneelawk.transpositioners.screen
 import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants.str
+import com.kneelawk.transpositioners.TPConstants.tooltip
+import com.kneelawk.transpositioners.client.screen.TPScreenUtils.tooltipLine
 import com.kneelawk.transpositioners.module.ItemMoverMk2Module
+import com.kneelawk.transpositioners.module.ModuleContext
 import com.kneelawk.transpositioners.net.OpenModulePacketHandler
 import com.kneelawk.transpositioners.net.OpenParentPacketHandler
 import com.kneelawk.transpositioners.net.sendToServer
@@ -11,10 +14,14 @@ import com.kneelawk.transpositioners.net.setServerReceiver
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.addSlots
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.buttonCycleEnum
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.cycleEnum
+import com.kneelawk.transpositioners.util.IconUtils.CHECK_ICON
+import com.kneelawk.transpositioners.util.IconUtils.DENY_ICON
 import com.kneelawk.transpositioners.util.MovementDirection
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
+import io.github.cottonmc.cotton.gui.widget.WCardPanel
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.LiteralText
 import net.minecraft.util.math.Direction
@@ -57,60 +64,149 @@ class ItemMoverMk2ScreenHandler(
     private val directionButton: WScalableButton
     private val insertionSideButton: WScalableButton
     private val extractionSideButton: WScalableButton
+    private val insertionSideSelector: WBlockSideSelector
+    private val extractionSideSelector: WBlockSideSelector
+
+    private var curInsertionSide: Direction
+    private var curExtractionSide: Direction
 
     init {
         setTitleAlignment(HorizontalAlignment.RIGHT)
 
-        val root = WPlainPanel()
+        val root = WCardPanel()
         setRootPanel(root)
 
-        root.add(createPlayerInventoryPanel(), 0, 3 * 18 + 9)
+        // inventory panel
+
+        val inventoryPanel = WPlainPanel()
+        root.add(0, inventoryPanel)
+
+        inventoryPanel.add(createPlayerInventoryPanel(), 0, 3 * 18 + 9)
 
         val backButton = WScalableButton(LiteralText("<-"))
-        root.add(backButton, 0, 0)
+        inventoryPanel.add(backButton, 0, 0)
         backButton.onClick = { OPEN_PARENT.send(this) }
 
         directionButton = WScalableButton(icon = movementDirectionI(module.direction))
-        root.add(directionButton, 2 * 18, 18)
-        directionButton.tooltip = movementDirectionT(module.direction)
+        inventoryPanel.add(directionButton, 2 * 18, 18)
+        directionButton.tooltip = listOf(tooltipLine(movementDirectionT(module.direction)))
         directionButton.onClick = {
             val direction = cycleEnum(module.direction)
             ID_DIRECTION_CHANGE.sendToServer(this) { it.writeByte(direction.id) }
         }
 
         insertionSideButton = WScalableButton(icon = insertionSideI(module.insertionSide))
-        root.add(insertionSideButton, 2 * 18, 2 * 18)
-        insertionSideButton.tooltip = insertionSideT(module.insertionSide)
-        insertionSideButton.onClick = { button ->
-            val side = buttonCycleEnum(module.insertionSide, button)
-            ID_INSERTION_SIDE_CHANGE.sendToServer(this) { it.writeByte(side.id) }
-        }
+        inventoryPanel.add(insertionSideButton, 2 * 18, 2 * 18)
+        insertionSideButton.tooltip = listOf(tooltipLine(insertionSideT(module.insertionSide)))
 
         extractionSideButton = WScalableButton(icon = extractionSideI(module.extractionSide))
-        root.add(extractionSideButton, 3 * 18, 2 * 18)
-        extractionSideButton.tooltip = extractionSideT(module.extractionSide)
-        extractionSideButton.onClick = { button ->
-            val side = buttonCycleEnum(module.extractionSide, button)
-            ID_EXTRACTION_SIDE_CHANGE.sendToServer(this) { it.writeByte(side.id) }
+        inventoryPanel.add(extractionSideButton, 3 * 18, 2 * 18)
+        extractionSideButton.tooltip = listOf(tooltipLine(extractionSideT(module.extractionSide)))
+
+        addSlots(inventoryPanel, module.gates, { OPEN_MODULE.send(this, it) }, 0, 2, 5 * 18, 1 * 18)
+
+        // insertion side panel
+
+        val insertionSidePanel = WPlainPanel()
+        root.add(1, insertionSidePanel)
+        curInsertionSide = module.insertionSide
+        insertionSideSelector =
+            WBlockSideSelector(
+                module.context.world, when (module.context) {
+                    is ModuleContext.Configurator -> module.context.backPos
+                    is ModuleContext.Entity       -> module.getInsertionPos()
+                }, 5 * 18, 5 * 18, setOf(module.insertionSide)
+            )
+        insertionSidePanel.add(insertionSideSelector, 2 * 18, 18)
+        insertionSideSelector.onSideClicked = { side, _ ->
+            curInsertionSide = side
+            insertionSideSelector.selectedSide = side
+        }
+        val insertionSideCancel = WScalableButton(icon = DENY_ICON)
+        insertionSidePanel.add(insertionSideCancel, 2 * 18, 6 * 18, 2 * 18 + 9, 18)
+        insertionSideCancel.tooltip = listOf(tooltipLine(tooltip("cancel")))
+        insertionSideCancel.onClick = {
+            curInsertionSide = module.insertionSide
+            insertionSideSelector.selectedSide = module.insertionSide
+            root.selectedIndex = 0
+        }
+        val insertionSideOk = WScalableButton(icon = CHECK_ICON)
+        insertionSidePanel.add(insertionSideOk, 4 * 18 + 9, 6 * 18, 2 * 18 + 9, 18)
+        insertionSideOk.tooltip = listOf(tooltipLine(tooltip("ok")))
+        insertionSideOk.onClick = {
+            ID_INSERTION_SIDE_CHANGE.sendToServer(this) { it.writeByte(curInsertionSide.id) }
+            root.selectedIndex = 0
         }
 
-        addSlots(root, module.gates, { OPEN_MODULE.send(this, it) }, 0, 2, 5 * 18, 1 * 18)
+        // extraction side panel
+
+        val extractionSidePanel = WPlainPanel()
+        root.add(2, extractionSidePanel)
+        curExtractionSide = module.extractionSide
+        extractionSideSelector = WBlockSideSelector(
+            module.context.world, when (module.context) {
+                is ModuleContext.Configurator -> module.context.backPos
+                is ModuleContext.Entity       -> module.getExtractionPos()
+            }, 5 * 18, 5 * 18, setOf(module.extractionSide)
+        )
+        extractionSidePanel.add(extractionSideSelector, 2 * 18, 18)
+        extractionSideSelector.onSideClicked = { side, _ ->
+            curExtractionSide = side
+            extractionSideSelector.selectedSide = side
+        }
+        val extractionSideCancel = WScalableButton(icon = DENY_ICON)
+        extractionSidePanel.add(extractionSideCancel, 2 * 18, 6 * 18, 2 * 18 + 9, 18)
+        extractionSideCancel.tooltip = listOf(tooltipLine(tooltip("cancel")))
+        extractionSideCancel.onClick = {
+            curExtractionSide = module.extractionSide
+            extractionSideSelector.selectedSide = module.extractionSide
+            root.selectedIndex = 0
+        }
+        val extractionSideOk = WScalableButton(icon = CHECK_ICON)
+        extractionSidePanel.add(extractionSideOk, 4 * 18 + 8, 6 * 18, 2 * 18 + 9, 18)
+        extractionSideOk.tooltip = listOf(tooltipLine(tooltip("ok")))
+        extractionSideOk.onClick = {
+            ID_EXTRACTION_SIDE_CHANGE.sendToServer(this) { it.writeByte(curExtractionSide.id) }
+            root.selectedIndex = 0
+        }
+
+        // context switch events
+
+        insertionSideButton.onClick = {
+            insertionSideSelector.resetRotation()
+            root.selectedIndex = 1
+        }
+
+        extractionSideButton.onClick = {
+            extractionSideSelector.resetRotation()
+            root.selectedIndex = 2
+        }
 
         root.validate(this)
     }
 
+    override fun close(player: PlayerEntity) {
+        insertionSideSelector.close()
+        extractionSideSelector.close()
+        super.close(player)
+    }
+
     fun s2cReceiveDirectionChange(direction: MovementDirection) {
         directionButton.icon = movementDirectionI(direction)
-        directionButton.tooltip = movementDirectionT(module.direction)
+        directionButton.tooltip = listOf(tooltipLine(movementDirectionT(module.direction)))
+        insertionSideSelector.pos = module.getInsertionPos()
+        extractionSideSelector.pos = module.getExtractionPos()
     }
 
     fun s2cReceiveInsertionSideChange(side: Direction) {
         insertionSideButton.icon = insertionSideI(side)
-        insertionSideButton.tooltip = insertionSideT(module.insertionSide)
+        insertionSideButton.tooltip = listOf(tooltipLine(insertionSideT(module.insertionSide)))
+        insertionSideSelector.selectedSide = side
     }
 
     fun s2cReceiveExtractionSideChange(side: Direction) {
         extractionSideButton.icon = extractionSideI(side)
-        extractionSideButton.tooltip = extractionSideT(module.extractionSide)
+        extractionSideButton.tooltip = listOf(tooltipLine(extractionSideT(module.extractionSide)))
+        extractionSideSelector.selectedSide = side
     }
 }

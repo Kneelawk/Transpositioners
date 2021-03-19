@@ -29,6 +29,8 @@
   "tooltip.transpositioners.direction": "Direction: %s",
   "tooltip.transpositioners.forward": "Forward",
   "tooltip.transpositioners.backward": "Backward",
+  "tooltip.transpositioners.ok": "Ok",
+  "tooltip.transpositioners.cancel": "Cancel",
   "tooltip.transpositioners.unconfigured": "Unconfigured",
   "tooltip.transpositioners.insertion_side": "Insertion Side: %s",
   "tooltip.transpositioners.extraction_side": "Extraction Side: %s",

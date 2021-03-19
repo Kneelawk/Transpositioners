@@ -86,21 +86,21 @@ class ItemMoverMk2Module(
         EXTRACTION_SIDE_CHANGE.sendToClients(this)
     }
 
+    fun getInsertionPos() = when (direction) {
+        MovementDirection.FORWARD  -> frontPos
+        MovementDirection.BACKWARD -> backPos
+    }
+
+    fun getExtractionPos() = when (direction) {
+        MovementDirection.FORWARD  -> backPos
+        MovementDirection.BACKWARD -> frontPos
+    }
+
     override fun move() {
         ignoreStacks.clear()
 
-        val insert = getItemInsertable(
-            when (direction) {
-                MovementDirection.FORWARD  -> frontPos
-                MovementDirection.BACKWARD -> backPos
-            }, insertionSide.opposite
-        )
-        val extractInv = getFixedItemInv(
-            when (direction) {
-                MovementDirection.FORWARD  -> backPos
-                MovementDirection.BACKWARD -> frontPos
-            }, extractionSide.opposite
-        )
+        val insert = getItemInsertable(getInsertionPos(), insertionSide.opposite)
+        val extractInv = getFixedItemInv(getExtractionPos(), extractionSide.opposite)
 
         var itemFilter: ItemFilter? = null
         gates.forEach { module ->
@@ -127,12 +127,7 @@ class ItemMoverMk2Module(
                 if (remaining == 0) break
             }
         } else {
-            val extract = getItemExtractable(
-                when (direction) {
-                    MovementDirection.FORWARD  -> backPos
-                    MovementDirection.BACKWARD -> frontPos
-                }, extractionSide.opposite
-            )
+            val extract = getItemExtractable(getExtractionPos(), extractionSide.opposite)
 
             attemptTransfer(MAX_STACK_SIZE, extract, insert, ignoreStacks, itemFilter!!)
         }

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "transpositioners:block/select_up"
+    }
+  }
+}

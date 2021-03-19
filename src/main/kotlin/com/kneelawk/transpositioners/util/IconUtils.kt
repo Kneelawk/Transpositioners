@@ -3,6 +3,7 @@ package com.kneelawk.transpositioners.util
 import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.client.screen.icon.EnhancedIcon
 import com.kneelawk.transpositioners.client.screen.icon.EnhancedTextureIcon
+import com.kneelawk.transpositioners.client.screen.icon.NinePatchIcon
 import net.minecraft.util.math.Direction
 
 object IconUtils {
@@ -23,8 +24,11 @@ object IconUtils {
     private val FORWARD_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/forward.png"), 16, 16)
     private val BACKWARD_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/backward.png"), 16, 16)
 
-    private val CHECK_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/check2.png"), 16, 16)
-    private val DENY_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/deny2.png"), 16, 16)
+    val CHECK_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/check2.png"), 16, 16)
+    val DENY_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/deny2.png"), 16, 16)
+
+    val BORDER_INSET =
+        NinePatchIcon(TPConstants.identifier("textures/gui/border_inset.png"), 16, 16, 0, 0, 16, 16, 2, 2, 2, 2, true)
 
     fun insertionSide(direction: Direction): EnhancedIcon {
         return when (direction) {
