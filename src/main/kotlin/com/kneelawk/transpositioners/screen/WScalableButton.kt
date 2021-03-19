@@ -2,8 +2,10 @@ package com.kneelawk.transpositioners.screen
 
 import com.kneelawk.transpositioners.client.screen.TPScreenUtils
 import com.kneelawk.transpositioners.client.screen.icon.EnhancedIcon
-import com.kneelawk.transpositioners.client.screen.icon.NinePatchIcon
 import com.kneelawk.transpositioners.client.screen.icon.ResizableIcon
+import com.kneelawk.transpositioners.util.IconUtils.BUTTON_DISABLED
+import com.kneelawk.transpositioners.util.IconUtils.BUTTON_HOVERED
+import com.kneelawk.transpositioners.util.IconUtils.BUTTON_REGULAR
 import io.github.cottonmc.cotton.gui.client.ScreenDrawing
 import io.github.cottonmc.cotton.gui.widget.WWidget
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
@@ -12,7 +14,6 @@ import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.AbstractButtonWidget
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.sound.SoundEvents
@@ -22,14 +23,6 @@ class WScalableButton(
     var label: Text? = null,
     var icon: Icon? = null,
 ) : WWidget() {
-    companion object {
-        private val DISABLED_ICON =
-            NinePatchIcon(AbstractButtonWidget.WIDGETS_LOCATION, 256, 256, 0, 46, 200, 20, 2, 2, 2, 2, true)
-        private val REGULAR_ICON =
-            NinePatchIcon(AbstractButtonWidget.WIDGETS_LOCATION, 256, 256, 0, 46 + 20, 200, 20, 3, 3, 3, 3, true)
-        private val HOVERED_ICON =
-            NinePatchIcon(AbstractButtonWidget.WIDGETS_LOCATION, 256, 256, 0, 46 + 40, 200, 20, 3, 3, 3, 3, true)
-    }
 
     var enabled = true
     var alignment = HorizontalAlignment.CENTER
@@ -50,11 +43,11 @@ class WScalableButton(
     override fun paint(matrices: MatrixStack, x: Int, y: Int, mouseX: Int, mouseY: Int) {
         val hovered = mouseX >= 0 && mouseY >= 0 && mouseX < getWidth() && mouseY < getHeight()
         if (!enabled) {
-            DISABLED_ICON.paint(matrices, x, y, width, height)
+            BUTTON_DISABLED.paint(matrices, x, y, width, height)
         } else if (hovered || isFocused) {
-            HOVERED_ICON.paint(matrices, x, y, width, height)
+            BUTTON_HOVERED.paint(matrices, x, y, width, height)
         } else {
-            REGULAR_ICON.paint(matrices, x, y, width, height)
+            BUTTON_REGULAR.paint(matrices, x, y, width, height)
         }
 
         val icon = icon

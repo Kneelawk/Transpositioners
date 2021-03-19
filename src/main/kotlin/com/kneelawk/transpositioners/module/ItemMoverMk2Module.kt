@@ -9,6 +9,7 @@ import alexiil.mc.lib.attributes.item.ItemInsertable
 import alexiil.mc.lib.attributes.item.filter.ItemFilter
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv
 import com.kneelawk.transpositioners.TPConstants
+import com.kneelawk.transpositioners.TPConstants.tt
 import com.kneelawk.transpositioners.item.TPItems
 import com.kneelawk.transpositioners.net.ModuleDataPacketHandler
 import com.kneelawk.transpositioners.screen.ItemMoverMk2ScreenHandler
@@ -180,7 +181,7 @@ class ItemMoverMk2Module(
     }
 
     override fun getDisplayName(): Text {
-        return TPItems.ITEM_MOVER_MODULE_MK2.name
+        return tt(TPItems.ITEM_MOVER_MODULE_MK2.translationKey)
     }
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {

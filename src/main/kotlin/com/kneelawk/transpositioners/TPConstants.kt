@@ -14,19 +14,23 @@ object TPConstants {
         return "$MOD_ID:$name"
     }
 
+    fun tt(key: String, vararg args: Any): TranslatableText {
+        return TranslatableText(key, *args)
+    }
+
     fun item(name: String, vararg args: Any): TranslatableText {
-        return TranslatableText("item.$MOD_ID.$name", *args)
+        return tt("item.$MOD_ID.$name", *args)
     }
 
     fun block(name: String, vararg args: Any): TranslatableText {
-        return TranslatableText("block.$MOD_ID.$name", *args)
+        return tt("block.$MOD_ID.$name", *args)
     }
 
     fun gui(name: String, vararg args: Any): TranslatableText {
-        return TranslatableText("gui.$MOD_ID.$name", *args)
+        return tt("gui.$MOD_ID.$name", *args)
     }
 
     fun tooltip(name: String, vararg args: Any): TranslatableText {
-        return TranslatableText("tooltip.$MOD_ID.$name", *args)
+        return tt("tooltip.$MOD_ID.$name", *args)
     }
 }

@@ -3,6 +3,7 @@ package com.kneelawk.transpositioners.module
 import alexiil.mc.lib.attributes.item.filter.ItemFilter
 import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.TPConstants.str
+import com.kneelawk.transpositioners.TPConstants.tt
 import com.kneelawk.transpositioners.item.TPItems
 import com.kneelawk.transpositioners.net.ModuleDataPacketHandler
 import com.kneelawk.transpositioners.screen.ItemGateMk1ScreenHandler
@@ -73,7 +74,7 @@ class ItemGateMk1Module(
     }
 
     override fun getDisplayName(): Text {
-        return TPItems.ITEM_GATE_MODULE_MK1.name
+        return tt(TPItems.ITEM_GATE_MODULE_MK1.translationKey)
     }
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {

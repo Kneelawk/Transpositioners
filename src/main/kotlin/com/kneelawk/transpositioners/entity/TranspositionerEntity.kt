@@ -12,6 +12,7 @@ import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants
+import com.kneelawk.transpositioners.TPConstants.tt
 import com.kneelawk.transpositioners.item.TranspositionerItem
 import com.kneelawk.transpositioners.module.*
 import com.kneelawk.transpositioners.screen.TranspositionerScreenHandler
@@ -31,7 +32,6 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
-import net.minecraft.text.TranslatableText
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.math.BlockPos
@@ -57,9 +57,9 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
         fun moduleCountByMk(mk: Int): Int {
             return when (mk) {
-                1 -> 1
-                2 -> 4
-                3 -> 16
+                1    -> 1
+                2    -> 4
+                3    -> 16
                 else -> throw IllegalArgumentException("Unknown transpositioner mk $mk")
             }
         }
@@ -192,7 +192,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
     override fun canStayAttached(): Boolean {
         return (isValid(attachmentPos, facing) || isValid(attachmentPos.offset(facing.opposite), facing.opposite)) &&
-                world.getOtherEntities(this, boundingBox, PREDICATE).isEmpty()
+            world.getOtherEntities(this, boundingBox, PREDICATE).isEmpty()
     }
 
     private fun isValid(pos: BlockPos, direction: Direction): Boolean {
@@ -275,12 +275,12 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
                     }
                 }
             }
-            entity != null -> {
+            entity != null         -> {
                 for (stack in stacks) {
                     dropStackOnEntity(entity, stack)
                 }
             }
-            else -> {
+            else                   -> {
                 for (stack in stacks) {
                     dropStack(stack)
                 }
@@ -316,7 +316,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     }
 
     override fun getDefaultName(): Text {
-        return TranslatableText(type.translationKey + ".mk" + mk)
+        return tt(type.translationKey + ".mk" + mk)
     }
 
     override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler {

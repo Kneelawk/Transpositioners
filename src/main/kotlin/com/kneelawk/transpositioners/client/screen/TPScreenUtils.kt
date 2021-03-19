@@ -2,7 +2,10 @@ package com.kneelawk.transpositioners.client.screen
 
 import com.kneelawk.transpositioners.client.screen.icon.EnhancedIcon
 import com.kneelawk.transpositioners.mixin.impl.MouseAccessor
+import com.kneelawk.transpositioners.proxy.CommonProxy
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.*
 import net.minecraft.client.util.InputUtil
@@ -153,11 +156,11 @@ object TPScreenUtils {
     }
 
     fun tooltipLine(text: Text): TooltipLine {
-        return TooltipLine.TextLine(text.asOrderedText())
+        return if (CommonProxy.INSTANCE.isClient) TooltipLine.TextLine(text.asOrderedText()) else TooltipLine.BlankLine
     }
 
     fun tooltipLine(icon: EnhancedIcon): TooltipLine {
-        return TooltipLine.IconLine(icon)
+        return if (CommonProxy.INSTANCE.isClient) TooltipLine.IconLine(icon) else TooltipLine.BlankLine
     }
 
     fun tooltipLine(): TooltipLine {
@@ -168,12 +171,14 @@ object TPScreenUtils {
         abstract val width: Int
         abstract val height: Int
 
+        @Environment(EnvType.CLIENT)
         abstract fun render(matrices: MatrixStack, provider: VertexConsumerProvider, x: Int, y: Int)
 
         class TextLine(private val text: OrderedText) : TooltipLine() {
             override val width = MinecraftClient.getInstance().textRenderer.getWidth(text)
             override val height = 8
 
+            @Environment(EnvType.CLIENT)
             override fun render(matrices: MatrixStack, provider: VertexConsumerProvider, x: Int, y: Int) {
                 MinecraftClient.getInstance().textRenderer.draw(
                     text, x.toFloat(), y.toFloat(), -1, true, matrices.peek().model, provider,
@@ -187,6 +192,7 @@ object TPScreenUtils {
             override val width = icon.baseWidth
             override val height = icon.baseHeight
 
+            @Environment(EnvType.CLIENT)
             override fun render(matrices: MatrixStack, provider: VertexConsumerProvider, x: Int, y: Int) {
                 icon.paint(matrices, provider, x, y, width, height)
             }
@@ -196,6 +202,7 @@ object TPScreenUtils {
             override val width = 0
             override val height = 8
 
+            @Environment(EnvType.CLIENT)
             override fun render(matrices: MatrixStack, provider: VertexConsumerProvider, x: Int, y: Int) {
             }
         }

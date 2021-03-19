@@ -4,6 +4,9 @@ import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.client.screen.icon.EnhancedIcon
 import com.kneelawk.transpositioners.client.screen.icon.EnhancedTextureIcon
 import com.kneelawk.transpositioners.client.screen.icon.NinePatchIcon
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.Direction
 
 object IconUtils {
@@ -26,6 +29,13 @@ object IconUtils {
 
     val CHECK_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/check2.png"), 16, 16)
     val DENY_ICON = EnhancedTextureIcon(TPConstants.identifier("textures/gui/deny2.png"), 16, 16)
+
+    val BUTTON_DISABLED =
+        NinePatchIcon(Identifier("textures/gui/widgets.png"), 256, 256, 0, 46, 200, 20, 2, 2, 2, 2, true)
+    val BUTTON_REGULAR =
+        NinePatchIcon(Identifier("textures/gui/widgets.png"), 256, 256, 0, 46 + 20, 200, 20, 3, 3, 3, 3, true)
+    val BUTTON_HOVERED =
+        NinePatchIcon(Identifier("textures/gui/widgets.png"), 256, 256, 0, 46 + 40, 200, 20, 3, 3, 3, 3, true)
 
     val BORDER_INSET =
         NinePatchIcon(TPConstants.identifier("textures/gui/border_inset.png"), 16, 16, 0, 0, 16, 16, 2, 2, 2, 2, true)

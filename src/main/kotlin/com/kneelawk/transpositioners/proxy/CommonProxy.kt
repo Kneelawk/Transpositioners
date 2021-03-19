@@ -5,5 +5,7 @@ interface CommonProxy {
         lateinit var INSTANCE: CommonProxy
     }
 
+    val isClient: Boolean
+
     fun presetCursorPosition() {}
 }
