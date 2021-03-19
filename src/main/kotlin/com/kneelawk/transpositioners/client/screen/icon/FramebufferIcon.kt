@@ -10,13 +10,13 @@ import net.minecraft.client.render.VertexFormats
 import net.minecraft.client.util.math.MatrixStack
 import org.lwjgl.opengl.GL11
 
-class FramebufferIcon(override val baseWidth: Int, override val baseHeight: Int) : EnhancedIcon {
+open class FramebufferIcon(override val baseWidth: Int, override val baseHeight: Int) : EnhancedIcon {
     // this should only really break down if minecraft changes to allow larger gui scales
-    private val scale = 4
+    protected val scale = 4
 
-    private val fbWidth = baseWidth * scale
-    private val fbHeight = baseHeight * scale
-    val framebuffer = Framebuffer(fbWidth, fbHeight, false, MinecraftClient.IS_SYSTEM_MAC)
+    protected val fbWidth = baseWidth * scale
+    protected val fbHeight = baseHeight * scale
+    val framebuffer = Framebuffer(fbWidth, fbHeight, true, MinecraftClient.IS_SYSTEM_MAC)
 
     private fun renderStart() {
         framebuffer.beginRead()
@@ -36,10 +36,15 @@ class FramebufferIcon(override val baseWidth: Int, override val baseHeight: Int)
         val tess = Tessellator.getInstance()
         val buf = tess.buffer
         buf.begin(GL11.GL_QUADS, VertexFormats.POSITION_TEXTURE)
+//        buf.vertex(x.toDouble(), (y + height).toDouble(), 0.0).texture(0f, 1f).next()
+//        buf.vertex((x + width).toDouble(), (y + height).toDouble(), 0.0).texture(1f, 1f).next()
+//        buf.vertex((x + width).toDouble(), y.toDouble(), 0.0).texture(1f, 0f).next()
+//        buf.vertex(x.toDouble(), y.toDouble(), 0.0).texture(0f, 0f).next()
         buf.vertex(matrices.peek().model, x.toFloat(), y.toFloat(), 0.0f).texture(0f, 1f).next()
         buf.vertex(matrices.peek().model, x.toFloat(), (y + height).toFloat(), 0.0f).texture(0f, 0f).next()
         buf.vertex(matrices.peek().model, (x + width).toFloat(), (y + height).toFloat(), 0.0f).texture(1f, 0f).next()
         buf.vertex(matrices.peek().model, (x + width).toFloat(), y.toFloat(), 0.0f).texture(1f, 1f).next()
+        tess.draw()
         framebuffer.endRead()
     }
 

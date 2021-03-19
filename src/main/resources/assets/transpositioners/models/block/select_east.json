@@ -1,0 +1,28 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "side": "transpositioners:block/select_east"
+  },
+  "elements": [
+    {
+      "from": [
+        16,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "west": {
+          "texture": "side"
+        },
+        "east": {
+          "texture": "side"
+        }
+      }
+    }
+  ]
+}

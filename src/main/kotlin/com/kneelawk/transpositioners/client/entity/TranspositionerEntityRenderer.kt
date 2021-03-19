@@ -1,9 +1,9 @@
 package com.kneelawk.transpositioners.client.entity
 
-import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.client.render.TranspositionerGhostRenderer
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import com.kneelawk.transpositioners.item.TranspositionerViewer
+import com.kneelawk.transpositioners.client.util.TPModels.TRANSPOSITIONERS
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -15,7 +15,6 @@ import net.minecraft.client.render.block.BlockRenderManager
 import net.minecraft.client.render.entity.EntityRenderDispatcher
 import net.minecraft.client.render.entity.EntityRenderer
 import net.minecraft.client.texture.SpriteAtlasTexture
-import net.minecraft.client.util.ModelIdentifier
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.client.util.math.Vector3f
 import net.minecraft.util.Hand
@@ -30,12 +29,6 @@ import kotlin.math.max
 class TranspositionerEntityRenderer(dispatcher: EntityRenderDispatcher) :
     EntityRenderer<TranspositionerEntity>(dispatcher) {
     companion object {
-        val MODEL_IDS = arrayOf(
-            ModelIdentifier(TPConstants.identifier("transpositioner_mk1"), ""),
-            ModelIdentifier(TPConstants.identifier("transpositioner_mk2"), ""),
-            ModelIdentifier(TPConstants.identifier("transpositioner_mk3"), "")
-        )
-
         private val client by lazy { MinecraftClient.getInstance() }
 
         fun render(
@@ -65,7 +58,7 @@ class TranspositionerEntityRenderer(dispatcher: EntityRenderDispatcher) :
                 matrices.peek(),
                 vertexConsumer,
                 null,
-                bakedModelManager.getModel(MODEL_IDS[entity.mk - 1]),
+                bakedModelManager.getModel(TRANSPOSITIONERS[entity.mk - 1]),
                 1.0f,
                 1.0f,
                 1.0f,

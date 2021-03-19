@@ -2,6 +2,7 @@ package com.kneelawk.transpositioners.client
 
 import com.kneelawk.transpositioners.client.entity.TranspositionerEntityRenderer
 import com.kneelawk.transpositioners.client.screen.TPScreens
+import com.kneelawk.transpositioners.client.util.TPModels
 import com.kneelawk.transpositioners.entity.TPEntityTypes
 import com.kneelawk.transpositioners.proxy.ClientProxy
 import com.kneelawk.transpositioners.proxy.CommonProxy
@@ -16,7 +17,10 @@ fun init() {
     }
 
     ModelLoadingRegistry.INSTANCE.registerModelProvider { _, out ->
-        for (id in TranspositionerEntityRenderer.MODEL_IDS) {
+        for (id in TPModels.TRANSPOSITIONERS) {
+            out.accept(id)
+        }
+        for (id in TPModels.SIDE_SELECTS) {
             out.accept(id)
         }
     }
