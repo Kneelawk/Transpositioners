@@ -12,7 +12,6 @@ import com.kneelawk.transpositioners.net.OpenParentPacketHandler
 import com.kneelawk.transpositioners.net.sendToServer
 import com.kneelawk.transpositioners.net.setServerReceiver
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.addSlots
-import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.buttonCycleEnum
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.cycleEnum
 import com.kneelawk.transpositioners.util.IconUtils.CHECK_ICON
 import com.kneelawk.transpositioners.util.IconUtils.DENY_ICON
@@ -112,10 +111,7 @@ class ItemMoverMk2ScreenHandler(
         curInsertionSide = module.insertionSide
         insertionSideSelector =
             WBlockSideSelector(
-                module.context.world, when (module.context) {
-                    is ModuleContext.Configurator -> module.context.backPos
-                    is ModuleContext.Entity       -> module.getInsertionPos()
-                }, 5 * 18, 5 * 18, setOf(module.insertionSide)
+                module.context.world, getInsertionPos(), 5 * 18, 5 * 18, setOf(module.insertionSide)
             )
         insertionSidePanel.add(insertionSideSelector, 2 * 18, 18)
         insertionSideSelector.onSideClicked = { side, _ ->
@@ -144,10 +140,7 @@ class ItemMoverMk2ScreenHandler(
         root.add(2, extractionSidePanel)
         curExtractionSide = module.extractionSide
         extractionSideSelector = WBlockSideSelector(
-            module.context.world, when (module.context) {
-                is ModuleContext.Configurator -> module.context.backPos
-                is ModuleContext.Entity       -> module.getExtractionPos()
-            }, 5 * 18, 5 * 18, setOf(module.extractionSide)
+            module.context.world, getExtractionPos(), 5 * 18, 5 * 18, setOf(module.extractionSide)
         )
         extractionSidePanel.add(extractionSideSelector, 2 * 18, 18)
         extractionSideSelector.onSideClicked = { side, _ ->
@@ -185,6 +178,16 @@ class ItemMoverMk2ScreenHandler(
         root.validate(this)
     }
 
+    private fun getInsertionPos() = when (module.context) {
+        is ModuleContext.Configurator -> module.context.backPos
+        is ModuleContext.Entity       -> module.getInsertionPos()
+    }
+
+    private fun getExtractionPos() = when (module.context) {
+        is ModuleContext.Configurator -> module.context.backPos
+        is ModuleContext.Entity       -> module.getExtractionPos()
+    }
+
     override fun close(player: PlayerEntity) {
         insertionSideSelector.close()
         extractionSideSelector.close()
@@ -194,8 +197,8 @@ class ItemMoverMk2ScreenHandler(
     fun s2cReceiveDirectionChange(direction: MovementDirection) {
         directionButton.icon = movementDirectionI(direction)
         directionButton.tooltip = listOf(tooltipLine(movementDirectionT(module.direction)))
-        insertionSideSelector.pos = module.getInsertionPos()
-        extractionSideSelector.pos = module.getExtractionPos()
+        insertionSideSelector.pos = getInsertionPos()
+        extractionSideSelector.pos = getExtractionPos()
     }
 
     fun s2cReceiveInsertionSideChange(side: Direction) {
