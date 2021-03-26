@@ -1,5 +1,6 @@
 package com.kneelawk.transpositioners.module
 
+import alexiil.mc.lib.attributes.item.filter.ExactItemSetFilter
 import alexiil.mc.lib.attributes.item.filter.ItemFilter
 import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.TPConstants.str
@@ -7,13 +8,13 @@ import com.kneelawk.transpositioners.TPConstants.tt
 import com.kneelawk.transpositioners.item.TPItems
 import com.kneelawk.transpositioners.net.ModuleDataPacketHandler
 import com.kneelawk.transpositioners.screen.ItemGateMk1ScreenHandler
-import com.kneelawk.transpositioners.util.BasicStackContainer
 import com.kneelawk.transpositioners.util.ListGateType
 import com.kneelawk.transpositioners.util.TooltipUtils.listGateType
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.PacketByteBuf
@@ -46,22 +47,21 @@ class ItemGateMk1Module(
     }
 
     override fun getItemFilter(): ItemFilter {
-        val itemSet = hashSetOf<BasicStackContainer>()
+        val itemSet = hashSetOf<Item>()
         for (i in 0 until items.size()) {
             val item = items.getStack(i)
             if (!item.isEmpty) {
-                itemSet.add(BasicStackContainer.of(item))
+                itemSet.add(item.item)
             }
         }
-        val allow = gateType == ListGateType.ALLOW
 
-        return ItemFilter {
-            allow == itemSet.contains(BasicStackContainer.of(it))
+        val filter = ExactItemSetFilter(itemSet)
+
+        return if (gateType == ListGateType.ALLOW) {
+            filter
+        } else {
+            filter.negate()
         }
-    }
-
-    override fun shouldMove(): Boolean {
-        return true
     }
 
     override fun writeToTag(tag: CompoundTag) {

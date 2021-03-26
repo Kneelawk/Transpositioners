@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import java.util.stream.Stream
 import kotlin.math.min
 
 /**
@@ -119,6 +120,15 @@ class ModuleInventory<M : Module>(
         for (i in 0 until size()) {
             getModule(i)?.let(fn)
         }
+    }
+
+    /**
+     * Returns a stream of all the modules in this inventory.
+     *
+     * @return a stream of all the modules in this inventory.
+     */
+    fun moduleStream(): Stream<M?> {
+        return modules.stream()
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.kneelawk.transpositioners.module
 
+import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter
 import alexiil.mc.lib.attributes.item.filter.ItemFilter
 import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.TPConstants.tt
@@ -57,9 +58,7 @@ class RedstoneGateModule(
         GATE_SIDE_CHANGE.sendToClients(this)
     }
 
-    override fun getItemFilter() = ItemFilter { true }
-
-    override fun shouldMove(): Boolean {
+    override fun getItemFilter(): ItemFilter {
         val pos = when (gateSide) {
             TranspositionerSide.FRONT -> frontPos
             TranspositionerSide.BACK  -> backPos
@@ -77,7 +76,11 @@ class RedstoneGateModule(
 
         previousRedstone = redstoneValue
 
-        return res
+        return if (res) {
+            ConstantItemFilter.ANYTHING
+        } else {
+            ConstantItemFilter.NOTHING
+        }
     }
 
     override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler {

@@ -6,6 +6,7 @@ import alexiil.mc.lib.attributes.item.FixedItemInv
 import alexiil.mc.lib.attributes.item.ItemAttributes
 import alexiil.mc.lib.attributes.item.ItemExtractable
 import alexiil.mc.lib.attributes.item.ItemInsertable
+import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter
 import alexiil.mc.lib.attributes.item.filter.ItemFilter
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv
 import com.kneelawk.transpositioners.TPConstants
@@ -31,6 +32,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
+import java.util.stream.Collectors
 
 class ItemMoverMk2Module(
     context: ModuleContext,
@@ -103,34 +105,21 @@ class ItemMoverMk2Module(
         val insert = getItemInsertable(getInsertionPos(), insertionSide.opposite)
         val extractInv = getFixedItemInv(getExtractionPos(), extractionSide.opposite)
 
-        var itemFilter: ItemFilter? = null
-        gates.forEach { module ->
-            // Every gate module has the ability to stop the process entirely
-            if (!module.shouldMove()) {
-                return
-            }
-
-            itemFilter = if (itemFilter == null) {
-                module.getItemFilter()
-            } else {
-                itemFilter!!.and(module.getItemFilter())
-            }
-        }
-        if (itemFilter == null) {
-            itemFilter = ItemFilter { true }
-        }
+        val itemFilter = AggregateItemFilter.allOf(
+            gates.moduleStream().filter { it != null }.map { it!!.getItemFilter() }.collect(Collectors.toList())
+        )
 
         if (extractInv != EmptyFixedItemInv.INSTANCE) {
             var remaining = MAX_STACK_SIZE
             for (slot in 0 until extractInv.slotCount) {
                 val extract = extractInv.getSlot(slot)
-                remaining = attemptTransfer(remaining, extract, insert, ignoreStacks, itemFilter!!)
+                remaining = attemptTransfer(remaining, extract, insert, ignoreStacks, itemFilter)
                 if (remaining == 0) break
             }
         } else {
             val extract = getItemExtractable(getExtractionPos(), extractionSide.opposite)
 
-            attemptTransfer(MAX_STACK_SIZE, extract, insert, ignoreStacks, itemFilter!!)
+            attemptTransfer(MAX_STACK_SIZE, extract, insert, ignoreStacks, itemFilter)
         }
     }
 
