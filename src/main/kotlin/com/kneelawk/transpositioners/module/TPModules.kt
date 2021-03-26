@@ -22,6 +22,7 @@ object TPModules {
         register(ItemMoverMk2Module.Type, TPItems.ITEM_MOVER_MODULE_MK2)
         register(ItemMoverMk3Module.Type, TPItems.ITEM_MOVER_MODULE_MK3)
         register(ItemGateMk1Module.Type, TPItems.ITEM_GATE_MODULE_MK1)
+        register(RedstoneGateModule.Type, TPItems.REDSTONE_GATE_MODULE)
     }
 
     // kotlin interface

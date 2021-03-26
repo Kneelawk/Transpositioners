@@ -10,7 +10,6 @@ import com.kneelawk.transpositioners.net.setServerReceiver
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.cycleEnum
 import com.kneelawk.transpositioners.util.ListGateType
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
-import io.github.cottonmc.cotton.gui.widget.WGridPanel
 import io.github.cottonmc.cotton.gui.widget.WItemSlot
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
@@ -41,7 +40,7 @@ class ItemGateMk1ScreenHandler(
         )
 
         private val OPEN_PARENT = OpenParentPacketHandler(NET_PARENT.idSignal("OPEN_PARENT")) { playerInventory.player }
-        private val ID_GATE_TYPE_GHANGE = NET_PARENT.idData("GATE_TYPE_CHANGE")
+        private val ID_GATE_TYPE_CHANGE = NET_PARENT.idData("GATE_TYPE_CHANGE")
             .setServerReceiver { module.updateGateType(ListGateType.byId(it.readByte().toInt())) }
     }
 
@@ -69,7 +68,7 @@ class ItemGateMk1ScreenHandler(
         gateType.tooltip = listOf(tooltipLine(listGateTypeT(module.gateType)))
         gateType.onClick = {
             val gateType = cycleEnum(module.gateType)
-            ID_GATE_TYPE_GHANGE.sendToServer(this) { it.writeByte(gateType.id) }
+            ID_GATE_TYPE_CHANGE.sendToServer(this) { it.writeByte(gateType.id) }
         }
 
         root.validate(this)
@@ -81,7 +80,7 @@ class ItemGateMk1ScreenHandler(
     }
 
     fun s2cReceiveGateTypeChange(type: ListGateType) {
-        gateType.icon = listGateTypeI(module.gateType)
+        gateType.icon = listGateTypeI(type)
         gateType.tooltip = listOf(tooltipLine(listGateTypeT(type)))
     }
 }

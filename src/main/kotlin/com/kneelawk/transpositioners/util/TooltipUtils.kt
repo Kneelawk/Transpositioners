@@ -48,4 +48,29 @@ object TooltipUtils {
             }
         })
     }
+
+    fun redstoneGateType(type: RedstoneGateType): Text {
+        return tooltip("redstone_gate_type", tooltip(type.name.toLowerCase()).apply {
+            when (type) {
+                RedstoneGateType.REDSTONE_DISABLE      -> formatted(Formatting.DARK_GRAY)
+                RedstoneGateType.REDSTONE_HIGH         -> formatted(Formatting.RED)
+                RedstoneGateType.REDSTONE_LOW          -> formatted(Formatting.DARK_RED)
+                RedstoneGateType.REDSTONE_RISING_EDGE  -> formatted(Formatting.DARK_GREEN)
+                RedstoneGateType.REDSTONE_FALLING_EDGE -> formatted(Formatting.DARK_BLUE)
+            }
+        })
+    }
+
+    fun transpositionerSide(side: TranspositionerSide): Text {
+        return tooltip(side.name.toLowerCase()).apply {
+            when (side) {
+                TranspositionerSide.FRONT -> formatted(Formatting.GREEN)
+                TranspositionerSide.BACK  -> formatted(Formatting.BLUE)
+            }
+        }
+    }
+
+    fun redstoneGateSide(side: TranspositionerSide): Text {
+        return tooltip("redstone_gate_side", transpositionerSide(side))
+    }
 }

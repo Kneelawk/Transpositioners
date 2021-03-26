@@ -29,6 +29,8 @@ object TPItems {
     val ITEM_GATE_MODULE_MK1 = ModuleItem(MODULE_ITEM_SETTINGS)
     val ITEM_GATE_MODULE_MK2 = ModuleItem(MODULE_ITEM_SETTINGS)
 
+    val REDSTONE_GATE_MODULE = ModuleItem(MODULE_ITEM_SETTINGS)
+
     fun register() {
         register(TRANSPOSITIONER_MK1, "transpositioner_mk1")
         register(TRANSPOSITIONER_MK2, "transpositioner_mk2")
@@ -39,6 +41,7 @@ object TPItems {
         register(ITEM_MOVER_MODULE_MK3, "item_mover_module_mk3")
         register(ITEM_GATE_MODULE_MK1, "item_gate_module_mk1")
         register(ITEM_GATE_MODULE_MK2, "item_gate_module_mk2")
+        register(REDSTONE_GATE_MODULE, "redstone_gate_module")
 
         UseBlockCallback.EVENT.register { player, _, hand, hitResult ->
             if (!player.isSpectator) {
