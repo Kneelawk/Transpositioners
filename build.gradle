@@ -40,28 +40,28 @@ dependencies {
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
-    modImplementation("alexiil.mc.lib:libblockattributes-all:0.8.5") {
+    modImplementation("alexiil.mc.lib:libblockattributes-all:${project.lba_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
     // jij lba
-    include "alexiil.mc.lib:libblockattributes-all:0.8.5"
+    include "alexiil.mc.lib:libblockattributes-all:${project.lba_version}"
 
-    modImplementation("alexiil.mc.lib:libnetworkstack-base:0.4.4-pre.1") {
+    modImplementation("alexiil.mc.lib:libnetworkstack-base:${project.lns_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
     // jij lns
-    include "alexiil.mc.lib:libnetworkstack-base:0.4.4-pre.1"
+    include "alexiil.mc.lib:libnetworkstack-base:${project.lns_version}"
 
-    modImplementation("io.github.cottonmc:LibGui:3.3.2+1.16.4") {
+    modImplementation("io.github.cottonmc:LibGui:${project.libgui_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
     // jij libgui
-    include "io.github.cottonmc:LibGui:3.3.2+1.16.4"
+    include "io.github.cottonmc:LibGui:${project.libgui_version}"
 
-    modRuntime("io.github.prospector:modmenu:1.14.9+build.14") {
+    modRuntime("io.github.prospector:modmenu:${project.modmenu_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
-    modRuntime("alexiil.mc.mod:simplepipes-all:0.4.3") {
+    modRuntime("alexiil.mc.mod:simplepipes-all:${project.simplepipes_version}") {
         exclude group: "net.fabricmc.fabric-api"
         exclude module: "libnetworkstack-base"
     }
