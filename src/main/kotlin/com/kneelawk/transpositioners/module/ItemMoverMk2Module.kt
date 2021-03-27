@@ -6,7 +6,7 @@ import alexiil.mc.lib.attributes.item.FixedItemInv
 import alexiil.mc.lib.attributes.item.ItemAttributes
 import alexiil.mc.lib.attributes.item.ItemExtractable
 import alexiil.mc.lib.attributes.item.ItemInsertable
-import alexiil.mc.lib.attributes.item.filter.AggregateItemFilter
+import alexiil.mc.lib.attributes.item.filter.ConstantItemFilter
 import alexiil.mc.lib.attributes.item.filter.ItemFilter
 import alexiil.mc.lib.attributes.item.impl.EmptyFixedItemInv
 import com.kneelawk.transpositioners.TPConstants
@@ -32,7 +32,6 @@ import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
-import java.util.stream.Collectors
 
 class ItemMoverMk2Module(
     context: ModuleContext,
@@ -105,9 +104,10 @@ class ItemMoverMk2Module(
         val insert = getItemInsertable(getInsertionPos(), insertionSide.opposite)
         val extractInv = getFixedItemInv(getExtractionPos(), extractionSide.opposite)
 
-        val itemFilter = AggregateItemFilter.allOf(
-            gates.moduleStream().filter { it != null }.map { it!!.getItemFilter() }.collect(Collectors.toList())
-        )
+//        val itemFilter = AggregateItemFilter.allOf(
+//            gates.moduleStream().filter { it != null }.map { it!!.getItemFilter() }.collect(Collectors.toList())
+//        )
+        val itemFilter = gates.getModule(0)?.getItemFilter() ?: ConstantItemFilter.ANYTHING
 
         if (extractInv != EmptyFixedItemInv.INSTANCE) {
             var remaining = MAX_STACK_SIZE
@@ -214,7 +214,7 @@ class ItemMoverMk2Module(
                 }
             }
 
-            val gates = ModuleInventory(2, context, path, TPModules.ITEM_GATES)
+            val gates = ModuleInventory(1, context, path, TPModules.ITEM_GATES)
             if (tag.contains("gates")) {
                 gates.readTags(tag.getList("gates", 10))
             }
@@ -234,7 +234,7 @@ class ItemMoverMk2Module(
                 }, when (context) {
                     is ModuleContext.Configurator -> Direction.DOWN
                     is ModuleContext.Entity       -> context.facing
-                }, ModuleInventory(2, context, path, TPModules.ITEM_GATES)
+                }, ModuleInventory(1, context, path, TPModules.ITEM_GATES)
             )
         }
 

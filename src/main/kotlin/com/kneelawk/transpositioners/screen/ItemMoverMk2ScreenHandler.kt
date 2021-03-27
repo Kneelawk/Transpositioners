@@ -86,7 +86,7 @@ class ItemMoverMk2ScreenHandler(
         backButton.onClick = { OPEN_PARENT.send(this) }
 
         directionButton = WScalableButton(icon = movementDirectionI(module.direction))
-        inventoryPanel.add(directionButton, 2 * 18, 18, 2 * 18, 18)
+        inventoryPanel.add(directionButton, 2 * 18 + 9, 18, 2 * 18, 18)
         directionButton.tooltip = listOf(tooltipLine(movementDirectionT(module.direction)))
         directionButton.onClick = {
             val direction = cycleEnum(module.direction)
@@ -94,14 +94,14 @@ class ItemMoverMk2ScreenHandler(
         }
 
         insertionSideButton = WScalableButton(icon = insertionSideI(module.insertionSide))
-        inventoryPanel.add(insertionSideButton, 3 * 18, 2 * 18)
+        inventoryPanel.add(insertionSideButton, 3 * 18 + 9, 2 * 18)
         insertionSideButton.tooltip = listOf(tooltipLine(insertionSideT(module.insertionSide)))
 
         extractionSideButton = WScalableButton(icon = extractionSideI(module.extractionSide))
-        inventoryPanel.add(extractionSideButton, 2 * 18, 2 * 18)
+        inventoryPanel.add(extractionSideButton, 2 * 18 + 9, 2 * 18)
         extractionSideButton.tooltip = listOf(tooltipLine(extractionSideT(module.extractionSide)))
 
-        addSlots(inventoryPanel, module.gates, { OPEN_MODULE.send(this, it) }, 0, 2, 5 * 18, 1 * 18)
+        addSlots(inventoryPanel, module.gates, { OPEN_MODULE.send(this, it) }, 0, 1, 5 * 18 + 9, 1 * 18)
 
         // insertion side panel
 
