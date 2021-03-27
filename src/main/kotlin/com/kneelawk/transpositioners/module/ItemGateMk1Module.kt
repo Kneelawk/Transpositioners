@@ -119,10 +119,7 @@ class ItemGateMk1Module(
             }
 
             if (moduleData.contains("gate_type")) {
-                tooltip += TPConstants.tooltip(
-                    "list_gate_type",
-                    listGateType(ListGateType.byId(moduleData.getByte("gate_type").toInt()))
-                )
+                tooltip += listGateType(ListGateType.byId(moduleData.getByte("gate_type").toInt()))
             }
         }
     }
