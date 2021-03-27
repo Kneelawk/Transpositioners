@@ -37,7 +37,7 @@ class ItemMoverMk2ScreenHandler(
     playerInventory: PlayerInventory,
     override val module: ItemMoverMk2Module
 ) :
-    SyncedGuiDescription(TPScreenHandlers.ITEM_MOVER_MK2_TYPE, syncId, playerInventory),
+    SyncedGuiDescription(TPScreenHandlers.ITEM_MOVER_MK2_TYPE, syncId, playerInventory, module.gates, null),
     ModuleScreenHandler {
     companion object {
         val LOGGER = LogManager.getLogger()
@@ -86,7 +86,7 @@ class ItemMoverMk2ScreenHandler(
         backButton.onClick = { OPEN_PARENT.send(this) }
 
         directionButton = WScalableButton(icon = movementDirectionI(module.direction))
-        inventoryPanel.add(directionButton, 2 * 18, 18)
+        inventoryPanel.add(directionButton, 2 * 18, 18, 2 * 18, 18)
         directionButton.tooltip = listOf(tooltipLine(movementDirectionT(module.direction)))
         directionButton.onClick = {
             val direction = cycleEnum(module.direction)
@@ -94,11 +94,11 @@ class ItemMoverMk2ScreenHandler(
         }
 
         insertionSideButton = WScalableButton(icon = insertionSideI(module.insertionSide))
-        inventoryPanel.add(insertionSideButton, 2 * 18, 2 * 18)
+        inventoryPanel.add(insertionSideButton, 3 * 18, 2 * 18)
         insertionSideButton.tooltip = listOf(tooltipLine(insertionSideT(module.insertionSide)))
 
         extractionSideButton = WScalableButton(icon = extractionSideI(module.extractionSide))
-        inventoryPanel.add(extractionSideButton, 3 * 18, 2 * 18)
+        inventoryPanel.add(extractionSideButton, 2 * 18, 2 * 18)
         extractionSideButton.tooltip = listOf(tooltipLine(extractionSideT(module.extractionSide)))
 
         addSlots(inventoryPanel, module.gates, { OPEN_MODULE.send(this, it) }, 0, 2, 5 * 18, 1 * 18)
