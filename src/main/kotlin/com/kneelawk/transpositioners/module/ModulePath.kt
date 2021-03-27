@@ -57,4 +57,8 @@ class ModulePath private constructor(val segments: List<Int>) {
             return cur
         }
     }
+
+    override fun toString(): String {
+        return segments.joinToString("/", "(", ")")
+    }
 }

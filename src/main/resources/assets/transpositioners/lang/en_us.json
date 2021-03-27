@@ -7,11 +7,18 @@
   "item.transpositioners.transpositioner_mk2": "Transpositioner Mk2",
   "item.transpositioners.transpositioner_mk3": "Transpositioner Mk3",
   "item.transpositioners.transpositioner_configurator": "Transpositioner Configurator",
+  "item.transpositioners.item_and_gate_module_mk1": "Item AND Gate Module Mk1",
+  "item.transpositioners.item_and_gate_module_mk2": "Item AND Gate Module Mk2",
+  "item.transpositioners.item_and_gate_module_mk3": "Item AND Gate Module Mk3",
   "item.transpositioners.item_gate_module_mk1": "Item Gate Module Mk1",
   "item.transpositioners.item_gate_module_mk2": "Item Gate Module Mk2",
   "item.transpositioners.item_mover_module_mk1": "Item Mover Module Mk1",
   "item.transpositioners.item_mover_module_mk2": "Item Mover Module Mk2",
   "item.transpositioners.item_mover_module_mk3": "Item Mover Module Mk3",
+  "item.transpositioners.item_not_gate_module": "Item NOT Gate Module",
+  "item.transpositioners.item_or_gate_module_mk1": "Item OR Gate Module Mk1",
+  "item.transpositioners.item_or_gate_module_mk2": "Item OR Gate Module Mk2",
+  "item.transpositioners.item_or_gate_module_mk3": "Item OR Gate Module Mk3",
   "item.transpositioners.redstone_gate_module": "Redstone Gate Module",
   "itemGroup.transpositioners.transpositioners": "Transpositioners",
   "gui.transpositioners.direction": "Direction:",
@@ -54,5 +61,8 @@
   "tooltip.transpositioners.redstone_falling_edge": "Redstone Falling Edge",
   "tooltip.transpositioners.redstone_gate_side": "Detection Side: %s",
   "tooltip.transpositioners.front": "Front",
-  "tooltip.transpositioners.back": "Back"
+  "tooltip.transpositioners.back": "Back",
+  "tooltip.transpositioners.not_state": "Inversion: %s",
+  "tooltip.transpositioners.not_state_true": "Inverted",
+  "tooltip.transpositioners.not_state_false": "Not Inverted"
 }

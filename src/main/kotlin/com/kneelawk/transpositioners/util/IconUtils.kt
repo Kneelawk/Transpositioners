@@ -32,6 +32,9 @@ object IconUtils {
     private val REDSTONE_FALLING_EDGE_ICON =
         EnhancedTextureIcon(identifier("textures/gui/redstone_falling_edge.png"), 16, 16)
 
+    private val NOT_STATE_TRUE = EnhancedTextureIcon(identifier("textures/gui/not_state.png"), 16, 16)
+    private val NOT_STATE_FALSE = EnhancedTextureIcon(identifier("textures/gui/not_state_disabled.png"), 16, 16)
+
     val CHECK_ICON = EnhancedTextureIcon(identifier("textures/gui/check2.png"), 16, 16)
     val DENY_ICON = EnhancedTextureIcon(identifier("textures/gui/deny2.png"), 16, 16)
     val X_ICON = EnhancedTextureIcon(identifier("textures/gui/disable.png"), 16, 16)
@@ -97,5 +100,9 @@ object IconUtils {
             TranspositionerSide.FRONT -> FORWARD_ICON
             TranspositionerSide.BACK  -> BACKWARD_ICON
         }
+    }
+
+    fun notState(notState: Boolean): EnhancedIcon {
+        return if (notState) NOT_STATE_TRUE else NOT_STATE_FALSE
     }
 }

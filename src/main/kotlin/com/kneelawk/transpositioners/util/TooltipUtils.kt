@@ -73,4 +73,12 @@ object TooltipUtils {
     fun redstoneGateSide(side: TranspositionerSide): Text {
         return tooltip("redstone_gate_side", transpositionerSide(side))
     }
+
+    fun notState(notState: Boolean): Text {
+        return tooltip("not_state", tooltip("not_state_$notState").apply {
+            if (notState) {
+                formatted(Formatting.RED)
+            }
+        })
+    }
 }

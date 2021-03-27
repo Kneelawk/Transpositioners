@@ -50,8 +50,7 @@ class ItemMoverMk2ScreenHandler(
         private val OPEN_PARENT = OpenParentPacketHandler(
             NET_PARENT.idSignal("OPEN_PARENT")
         ) { playerInventory.player }
-        private val OPEN_MODULE = OpenModulePacketHandler(NET_PARENT.idData("OPEN_MODULE"), { module.gates },
-            { playerInventory.player })
+        private val OPEN_MODULE = OpenModulePacketHandler(NET_PARENT.idData("OPEN_MODULE")) { playerInventory.player }
         private val ID_DIRECTION_CHANGE = NET_PARENT.idData("DIRECTION_CHANGE", 1)
             .setServerReceiver { module.updateDirection(MovementDirection.byId(it.readByte().toInt())) }
         private val ID_INSERTION_SIDE_CHANGE = NET_PARENT.idData("INSERTION_SIDE_CHANGE", 1)

@@ -36,11 +36,13 @@ interface Module : ModuleContainer {
         fun writeModulePath(module: Module, buf: PacketByteBuf) {
             when (val context = module.context) {
                 is ModuleContext.Configurator -> {
-                    buf.writeBoolean(false)
+                    // calling writeBoolean here appears to be clobbering something when the payload also contains a boolean
+                    buf.writeByte(0)
                     buf.writeBlockPos(context.configurator.pos)
                 }
                 is ModuleContext.Entity -> {
-                    buf.writeBoolean(true)
+                    // calling writeBoolean here appears to be clobbering something when the payload also contains a boolean
+                    buf.writeByte(1)
                     buf.writeInt(context.entity.entityId)
                 }
             }
@@ -48,7 +50,8 @@ interface Module : ModuleContainer {
         }
 
         fun readModulePath(world: World, buf: PacketByteBuf): Module? {
-            val container = if (buf.readBoolean()) {
+            // calling readBoolean here appears to be clobbering something when the payload also contains a boolean
+            val container = if (buf.readByte().toInt() == 1) {
                 world.getEntityById(buf.readInt()) as? ModuleContainer ?: return null
             } else {
                 world.getBlockEntity(buf.readBlockPos()) as? ModuleContainer ?: return null
