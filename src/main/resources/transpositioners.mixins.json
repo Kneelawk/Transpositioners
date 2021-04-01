@@ -5,8 +5,7 @@
   "mixins": [
   ],
   "client": [
-    "ClientPlayNetworkHandlerMixin",
-    "WorldRendererMixin"
+    "ClientPlayNetworkHandlerMixin"
   ],
   "server": [
   ],
