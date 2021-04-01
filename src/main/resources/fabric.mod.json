@@ -20,6 +20,9 @@
     ],
     "client": [
       "com.kneelawk.transpositioners.client.TranspositionersClientModKt::init"
+    ],
+    "server": [
+      "com.kneelawk.transpositioners.server.TranspositionersServerModKt::init"
     ]
   },
   "mixins": [

@@ -1,7 +1,7 @@
 package com.kneelawk.transpositioners.mixin.impl;
 
+import com.kneelawk.transpositioners.entity.TPEntityTypes;
 import com.kneelawk.transpositioners.entity.TranspositionerEntity;
-import com.kneelawk.transpositioners.entity.TranspositionerEntityTypes;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
@@ -25,7 +25,7 @@ public class ClientPlayNetworkHandlerMixin {
     private void handleEntitySpawn(EntitySpawnS2CPacket packet, CallbackInfo ci, double x, double y, double z,
                                    Entity entity41, EntityType<?> entityType) {
         Entity newEntity = null;
-        if (entityType == TranspositionerEntityTypes.INSTANCE.getTRANSPOSITIONER()) {
+        if (entityType == TPEntityTypes.INSTANCE.getTRANSPOSITIONER()) {
             int entityData = packet.getEntityData();
             newEntity = new TranspositionerEntity(world, new BlockPos(x, y, z), Direction.byId(entityData & 0x7),
                     (entityData >> 3) & 0x3);

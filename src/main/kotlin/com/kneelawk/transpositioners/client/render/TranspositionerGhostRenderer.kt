@@ -14,13 +14,32 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
-import net.minecraft.util.math.MathHelper.sin
 import org.lwjgl.opengl.GL11
+import kotlin.math.sin
 
 object TranspositionerGhostRenderer {
     private var placementDelta = 0f
     private val renderLayers = Object2ObjectLinkedOpenHashMap<RenderLayer, BufferBuilder>()
     private val texture: RenderPhase = RenderPhase.Texture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false, true)
+
+    private fun ghostStart() {
+        texture.startDrawing()
+        GL11.glDepthRange(0.0, 0.1)
+        RenderSystem.enableCull()
+        RenderSystem.enableDepthTest()
+        RenderSystem.enableBlend()
+        RenderSystem.blendFuncSeparate(
+            SrcFactor.SRC_ALPHA, DstFactor.ONE_MINUS_SRC_ALPHA, SrcFactor.ONE, DstFactor.ONE_MINUS_SRC_ALPHA
+        )
+    }
+
+    private fun ghostEnd() {
+        RenderSystem.disableBlend()
+        RenderSystem.defaultBlendFunc()
+        GL11.glDepthRange(0.0, 1.0)
+        RenderSystem.disableCull()
+        texture.endDrawing()
+    }
 
     val GHOST = object : RenderLayer(
         "TRANSPOSITIONER_GHOST",
@@ -29,17 +48,32 @@ object TranspositionerGhostRenderer {
         1 shl 12,
         false,
         true,
-        {
-            texture.startDrawing()
-            GL11.glDepthRange(0.0, 0.1)
-            RenderSystem.enableCull()
-            RenderSystem.enableDepthTest()
-        },
-        {
-            GL11.glDepthRange(0.0, 1.0)
-            RenderSystem.disableCull()
-            texture.endDrawing()
-        }) {}
+        ::ghostStart,
+        ::ghostEnd
+    ) {}
+
+    private fun placementStart() {
+        texture.startDrawing()
+        RenderSystem.enableBlend()
+        RenderSystem.enableAlphaTest()
+        RenderSystem.defaultAlphaFunc()
+//        RenderSystem.blendFuncSeparate(SrcFactor.SRC_ALPHA, DstFactor.CONSTANT_ALPHA, SrcFactor.ONE, DstFactor.ZERO)
+        RenderSystem.blendFunc(SrcFactor.CONSTANT_ALPHA, DstFactor.ONE_MINUS_CONSTANT_ALPHA)
+        val value = sin(placementDelta / 4f) / 4f + 0.5f
+        RenderSystem.blendColor(1f, 1f, 1f, value)
+        GL11.glDepthRange(0.0, 0.0)
+        RenderSystem.enableCull()
+        RenderSystem.enableDepthTest()
+    }
+
+    private fun placementEnd() {
+        GL11.glDepthRange(0.0, 1.0)
+        RenderSystem.blendColor(0f, 0f, 0f, 0f)
+        RenderSystem.disableBlend()
+        RenderSystem.defaultBlendFunc()
+        RenderSystem.disableCull()
+        texture.endDrawing()
+    }
 
     val PLACEMENT = object : RenderLayer(
         "TRANSPOSITIONER_PLACEMENT",
@@ -48,26 +82,9 @@ object TranspositionerGhostRenderer {
         1 shl 12,
         false,
         true,
-        {
-            texture.startDrawing()
-            RenderSystem.enableBlend()
-            RenderSystem.enableAlphaTest()
-            RenderSystem.defaultAlphaFunc()
-            RenderSystem.blendFuncSeparate(SrcFactor.SRC_ALPHA, DstFactor.CONSTANT_ALPHA, SrcFactor.ONE, DstFactor.ZERO)
-            val value = sin(placementDelta / 4f) / 4f + 0.5f
-            RenderSystem.blendColor(value, value, value, value)
-            GL11.glDepthRange(0.0, 0.0)
-            RenderSystem.enableCull()
-            RenderSystem.enableDepthTest()
-        },
-        {
-            GL11.glDepthRange(0.0, 1.0)
-            RenderSystem.blendColor(0f, 0f, 0f, 0f)
-            RenderSystem.disableBlend()
-            RenderSystem.defaultBlendFunc()
-            RenderSystem.disableCull()
-            texture.endDrawing()
-        }) {}
+        ::placementStart,
+        ::placementEnd
+    ) {}
 
     init {
         renderLayers[GHOST] = BufferBuilder(1 shl 12)

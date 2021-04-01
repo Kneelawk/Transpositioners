@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "transpositioners:block/module_configurator_side",
+    "bottom": "transpositioners:block/module_configurator_bottom",
+    "top": "transpositioners:block/module_configurator_top"
+  }
+}

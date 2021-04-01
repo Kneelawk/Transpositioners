@@ -1,17 +1,20 @@
 package com.kneelawk.transpositioners.entity
 
 import alexiil.mc.lib.attributes.SearchOptions
-import alexiil.mc.lib.attributes.Simulation
 import alexiil.mc.lib.attributes.item.ItemAttributes
 import alexiil.mc.lib.attributes.item.ItemExtractable
 import alexiil.mc.lib.attributes.item.ItemInsertable
 import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable
 import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable
 import alexiil.mc.lib.net.IMsgReadCtx
+import alexiil.mc.lib.net.NetIdDataK
+import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import alexiil.mc.lib.net.impl.McNetworkStack
-import com.kneelawk.transpositioners.TranspositionersConstants
+import com.kneelawk.transpositioners.TPConstants
+import com.kneelawk.transpositioners.TPConstants.tt
 import com.kneelawk.transpositioners.item.TranspositionerItem
+import com.kneelawk.transpositioners.module.*
 import com.kneelawk.transpositioners.screen.TranspositionerScreenHandler
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -26,11 +29,9 @@ import net.minecraft.network.Packet
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket
 import net.minecraft.screen.ScreenHandler
-import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
-import net.minecraft.text.TranslatableText
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.math.BlockPos
@@ -40,29 +41,57 @@ import net.minecraft.world.GameRules
 import net.minecraft.world.World
 import org.apache.commons.lang3.Validate
 
-class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFactory {
+class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFactory, ModuleContainer {
     companion object {
-        val NET_PARENT = McNetworkStack.ENTITY.subType(
+        private val NET_PARENT: ParentNetIdSingle<TranspositionerEntity> = McNetworkStack.ENTITY.subType(
             TranspositionerEntity::class.java,
-            TranspositionersConstants.str("transpositioner_entity")
+            TPConstants.str("transpositioner_entity")
         )
-        val ID_CHANGE_MK = NET_PARENT.idData("CHANGE_MK").setReceiver(TranspositionerEntity::receiveMkChange)
+        private val ID_CHANGE_MK: NetIdDataK<TranspositionerEntity> =
+            NET_PARENT.idData("CHANGE_MK").setReceiver(TranspositionerEntity::receiveMkChange)
+        private val ID_INSERT_MODULE: NetIdDataK<TranspositionerEntity> =
+            NET_PARENT.idData("INSERT_MODULE").setReceiver(TranspositionerEntity::receiveInsertModule)
+
+        const val MIN_MK = 1
+        const val MAX_MK = 3
+
+        fun moduleCountByMk(mk: Int): Int {
+            return when (mk) {
+                1    -> 1
+                2    -> 4
+                3    -> 16
+                else -> throw IllegalArgumentException("Unknown transpositioner mk $mk")
+            }
+        }
     }
 
     var mk: Int
         private set
+    var modules: ModuleInventory<MoverModule>
 
     constructor(entityType: EntityType<out TranspositionerEntity>, world: World) : super(entityType, world) {
-        mk = 0
+        mk = MIN_MK
+        modules = ModuleInventory(
+            moduleCountByMk(mk),
+            ModuleContext.Entity(this),
+            ModulePath.ROOT,
+            TPModules.MOVERS
+        )
     }
 
     constructor(world: World, pos: BlockPos, direction: Direction, mk: Int) : super(
-        TranspositionerEntityTypes.TRANSPOSITIONER,
+        TPEntityTypes.TRANSPOSITIONER,
         world,
         pos
     ) {
         setFacing(direction)
-        this.mk = mk.coerceIn(1, 3)
+        this.mk = mk.coerceIn(MIN_MK, MAX_MK)
+        modules = ModuleInventory(
+            moduleCountByMk(mk),
+            ModuleContext.Entity(this),
+            ModulePath.ROOT,
+            TPModules.MOVERS
+        )
     }
 
     override fun setFacing(facing: Direction) {
@@ -80,14 +109,23 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         updateAttachmentPosition()
     }
 
-    fun updateMk(mk: Int) {
-        this.mk = mk
+    private fun setModuleCount(count: Int, dropItems: Boolean) {
+        val conversion = modules.convertToNewSized(count)
+        modules = conversion.newInventory
 
-        if (!world.isClient) {
-            sendMkChage(mk)
+        if (dropItems) {
+            for (stack in conversion.remainingStacks) {
+                dropStack(stack)
+            }
         }
+    }
 
-        // TODO: Inventory re-organization
+    fun updateMk(mk: Int) {
+        if (!world.isClient) {
+            this.mk = mk.coerceIn(MIN_MK, MAX_MK)
+            sendMkChage(this.mk)
+            setModuleCount(moduleCountByMk(mk), true)
+        }
     }
 
     private fun sendMkChage(mk: Int) {
@@ -101,7 +139,34 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
     private fun receiveMkChange(buf: PacketByteBuf, ctx: IMsgReadCtx) {
         ctx.assertClientSide()
-        updateMk(buf.readByte().toInt())
+        mk = buf.readByte().toInt().coerceIn(MIN_MK, MAX_MK)
+        setModuleCount(moduleCountByMk(mk), false)
+    }
+
+    fun canInsertModule(stack: ItemStack): Boolean {
+        return modules.canInsert(stack)
+    }
+
+    fun insertModule(stack: ItemStack) {
+        if (!world.isClient && modules.canInsert(stack)) {
+            val toInsert = stack.split(1)
+            sendInsertModule(toInsert)
+            modules.addStack(toInsert)
+        }
+    }
+
+    private fun sendInsertModule(toInsert: ItemStack) {
+        for (con in CoreMinecraftNetUtil.getPlayersWatching(world, attachmentPos)) {
+            ID_INSERT_MODULE.send(con, this) { _, buf, ctx ->
+                ctx.assertServerSide()
+                buf.writeItemStack(toInsert)
+            }
+        }
+    }
+
+    private fun receiveInsertModule(buf: PacketByteBuf, ctx: IMsgReadCtx) {
+        ctx.assertClientSide()
+        modules.addStack(buf.readItemStack())
     }
 
     override fun updateAttachmentPosition() {
@@ -127,7 +192,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
     override fun canStayAttached(): Boolean {
         return (isValid(attachmentPos, facing) || isValid(attachmentPos.offset(facing.opposite), facing.opposite)) &&
-                world.getOtherEntities(this, boundingBox, PREDICATE).isEmpty()
+            world.getOtherEntities(this, boundingBox, PREDICATE).isEmpty()
     }
 
     private fun isValid(pos: BlockPos, direction: Direction): Boolean {
@@ -160,13 +225,19 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
         tag.putByte("Facing", facing.id.toByte())
         tag.putByte("Mk", mk.toByte())
+
+        tag.put("Inventory", modules.getTags())
     }
 
     override fun readCustomDataFromTag(tag: CompoundTag) {
         super.readCustomDataFromTag(tag)
 
         if (tag.contains("Facing")) setFacing(Direction.byId(tag.getByte("Facing").toInt()))
-        mk = if (tag.contains("Mk")) tag.getByte("Mk").toInt().coerceIn(1, 3) else 1
+        mk = if (tag.contains("Mk")) tag.getByte("Mk").toInt().coerceIn(MIN_MK, MAX_MK) else MIN_MK
+
+        modules.clear()
+        setModuleCount(moduleCountByMk(mk), false)
+        if (tag.contains("Inventory")) modules.readTags(tag.getList("Inventory", 10))
     }
 
     override fun createSpawnPacket(): Packet<*> {
@@ -185,8 +256,11 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         if (world.gameRules.getBoolean(GameRules.DO_ENTITY_DROPS)) {
             playSound(SoundEvents.BLOCK_PISTON_CONTRACT, 1f, 1f)
 
-            // TODO: handle entity recursive inventory stuff.
-            dropStacks(entity, listOf(ItemStack(TranspositionerItem.getItem(mk))))
+            val drops = mutableListOf<ItemStack>()
+            drops.add(ItemStack(TranspositionerItem.getItem(mk)))
+            drops.addAll(modules.clearToList())
+
+            dropStacks(entity, drops)
         }
     }
 
@@ -201,12 +275,12 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
                     }
                 }
             }
-            entity != null -> {
+            entity != null         -> {
                 for (stack in stacks) {
                     dropStackOnEntity(entity, stack)
                 }
             }
-            else -> {
+            else                   -> {
                 for (stack in stacks) {
                     dropStack(stack)
                 }
@@ -228,25 +302,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         super.tick()
 
         if (!world.isClient) {
-            val extract = getItemExtractable(attachmentPos.offset(facing.opposite), facing.opposite)
-            val insert = getItemInsertable(attachmentPos, facing)
-
-            val maxAmount = 8
-
-            val extractedSim = extract.attemptAnyExtraction(maxAmount, Simulation.SIMULATE)
-            if (!extractedSim.isEmpty) {
-                val leftOverSim = insert.attemptInsertion(extractedSim, Simulation.SIMULATE)
-                val amount = extractedSim.count - leftOverSim.count
-
-                if (amount != 0) {
-                    val leftOver =
-                        insert.attemptInsertion(
-                            extract.attemptAnyExtraction(amount, Simulation.ACTION),
-                            Simulation.ACTION
-                        )
-                    assert(leftOver.isEmpty) { "leftOver: $leftOver" }
-                }
-            }
+            modules.forEach { it.move() }
         }
     }
 
@@ -260,14 +316,18 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     }
 
     override fun getDefaultName(): Text {
-        return TranslatableText(type.translationKey + ".mk" + mk)
+        return tt(type.translationKey + ".mk" + mk)
     }
 
     override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler {
-        return TranspositionerScreenHandler(syncId, inv, this, ScreenHandlerContext.EMPTY)
+        return TranspositionerScreenHandler(syncId, inv, this)
     }
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeInt(entityId)
+    }
+
+    override fun getModule(index: Int): Module? {
+        return modules.getModule(index)
     }
 }

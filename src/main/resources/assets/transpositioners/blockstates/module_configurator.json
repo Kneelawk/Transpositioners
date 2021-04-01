@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "transpositioners:block/module_configurator",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "transpositioners:block/module_configurator"
+    },
+    "facing=south": {
+      "model": "transpositioners:block/module_configurator",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "transpositioners:block/module_configurator",
+      "y": 270
+    }
+  }
+}

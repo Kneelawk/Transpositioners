@@ -1,11 +1,17 @@
 package com.kneelawk.transpositioners
 
-import com.kneelawk.transpositioners.entity.TranspositionerEntityTypes
-import com.kneelawk.transpositioners.item.TranspositionerItems
-import com.kneelawk.transpositioners.screen.TranspositionerScreenHandlers
+import com.kneelawk.transpositioners.block.TPBlocks
+import com.kneelawk.transpositioners.blockentity.TPBlockEntities
+import com.kneelawk.transpositioners.entity.TPEntityTypes
+import com.kneelawk.transpositioners.item.TPItems
+import com.kneelawk.transpositioners.module.TPModules
+import com.kneelawk.transpositioners.screen.TPScreenHandlers
 
 fun init() {
-    TranspositionerItems.register()
-    TranspositionerEntityTypes.register()
-    TranspositionerScreenHandlers.register()
+    TPBlocks.register()
+    TPItems.register()
+    TPBlockEntities.register()
+    TPEntityTypes.register()
+    TPModules.register()
+    TPScreenHandlers.register()
 }
