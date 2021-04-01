@@ -6,6 +6,7 @@ import com.kneelawk.transpositioners.client.util.TPModels
 import com.kneelawk.transpositioners.entity.TPEntityTypes
 import com.kneelawk.transpositioners.proxy.ClientProxy
 import com.kneelawk.transpositioners.proxy.CommonProxy
+import com.kneelawk.transpositioners.client.render.TranspositionerGhostRenderer
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry
 import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry
 
@@ -26,4 +27,5 @@ fun init() {
     }
 
     TPScreens.register()
+    TranspositionerGhostRenderer.register()
 }

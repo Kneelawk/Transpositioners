@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.GlStateManager.DstFactor
 import com.mojang.blaze3d.platform.GlStateManager.SrcFactor
 import com.mojang.blaze3d.systems.RenderSystem
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.*
 import net.minecraft.client.texture.SpriteAtlasTexture
@@ -93,7 +94,13 @@ object TranspositionerGhostRenderer {
     val CONSUMERS: VertexConsumerProvider.Immediate =
         VertexConsumerProvider.immediate(renderLayers, BufferBuilder(1 shl 12))
 
-    fun draw(
+    fun register() {
+        WorldRenderEvents.AFTER_ENTITIES.register { context ->
+            draw(context.camera(), context.tickDelta(), context.matrixStack())
+        }
+    }
+
+    private fun draw(
         camera: Camera,
         tickDelta: Float,
         matrices: MatrixStack

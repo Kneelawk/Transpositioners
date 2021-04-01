@@ -6,8 +6,7 @@
   ],
   "client": [
     "ClientPlayNetworkHandlerMixin",
-    "MouseAccessor",
-    "WorldRendererMixin"
+    "MouseAccessor"
   ],
   "server": [
   ],
