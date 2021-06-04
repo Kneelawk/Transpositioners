@@ -15,7 +15,6 @@ import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
 import org.lwjgl.opengl.GL11
-import kotlin.math.sin
 
 object TranspositionerGhostRenderer {
     private var placementDelta = 0f
@@ -26,22 +25,25 @@ object TranspositionerGhostRenderer {
         val textureManager = MinecraftClient.getInstance().textureManager
         textureManager.getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, true)
         RenderSystem.setShaderTexture(0, SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE)
-        // FIXME: GL11 is no-longer supported
+        MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.enable()
+        // FIXME: GL11 is no-longer supported (but this still works somehow?)
         GL11.glDepthRange(0.0, 0.1)
         RenderSystem.enableCull()
         RenderSystem.enableDepthTest()
-        RenderSystem.enableBlend()
-        RenderSystem.blendFuncSeparate(
-            SrcFactor.SRC_ALPHA, DstFactor.ONE_MINUS_SRC_ALPHA, SrcFactor.ONE, DstFactor.ONE_MINUS_SRC_ALPHA
-        )
+//        RenderSystem.enableBlend()
+//        RenderSystem.blendFuncSeparate(
+//            SrcFactor.SRC_ALPHA, DstFactor.ONE_MINUS_SRC_ALPHA, SrcFactor.ONE, DstFactor.ONE_MINUS_SRC_ALPHA
+//        )
+        RenderSystem.setShader(GameRenderer::getRenderTypeEntityCutoutShader)
     }
 
     private fun ghostEnd() {
-        RenderSystem.disableBlend()
-        RenderSystem.defaultBlendFunc()
+//        RenderSystem.disableBlend()
+//        RenderSystem.defaultBlendFunc()
         // FIXME: GL11 is no-longer supported
         GL11.glDepthRange(0.0, 1.0)
         RenderSystem.disableCull()
+        MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.disable()
     }
 
     val GHOST = object : RenderLayer(
@@ -60,8 +62,9 @@ object TranspositionerGhostRenderer {
         val textureManager = MinecraftClient.getInstance().textureManager
         textureManager.getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, true)
         RenderSystem.setShaderTexture(0, SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE)
-        RenderSystem.enableBlend()
+        MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.enable()
         // FIXME: GL11 is no-longer supported
+//        RenderSystem.enableBlend()
 //        RenderSystem.enableAlphaTest()
 //        RenderSystem.defaultAlphaFunc()
 //        RenderSystem.blendFuncSeparate(SrcFactor.SRC_ALPHA, DstFactor.CONSTANT_ALPHA, SrcFactor.ONE, DstFactor.ZERO)
@@ -72,16 +75,18 @@ object TranspositionerGhostRenderer {
         GL11.glDepthRange(0.0, 0.0)
         RenderSystem.enableCull()
         RenderSystem.enableDepthTest()
+        RenderSystem.setShader(GameRenderer::getRenderTypeEntityCutoutShader)
     }
 
     private fun placementEnd() {
+        RenderSystem.disableCull()
         // FIXME: GL11 is no-longer supported
         GL11.glDepthRange(0.0, 1.0)
         // FIXME: GL11 is no-longer supported
 //        RenderSystem.blendColor(0f, 0f, 0f, 0f)
-        RenderSystem.disableBlend()
-        RenderSystem.defaultBlendFunc()
-        RenderSystem.disableCull()
+//        RenderSystem.disableBlend()
+//        RenderSystem.defaultBlendFunc()
+        MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.disable()
     }
 
     val PLACEMENT = object : RenderLayer(
