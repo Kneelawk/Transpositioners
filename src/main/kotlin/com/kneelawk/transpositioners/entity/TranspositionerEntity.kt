@@ -24,7 +24,7 @@ import net.minecraft.entity.decoration.AbstractDecorationEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.Packet
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket
@@ -57,9 +57,9 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
         fun moduleCountByMk(mk: Int): Int {
             return when (mk) {
-                1    -> 1
-                2    -> 4
-                3    -> 16
+                1 -> 1
+                2 -> 4
+                3 -> 16
                 else -> throw IllegalArgumentException("Unknown transpositioner mk $mk")
             }
         }
@@ -192,7 +192,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
     override fun canStayAttached(): Boolean {
         return (isValid(attachmentPos, facing) || isValid(attachmentPos.offset(facing.opposite), facing.opposite)) &&
-            world.getOtherEntities(this, boundingBox, PREDICATE).isEmpty()
+                world.getOtherEntities(this, boundingBox, PREDICATE).isEmpty()
     }
 
     private fun isValid(pos: BlockPos, direction: Direction): Boolean {
@@ -220,28 +220,45 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         return 0.0f
     }
 
-    override fun writeCustomDataToTag(tag: CompoundTag) {
-        super.writeCustomDataToTag(tag)
+    override fun writeCustomDataToNbt(tag: NbtCompound) {
+        super.writeCustomDataToNbt(tag)
 
         tag.putByte("Facing", facing.id.toByte())
         tag.putByte("Mk", mk.toByte())
 
-        tag.put("Inventory", modules.getTags())
+        tag.put("Inventory", modules.toNbtList())
     }
 
-    override fun readCustomDataFromTag(tag: CompoundTag) {
-        super.readCustomDataFromTag(tag)
+    override fun readCustomDataFromNbt(tag: NbtCompound) {
+        super.readCustomDataFromNbt(tag)
 
         if (tag.contains("Facing")) setFacing(Direction.byId(tag.getByte("Facing").toInt()))
         mk = if (tag.contains("Mk")) tag.getByte("Mk").toInt().coerceIn(MIN_MK, MAX_MK) else MIN_MK
 
         modules.clear()
         setModuleCount(moduleCountByMk(mk), false)
-        if (tag.contains("Inventory")) modules.readTags(tag.getList("Inventory", 10))
+        if (tag.contains("Inventory")) modules.readNbtList(tag.getList("Inventory", 10))
     }
 
     override fun createSpawnPacket(): Packet<*> {
         return EntitySpawnS2CPacket(this, type, ((mk and 0x3) shl 3) or (facing.id and 0x7), decorationBlockPos)
+    }
+
+    override fun onSpawnPacket(packet: EntitySpawnS2CPacket) {
+        super.onSpawnPacket(packet)
+
+        val entityData = packet.entityData
+        val direction = Direction.byId(entityData and 0x7)
+        val mk = entityData shr 3 and 0x3
+
+        setFacing(direction)
+        this.mk = mk.coerceIn(MIN_MK, MAX_MK)
+        modules = ModuleInventory(
+            moduleCountByMk(this.mk),
+            ModuleContext.Entity(this),
+            ModulePath.ROOT,
+            TPModules.MOVERS
+        )
     }
 
     override fun getWidthPixels(): Int {
@@ -275,12 +292,12 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
                     }
                 }
             }
-            entity != null         -> {
+            entity != null -> {
                 for (stack in stacks) {
                     dropStackOnEntity(entity, stack)
                 }
             }
-            else                   -> {
+            else -> {
                 for (stack in stacks) {
                     dropStack(stack)
                 }
@@ -324,7 +341,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     }
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
-        buf.writeInt(entityId)
+        buf.writeInt(id)
     }
 
     override fun getModule(index: Int): Module? {

@@ -28,6 +28,6 @@ class EnhancedTextureIcon(
 
     @Environment(EnvType.CLIENT)
     override fun paint(matrices: MatrixStack, x: Int, y: Int, width: Int, height: Int) {
-        ScreenDrawing.texturedRect(x, y, width, height, texture, color, opacity)
+        ScreenDrawing.texturedRect(matrices, x, y, width, height, texture, color, opacity)
     }
 }

@@ -8,14 +8,15 @@ import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.text.TranslatableText
+import net.minecraft.util.math.BlockPos
 
-class ModuleConfiguratorBlockEntity : BlockEntity(TPBlockEntities.MODULE_CONFIGURATOR),
+class ModuleConfiguratorBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(TPBlockEntities.MODULE_CONFIGURATOR, pos, state),
     ExtendedScreenHandlerFactory, ModuleContainer {
     companion object {
         private const val MODULE_INVENTORY_TAG = "Inventory"
@@ -28,16 +29,16 @@ class ModuleConfiguratorBlockEntity : BlockEntity(TPBlockEntities.MODULE_CONFIGU
         TPModules.GLOBAL
     )
 
-    override fun fromTag(state: BlockState, tag: CompoundTag) {
-        super.fromTag(state, tag)
+    override fun readNbt(tag: NbtCompound) {
+        super.readNbt(tag)
 
-        modules.readTags(tag.getList(MODULE_INVENTORY_TAG, 10))
+        modules.readNbtList(tag.getList(MODULE_INVENTORY_TAG, 10))
     }
 
-    override fun toTag(tag: CompoundTag): CompoundTag {
-        val newTag = super.toTag(tag)
+    override fun writeNbt(tag: NbtCompound): NbtCompound {
+        val newTag = super.writeNbt(tag)
 
-        newTag.put(MODULE_INVENTORY_TAG, modules.getTags())
+        newTag.put(MODULE_INVENTORY_TAG, modules.toNbtList())
 
         return newTag
     }

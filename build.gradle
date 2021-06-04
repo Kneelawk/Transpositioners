@@ -36,6 +36,9 @@ repositories {
 //        name = "CurseForge"
 //        url = "https://minecraft.curseforge.com/api/maven"
 //    }
+    flatDir {
+        dirs "./libs"
+    }
 }
 
 dependencies {
@@ -49,19 +52,22 @@ dependencies {
 
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
 
-    // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
-    // You may need to force-disable transitiveness on them.
+    // Dependencies
+
     modImplementation("alexiil.mc.lib:libblockattributes-all:${project.lba_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
     // jij lba
     include "alexiil.mc.lib:libblockattributes-all:${project.lba_version}"
 
-    modImplementation("alexiil.mc.lib:libnetworkstack-base:${project.lns_version}") {
-        exclude group: "net.fabricmc.fabric-api"
-    }
-    // jij lns
-    include "alexiil.mc.lib:libnetworkstack-base:${project.lns_version}"
+    // TODO: use official LNS
+//    modImplementation("alexiil.mc.lib:libnetworkstack-base:${project.lns_version}") {
+//        exclude group: "net.fabricmc.fabric-api"
+//    }
+//    // jij lns
+//    include "alexiil.mc.lib:libnetworkstack-base:${project.lns_version}"
+
+    modImplementation name: "LibNetworkStack-0.4.8-pre.1-dev"
 
     modImplementation("io.github.cottonmc:LibGui:${project.libgui_version}") {
         exclude group: "net.fabricmc.fabric-api"
@@ -69,13 +75,14 @@ dependencies {
     // jij libgui
     include "io.github.cottonmc:LibGui:${project.libgui_version}"
 
-    modRuntime("io.github.prospector:modmenu:${project.modmenu_version}") {
-        exclude group: "net.fabricmc.fabric-api"
-    }
-    modRuntime("alexiil.mc.mod:simplepipes-all:${project.simplepipes_version}") {
-        exclude group: "net.fabricmc.fabric-api"
-        exclude module: "libnetworkstack-base"
-    }
+    // TODO: update ModMenu, SimplePipes, and Canvas
+//    modRuntime("io.github.prospector:modmenu:${project.modmenu_version}") {
+//        exclude group: "net.fabricmc.fabric-api"
+//    }
+//    modRuntime("alexiil.mc.mod:simplepipes-all:${project.simplepipes_version}") {
+//        exclude group: "net.fabricmc.fabric-api"
+//        exclude module: "libnetworkstack-base"
+//    }
 //    modRuntime("grondag:canvas-mc116:1.0.+") {
 //        exclude group: "net.fabricmc.fabric-api"
 //    }
@@ -88,13 +95,8 @@ processResources {
 
     exclude("**/*.xcf")
 
-    from(sourceSets.main.resources.srcDirs) {
-        include "fabric.mod.json"
+    filesMatching("fabric.mod.json") {
         expand "version": project.version
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude "fabric.mod.json"
     }
 }
 

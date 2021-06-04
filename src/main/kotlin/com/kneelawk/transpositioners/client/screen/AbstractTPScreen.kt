@@ -9,8 +9,8 @@ import net.minecraft.text.Text
 abstract class AbstractTPScreen<T : SyncedGuiDescription>(gui: T, player: PlayerEntity, title: Text) :
     CottonInventoryScreen<T>(gui, player, title) {
 
-    override fun init(client: MinecraftClient, screenWidth: Int, screenHeight: Int) {
-        super.init(client, screenWidth, screenHeight)
+    override fun init() {
+        super.init()
         TPScreenUtils.applyCursorPosition()
     }
 }

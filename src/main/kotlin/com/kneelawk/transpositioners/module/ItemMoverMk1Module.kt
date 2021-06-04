@@ -6,7 +6,7 @@ import alexiil.mc.lib.attributes.item.ItemAttributes
 import alexiil.mc.lib.attributes.item.ItemExtractable
 import alexiil.mc.lib.attributes.item.ItemInsertable
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 
@@ -49,7 +49,7 @@ class ItemMoverMk1Module(context: ModuleContext, path: ModulePath) :
             context: ModuleContext,
             path: ModulePath,
             stack: ItemStack,
-            tag: CompoundTag
+            tag: NbtCompound
         ): ItemMoverMk1Module {
             return ItemMoverMk1Module(context, path)
         }

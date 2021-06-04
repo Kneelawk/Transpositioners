@@ -73,25 +73,18 @@ object TPScreenHandlerUtils {
 
     fun handleGhostSlots(
         slotNumber: Int,
-        player: PlayerEntity,
         action: SlotActionType,
         button: Int,
         screenHandler: ScreenHandler,
         ghostInventory: Inventory
-    ): ItemStack? {
+    ): Boolean {
         if (slotNumber >= 0 && slotNumber < screenHandler.slots.size) {
-            val playerInventory = player.inventory
             val slot = screenHandler.getSlot(slotNumber)
-            var syncStack = ItemStack.EMPTY
             if (slot != null && slot.inventory == ghostInventory) {
-                if ((action == SlotActionType.PICKUP || action == SlotActionType.QUICK_MOVE) && slot.hasStack()) {
-                    syncStack = slot.stack
-                }
-
                 if (action == SlotActionType.PICKUP
                     || (action == SlotActionType.QUICK_CRAFT && SyncedGuiDescription.unpackQuickCraftStage(button) == 1)
                 ) {
-                    val stack = playerInventory.cursorStack.copy()
+                    val stack = screenHandler.cursorStack
                     if (!stack.isEmpty) {
                         stack.count = 1
                     }
@@ -102,7 +95,7 @@ object TPScreenHandlerUtils {
                     slot.stack = ItemStack.EMPTY
                 }
 
-                return syncStack
+                return true
             }
 
             if (action == SlotActionType.QUICK_MOVE) {
@@ -111,14 +104,14 @@ object TPScreenHandlerUtils {
                 for (target in screenHandler.slots) {
                     if (target.inventory == ghostInventory && !target.hasStack() && target.canInsert(stack)) {
                         target.stack = stack
-                        return syncStack
+                        return true
                     }
                 }
 
-                return ItemStack.EMPTY
+                return true
             }
         }
 
-        return null
+        return false
     }
 }

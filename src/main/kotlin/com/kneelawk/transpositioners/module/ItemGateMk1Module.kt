@@ -16,7 +16,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
@@ -64,8 +64,8 @@ class ItemGateMk1Module(
         }
     }
 
-    override fun writeToTag(tag: CompoundTag) {
-        tag.put("items", items.tags)
+    override fun writeToTag(tag: NbtCompound) {
+        tag.put("items", items.toNbtList())
         tag.putByte("gate_type", gateType.id.toByte())
     }
 
@@ -86,12 +86,12 @@ class ItemGateMk1Module(
             context: ModuleContext,
             path: ModulePath,
             stack: ItemStack,
-            tag: CompoundTag
+            tag: NbtCompound
         ): ItemGateMk1Module {
             val items = TPSimpleInventory(9)
 
             if (tag.contains("items")) {
-                items.readTags(tag.getList("items", 10))
+                items.readNbtList(tag.getList("items", 10))
             }
 
             val gateType = if (tag.contains("gate_type")) {
@@ -109,7 +109,7 @@ class ItemGateMk1Module(
 
         override fun appendTooltip(
             stack: ItemStack, world: World?, tooltip: MutableList<Text>,
-            tooltipContext: TooltipContext, moduleData: CompoundTag
+            tooltipContext: TooltipContext, moduleData: NbtCompound
         ) {
             if (moduleData.contains("items")) {
                 val gates = moduleData.getList("items", 10)

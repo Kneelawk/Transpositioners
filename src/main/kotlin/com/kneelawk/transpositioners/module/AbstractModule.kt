@@ -1,7 +1,7 @@
 package com.kneelawk.transpositioners.module
 
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
@@ -28,7 +28,7 @@ abstract class AbstractModule(
         return true
     }
 
-    override fun writeToTag(tag: CompoundTag) {
+    override fun writeToTag(tag: NbtCompound) {
     }
 
     override fun addStacksForDrop(stacks: MutableCollection<ItemStack>) {

@@ -1,9 +1,9 @@
 package com.kneelawk.transpositioners.client.entity
 
 import com.kneelawk.transpositioners.client.render.TranspositionerGhostRenderer
+import com.kneelawk.transpositioners.client.util.TPModels.TRANSPOSITIONERS
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import com.kneelawk.transpositioners.item.TranspositionerViewer
-import com.kneelawk.transpositioners.client.util.TPModels.TRANSPOSITIONERS
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -12,22 +12,22 @@ import net.minecraft.client.render.TexturedRenderLayers
 import net.minecraft.client.render.VertexConsumer
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.block.BlockRenderManager
-import net.minecraft.client.render.entity.EntityRenderDispatcher
 import net.minecraft.client.render.entity.EntityRenderer
+import net.minecraft.client.render.entity.EntityRendererFactory
 import net.minecraft.client.texture.SpriteAtlasTexture
 import net.minecraft.client.util.math.MatrixStack
-import net.minecraft.client.util.math.Vector3f
 import net.minecraft.util.Hand
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.Vec3f
 import net.minecraft.world.LightType
 import kotlin.math.max
 
 @Environment(EnvType.CLIENT)
-class TranspositionerEntityRenderer(dispatcher: EntityRenderDispatcher) :
-    EntityRenderer<TranspositionerEntity>(dispatcher) {
+class TranspositionerEntityRenderer(ctx: EntityRendererFactory.Context) :
+    EntityRenderer<TranspositionerEntity>(ctx) {
     companion object {
         private val client by lazy { MinecraftClient.getInstance() }
 
@@ -48,8 +48,8 @@ class TranspositionerEntityRenderer(dispatcher: EntityRenderDispatcher) :
                 direction.offsetX.toDouble() * 7.5 / 16.0, direction.offsetY.toDouble() * 7.5 / 16.0, direction.offsetZ
                     .toDouble() * 7.5 / 16.0
             )
-            matrices.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(entity.pitch))
-            matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0f - entity.yaw))
+            matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(entity.pitch))
+            matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0f - entity.yaw))
 
             val blockRenderManager: BlockRenderManager = client.blockRenderManager
             val bakedModelManager = blockRenderManager.models.modelManager
@@ -109,7 +109,7 @@ class TranspositionerEntityRenderer(dispatcher: EntityRenderDispatcher) :
         return TranspositionerEntityRenderer.getPositionOffset(entity, tickDelta)
     }
 
-    override fun method_27950(entity: TranspositionerEntity, blockPos: BlockPos): Int {
+    override fun getSkyLight(entity: TranspositionerEntity, blockPos: BlockPos): Int {
         val pos1 = entity.decorationBlockPos
         val pos2 = pos1.offset(entity.horizontalFacing)
         return max(entity.world.getLightLevel(LightType.SKY, pos1), entity.world.getLightLevel(LightType.SKY, pos2))

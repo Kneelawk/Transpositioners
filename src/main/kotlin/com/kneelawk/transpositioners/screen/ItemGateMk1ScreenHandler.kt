@@ -15,7 +15,6 @@ import io.github.cottonmc.cotton.gui.widget.WPlainPanel
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.item.ItemStack
 import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.text.LiteralText
 import org.apache.logging.log4j.LogManager
@@ -74,9 +73,10 @@ class ItemGateMk1ScreenHandler(
         root.validate(this)
     }
 
-    override fun onSlotClick(slotNumber: Int, button: Int, action: SlotActionType, player: PlayerEntity): ItemStack {
-        return TPScreenHandlerUtils.handleGhostSlots(slotNumber, player, action, button, this, module.items)
-            ?: super.onSlotClick(slotNumber, button, action, player)
+    override fun onSlotClick(slotNumber: Int, button: Int, action: SlotActionType, player: PlayerEntity) {
+        if (!TPScreenHandlerUtils.handleGhostSlots(slotNumber, action, button, this, module.items)) {
+            super.onSlotClick(slotNumber, button, action, player)
+        }
     }
 
     fun s2cReceiveGateTypeChange(type: ListGateType) {

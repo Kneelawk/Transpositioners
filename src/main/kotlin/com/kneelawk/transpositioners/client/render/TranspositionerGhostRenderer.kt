@@ -20,10 +20,13 @@ import kotlin.math.sin
 object TranspositionerGhostRenderer {
     private var placementDelta = 0f
     private val renderLayers = Object2ObjectLinkedOpenHashMap<RenderLayer, BufferBuilder>()
-    private val texture: RenderPhase = RenderPhase.Texture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false, true)
 
     private fun ghostStart() {
-        texture.startDrawing()
+        RenderSystem.enableTexture()
+        val textureManager = MinecraftClient.getInstance().textureManager
+        textureManager.getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, true)
+        RenderSystem.setShaderTexture(0, SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE)
+        // FIXME: GL11 is no-longer supported
         GL11.glDepthRange(0.0, 0.1)
         RenderSystem.enableCull()
         RenderSystem.enableDepthTest()
@@ -36,15 +39,15 @@ object TranspositionerGhostRenderer {
     private fun ghostEnd() {
         RenderSystem.disableBlend()
         RenderSystem.defaultBlendFunc()
+        // FIXME: GL11 is no-longer supported
         GL11.glDepthRange(0.0, 1.0)
         RenderSystem.disableCull()
-        texture.endDrawing()
     }
 
     val GHOST = object : RenderLayer(
         "TRANSPOSITIONER_GHOST",
         VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
-        GL11.GL_QUADS,
+        VertexFormat.DrawMode.QUADS,
         1 shl 12,
         false,
         true,
@@ -53,32 +56,38 @@ object TranspositionerGhostRenderer {
     ) {}
 
     private fun placementStart() {
-        texture.startDrawing()
+        RenderSystem.enableTexture()
+        val textureManager = MinecraftClient.getInstance().textureManager
+        textureManager.getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, true)
+        RenderSystem.setShaderTexture(0, SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE)
         RenderSystem.enableBlend()
-        RenderSystem.enableAlphaTest()
-        RenderSystem.defaultAlphaFunc()
+        // FIXME: GL11 is no-longer supported
+//        RenderSystem.enableAlphaTest()
+//        RenderSystem.defaultAlphaFunc()
 //        RenderSystem.blendFuncSeparate(SrcFactor.SRC_ALPHA, DstFactor.CONSTANT_ALPHA, SrcFactor.ONE, DstFactor.ZERO)
-        RenderSystem.blendFunc(SrcFactor.CONSTANT_ALPHA, DstFactor.ONE_MINUS_CONSTANT_ALPHA)
-        val value = sin(placementDelta / 4f) / 4f + 0.5f
-        RenderSystem.blendColor(1f, 1f, 1f, value)
+//        RenderSystem.blendFunc(SrcFactor.CONSTANT_ALPHA, DstFactor.ONE_MINUS_CONSTANT_ALPHA)
+//        val value = sin(placementDelta / 4f) / 4f + 0.5f
+//        RenderSystem.blendColor(1f, 1f, 1f, value)
+        // FIXME: GL11 is no-longer supported
         GL11.glDepthRange(0.0, 0.0)
         RenderSystem.enableCull()
         RenderSystem.enableDepthTest()
     }
 
     private fun placementEnd() {
+        // FIXME: GL11 is no-longer supported
         GL11.glDepthRange(0.0, 1.0)
-        RenderSystem.blendColor(0f, 0f, 0f, 0f)
+        // FIXME: GL11 is no-longer supported
+//        RenderSystem.blendColor(0f, 0f, 0f, 0f)
         RenderSystem.disableBlend()
         RenderSystem.defaultBlendFunc()
         RenderSystem.disableCull()
-        texture.endDrawing()
     }
 
     val PLACEMENT = object : RenderLayer(
         "TRANSPOSITIONER_PLACEMENT",
         VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
-        GL11.GL_QUADS,
+        VertexFormat.DrawMode.QUADS,
         1 shl 12,
         false,
         true,

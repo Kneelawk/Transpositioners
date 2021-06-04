@@ -13,8 +13,8 @@ import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry
 fun init() {
     CommonProxy.INSTANCE = ClientProxy
 
-    EntityRendererRegistry.INSTANCE.register(TPEntityTypes.TRANSPOSITIONER) { dispatcher, _ ->
-        TranspositionerEntityRenderer(dispatcher)
+    EntityRendererRegistry.INSTANCE.register(TPEntityTypes.TRANSPOSITIONER) { ctx ->
+        TranspositionerEntityRenderer(ctx)
     }
 
     ModelLoadingRegistry.INSTANCE.registerModelProvider { _, out ->

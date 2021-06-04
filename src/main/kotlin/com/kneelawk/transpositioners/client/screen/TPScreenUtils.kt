@@ -88,7 +88,7 @@ object TPScreenUtils {
             matrices.push()
             val tessellator = Tessellator.getInstance()
             val bufferBuilder = tessellator.buffer
-            bufferBuilder.begin(7, VertexFormats.POSITION_COLOR)
+            bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
             val matrix4f = matrices.peek().model
 
             fillGradient(
@@ -129,10 +129,11 @@ object TPScreenUtils {
             RenderSystem.disableTexture()
             RenderSystem.enableBlend()
             RenderSystem.defaultBlendFunc()
-            RenderSystem.shadeModel(7425)
+            // TODO: Figure out what this did
+//            RenderSystem.shadeModel(7425)
             bufferBuilder.end()
             BufferRenderer.draw(bufferBuilder)
-            RenderSystem.shadeModel(7424)
+//            RenderSystem.shadeModel(7424)
             RenderSystem.disableBlend()
             RenderSystem.enableTexture()
 

@@ -64,7 +64,7 @@ class NinePatchIcon(
     @Environment(EnvType.CLIENT)
     override fun paint(matrices: MatrixStack, x: Int, y: Int, width: Int, height: Int) {
         paint(x, y, width, height) { x, y, width, height, texture, u1, v1, u2, v2 ->
-            ScreenDrawing.texturedRect(x, y, width, height, texture, u1, v1, u2, v2, -1)
+            ScreenDrawing.texturedRect(matrices, x, y, width, height, texture, u1, v1, u2, v2, -1)
         }
     }
 

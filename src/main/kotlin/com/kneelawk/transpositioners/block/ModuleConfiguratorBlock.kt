@@ -26,8 +26,8 @@ class ModuleConfiguratorBlock(settings: Settings) : BlockWithEntity(settings) {
         defaultState = stateManager.defaultState.with(FACING, Direction.NORTH)
     }
 
-    override fun createBlockEntity(world: BlockView?): BlockEntity {
-        return ModuleConfiguratorBlockEntity()
+    override fun createBlockEntity(pos: BlockPos, state: BlockState): BlockEntity {
+        return ModuleConfiguratorBlockEntity(pos, state)
     }
 
     override fun onUse(

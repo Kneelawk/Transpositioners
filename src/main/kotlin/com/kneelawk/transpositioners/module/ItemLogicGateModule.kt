@@ -16,7 +16,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
@@ -40,9 +40,9 @@ class ItemLogicGateModule(
 
         fun gateCountByMk(mk: Int): Int {
             return when (mk) {
-                1    -> 2
-                2    -> 4
-                3    -> 16
+                1 -> 2
+                2 -> 4
+                3 -> 16
                 else -> throw IllegalArgumentException("Unknown LogicGate mk: $mk")
             }
         }
@@ -51,10 +51,10 @@ class ItemLogicGateModule(
             TPItems.ITEM_AND_GATE_MODULE_MK1 -> true
             TPItems.ITEM_AND_GATE_MODULE_MK2 -> true
             TPItems.ITEM_AND_GATE_MODULE_MK3 -> true
-            TPItems.ITEM_OR_GATE_MODULE_MK1  -> false
-            TPItems.ITEM_OR_GATE_MODULE_MK2  -> false
-            TPItems.ITEM_OR_GATE_MODULE_MK3  -> false
-            else                             -> throw IllegalArgumentException(
+            TPItems.ITEM_OR_GATE_MODULE_MK1 -> false
+            TPItems.ITEM_OR_GATE_MODULE_MK2 -> false
+            TPItems.ITEM_OR_GATE_MODULE_MK3 -> false
+            else -> throw IllegalArgumentException(
                 "Unknown LogicGate item: ${item.translationKey}"
             )
         }
@@ -63,26 +63,26 @@ class ItemLogicGateModule(
             TPItems.ITEM_AND_GATE_MODULE_MK1 -> 1
             TPItems.ITEM_AND_GATE_MODULE_MK2 -> 2
             TPItems.ITEM_AND_GATE_MODULE_MK3 -> 3
-            TPItems.ITEM_OR_GATE_MODULE_MK1  -> 1
-            TPItems.ITEM_OR_GATE_MODULE_MK2  -> 2
-            TPItems.ITEM_OR_GATE_MODULE_MK3  -> 3
-            else                             -> throw IllegalArgumentException(
+            TPItems.ITEM_OR_GATE_MODULE_MK1 -> 1
+            TPItems.ITEM_OR_GATE_MODULE_MK2 -> 2
+            TPItems.ITEM_OR_GATE_MODULE_MK3 -> 3
+            else -> throw IllegalArgumentException(
                 "Unknown LogicGate item: ${item.translationKey}"
             )
         }
 
         fun getItem(mk: Int, andGate: Boolean) = if (andGate) {
             when (mk) {
-                1    -> TPItems.ITEM_AND_GATE_MODULE_MK1
-                2    -> TPItems.ITEM_AND_GATE_MODULE_MK2
-                3    -> TPItems.ITEM_AND_GATE_MODULE_MK3
+                1 -> TPItems.ITEM_AND_GATE_MODULE_MK1
+                2 -> TPItems.ITEM_AND_GATE_MODULE_MK2
+                3 -> TPItems.ITEM_AND_GATE_MODULE_MK3
                 else -> throw IllegalStateException("Unknown AND LogicGate item with mk: $mk")
             }
         } else {
             when (mk) {
-                1    -> TPItems.ITEM_OR_GATE_MODULE_MK1
-                2    -> TPItems.ITEM_OR_GATE_MODULE_MK2
-                3    -> TPItems.ITEM_OR_GATE_MODULE_MK3
+                1 -> TPItems.ITEM_OR_GATE_MODULE_MK1
+                2 -> TPItems.ITEM_OR_GATE_MODULE_MK2
+                3 -> TPItems.ITEM_OR_GATE_MODULE_MK3
                 else -> throw IllegalStateException("Unknown OR LogicGate item with mk: $mk")
             }
         }
@@ -125,14 +125,14 @@ class ItemLogicGateModule(
         return gates.getModule(index)
     }
 
-    override fun writeToTag(tag: CompoundTag) {
-        tag.put("gates", gates.getTags())
+    override fun writeToTag(tag: NbtCompound) {
+        tag.put("gates", gates.toNbtList())
         if (mk > 1) tag.putBoolean("not_state", notState)
     }
 
     object Type : ModuleType<ItemLogicGateModule> {
         override fun readFromTag(
-            context: ModuleContext, path: ModulePath, stack: ItemStack, tag: CompoundTag
+            context: ModuleContext, path: ModulePath, stack: ItemStack, tag: NbtCompound
         ): ItemLogicGateModule {
             val item = stack.item
             val mk = getMk(item)
@@ -140,7 +140,7 @@ class ItemLogicGateModule(
 
             val gates = ModuleInventory(gateCountByMk(mk), context, path, TPModules.ITEM_GATES)
             if (tag.contains("gates")) {
-                gates.readTags(tag.getList("gates", 10))
+                gates.readNbtList(tag.getList("gates", 10))
             }
 
             val notState = if (mk > 1 && tag.contains("not_state")) {
@@ -163,7 +163,7 @@ class ItemLogicGateModule(
 
         override fun appendTooltip(
             stack: ItemStack, world: World?, tooltip: MutableList<Text>, tooltipContext: TooltipContext,
-            moduleData: CompoundTag
+            moduleData: NbtCompound
         ) {
             if (moduleData.contains("gates")) {
                 val gates = moduleData.getList("gates", 10)
