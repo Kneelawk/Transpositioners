@@ -14,7 +14,6 @@ import net.minecraft.client.render.RenderLayers
 import net.minecraft.client.render.Tessellator
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.block.BlockRenderManager
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.sound.SoundEvents
@@ -126,8 +125,6 @@ class WBlockSideSelector(
         val immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().buffer)
         val blockStack = buildMatrix()
         val random = Random(42)
-        val culling = GL11.glIsEnabled(GL11.GL_CULL_FACE)
-        val frontFace = GL11.glGetInteger(GL11.GL_FRONT_FACE)
 
         val blockState = world.getBlockState(pos)
         if (!blockState.isAir) {
@@ -176,13 +173,6 @@ class WBlockSideSelector(
         }
 
         immediate.draw()
-
-        GL11.glFrontFace(frontFace)
-        if (culling) {
-            GL11.glEnable(GL11.GL_CULL_FACE)
-        } else {
-            GL11.glDisable(GL11.GL_CULL_FACE)
-        }
 
         mc.framebuffer.beginWrite(true)
 
