@@ -2,8 +2,6 @@ package com.kneelawk.transpositioners.client.render
 
 import com.kneelawk.transpositioners.client.entity.TranspositionerEntityRenderer
 import com.kneelawk.transpositioners.item.TranspositionerItem
-import com.mojang.blaze3d.platform.GlStateManager.DstFactor
-import com.mojang.blaze3d.platform.GlStateManager.SrcFactor
 import com.mojang.blaze3d.systems.RenderSystem
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
@@ -30,15 +28,15 @@ object TranspositionerGhostRenderer {
         GL11.glDepthRange(0.0, 0.1)
         RenderSystem.enableCull()
         RenderSystem.enableDepthTest()
-//        RenderSystem.enableBlend()
+        RenderSystem.enableBlend()
 //        RenderSystem.blendFuncSeparate(
 //            SrcFactor.SRC_ALPHA, DstFactor.ONE_MINUS_SRC_ALPHA, SrcFactor.ONE, DstFactor.ONE_MINUS_SRC_ALPHA
 //        )
-        RenderSystem.setShader(GameRenderer::getRenderTypeEntityCutoutShader)
+        RenderSystem.setShader(TPShaders::GHOST)
     }
 
     private fun ghostEnd() {
-//        RenderSystem.disableBlend()
+        RenderSystem.disableBlend()
 //        RenderSystem.defaultBlendFunc()
         // FIXME: GL11 is no-longer supported
         GL11.glDepthRange(0.0, 1.0)
@@ -64,7 +62,8 @@ object TranspositionerGhostRenderer {
         RenderSystem.setShaderTexture(0, SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE)
         MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.enable()
         // FIXME: GL11 is no-longer supported
-//        RenderSystem.enableBlend()
+        RenderSystem.enableBlend()
+        TPShaders.PLACEMENT.getUniform("PlacementDelta")?.set(placementDelta)
 //        RenderSystem.enableAlphaTest()
 //        RenderSystem.defaultAlphaFunc()
 //        RenderSystem.blendFuncSeparate(SrcFactor.SRC_ALPHA, DstFactor.CONSTANT_ALPHA, SrcFactor.ONE, DstFactor.ZERO)
@@ -75,7 +74,7 @@ object TranspositionerGhostRenderer {
         GL11.glDepthRange(0.0, 0.0)
         RenderSystem.enableCull()
         RenderSystem.enableDepthTest()
-        RenderSystem.setShader(GameRenderer::getRenderTypeEntityCutoutShader)
+        RenderSystem.setShader(TPShaders::PLACEMENT)
     }
 
     private fun placementEnd() {
@@ -84,7 +83,7 @@ object TranspositionerGhostRenderer {
         GL11.glDepthRange(0.0, 1.0)
         // FIXME: GL11 is no-longer supported
 //        RenderSystem.blendColor(0f, 0f, 0f, 0f)
-//        RenderSystem.disableBlend()
+        RenderSystem.disableBlend()
 //        RenderSystem.defaultBlendFunc()
         MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.disable()
     }
