@@ -2,6 +2,7 @@ package com.kneelawk.transpositioners.client.render
 
 import com.kneelawk.transpositioners.client.entity.TranspositionerEntityRenderer
 import com.kneelawk.transpositioners.item.TranspositionerItem
+import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
@@ -12,9 +13,12 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
-import org.lwjgl.opengl.GL11
+import net.minecraft.util.math.Matrix4f
 
 object TranspositionerGhostRenderer {
+    private val PLACEMENT_DEPTH_RANGE = Matrix4f.scale(1f, 1f, 0.01f)
+    private val GHOST_DEPTH_RANGE = Matrix4f.scale(1f, 1f, 0.01f)
+
     private var placementDelta = 0f
     private val renderLayers = Object2ObjectLinkedOpenHashMap<RenderLayer, BufferBuilder>()
 
@@ -24,22 +28,22 @@ object TranspositionerGhostRenderer {
         textureManager.getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, true)
         RenderSystem.setShaderTexture(0, SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE)
         MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.enable()
-        // FIXME: GL11 is no-longer supported (but this still works somehow?)
-        GL11.glDepthRange(0.0, 0.1)
+        TPShaders.GHOST.getUniform("DepthRangeMat")?.set(GHOST_DEPTH_RANGE)
         RenderSystem.enableCull()
         RenderSystem.enableDepthTest()
         RenderSystem.enableBlend()
-//        RenderSystem.blendFuncSeparate(
-//            SrcFactor.SRC_ALPHA, DstFactor.ONE_MINUS_SRC_ALPHA, SrcFactor.ONE, DstFactor.ONE_MINUS_SRC_ALPHA
-//        )
+        RenderSystem.blendFuncSeparate(
+            GlStateManager.SrcFactor.SRC_ALPHA,
+            GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA,
+            GlStateManager.SrcFactor.ONE,
+            GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA
+        )
         RenderSystem.setShader(TPShaders::GHOST)
     }
 
     private fun ghostEnd() {
         RenderSystem.disableBlend()
-//        RenderSystem.defaultBlendFunc()
-        // FIXME: GL11 is no-longer supported
-        GL11.glDepthRange(0.0, 1.0)
+        RenderSystem.defaultBlendFunc()
         RenderSystem.disableCull()
         MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.disable()
     }
@@ -61,17 +65,15 @@ object TranspositionerGhostRenderer {
         textureManager.getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, true)
         RenderSystem.setShaderTexture(0, SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE)
         MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.enable()
-        // FIXME: GL11 is no-longer supported
         RenderSystem.enableBlend()
+        RenderSystem.blendFuncSeparate(
+            GlStateManager.SrcFactor.SRC_ALPHA,
+            GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA,
+            GlStateManager.SrcFactor.ONE,
+            GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA
+        )
         TPShaders.PLACEMENT.getUniform("PlacementDelta")?.set(placementDelta)
-//        RenderSystem.enableAlphaTest()
-//        RenderSystem.defaultAlphaFunc()
-//        RenderSystem.blendFuncSeparate(SrcFactor.SRC_ALPHA, DstFactor.CONSTANT_ALPHA, SrcFactor.ONE, DstFactor.ZERO)
-//        RenderSystem.blendFunc(SrcFactor.CONSTANT_ALPHA, DstFactor.ONE_MINUS_CONSTANT_ALPHA)
-//        val value = sin(placementDelta / 4f) / 4f + 0.5f
-//        RenderSystem.blendColor(1f, 1f, 1f, value)
-        // FIXME: GL11 is no-longer supported
-        GL11.glDepthRange(0.0, 0.0)
+        TPShaders.PLACEMENT.getUniform("DepthRangeMat")?.set(PLACEMENT_DEPTH_RANGE)
         RenderSystem.enableCull()
         RenderSystem.enableDepthTest()
         RenderSystem.setShader(TPShaders::PLACEMENT)
@@ -79,12 +81,8 @@ object TranspositionerGhostRenderer {
 
     private fun placementEnd() {
         RenderSystem.disableCull()
-        // FIXME: GL11 is no-longer supported
-        GL11.glDepthRange(0.0, 1.0)
-        // FIXME: GL11 is no-longer supported
-//        RenderSystem.blendColor(0f, 0f, 0f, 0f)
         RenderSystem.disableBlend()
-//        RenderSystem.defaultBlendFunc()
+        RenderSystem.defaultBlendFunc()
         MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.disable()
     }
 
