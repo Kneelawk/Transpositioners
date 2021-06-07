@@ -28,7 +28,7 @@ object TranspositionerGhostRenderer {
         textureManager.getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, true)
         RenderSystem.setShaderTexture(0, SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE)
         MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.enable()
-        TPShaders.GHOST.getUniform("DepthRangeMat")?.set(GHOST_DEPTH_RANGE)
+        TPShaders.GHOST.findUniformMat4("DepthRangeMat").set(GHOST_DEPTH_RANGE)
         RenderSystem.enableCull()
         RenderSystem.enableDepthTest()
         RenderSystem.enableBlend()
@@ -38,7 +38,7 @@ object TranspositionerGhostRenderer {
             GlStateManager.SrcFactor.ONE,
             GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA
         )
-        RenderSystem.setShader(TPShaders::GHOST)
+        RenderSystem.setShader(TPShaders.GHOST::getProgram)
     }
 
     private fun ghostEnd() {
@@ -72,11 +72,11 @@ object TranspositionerGhostRenderer {
             GlStateManager.SrcFactor.ONE,
             GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA
         )
-        TPShaders.PLACEMENT.getUniform("PlacementDelta")?.set(placementDelta)
-        TPShaders.PLACEMENT.getUniform("DepthRangeMat")?.set(PLACEMENT_DEPTH_RANGE)
+        TPShaders.PLACEMENT.findUniform1f("PlacementDelta").set(placementDelta)
+        TPShaders.PLACEMENT.findUniformMat4("DepthRangeMat").set(PLACEMENT_DEPTH_RANGE)
         RenderSystem.enableCull()
         RenderSystem.enableDepthTest()
-        RenderSystem.setShader(TPShaders::PLACEMENT)
+        RenderSystem.setShader(TPShaders.PLACEMENT::getProgram)
     }
 
     private fun placementEnd() {

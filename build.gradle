@@ -25,6 +25,14 @@ repositories {
         name = "CottonMC"
         url = "https://server.bbkr.space/artifactory/libs-release"
     }
+    maven {
+        name = 'Ladysnake Mods'
+        url = 'https://ladysnake.jfrog.io/artifactory/mods'
+        content {
+            includeGroup 'io.github.ladysnake'
+            includeGroupByRegex 'io\\.github\\.onyxstudios.*'
+        }
+    }
 //    jcenter()
 //    // where grondag's mods live
 //    maven {
@@ -75,6 +83,13 @@ dependencies {
     // jij libgui
     include "io.github.cottonmc:LibGui:${project.libgui_version}"
 
+    // satin
+    modImplementation("io.github.ladysnake:satin:${satin_version}") {
+        exclude group: 'net.fabricmc.fabric-api'
+    }
+    // jij satin
+    include "io.github.ladysnake:satin:${satin_version}"
+
     // TODO: update ModMenu, SimplePipes, and Canvas
 //    modRuntime("io.github.prospector:modmenu:${project.modmenu_version}") {
 //        exclude group: "net.fabricmc.fabric-api"
@@ -87,7 +102,8 @@ dependencies {
 //        exclude group: "net.fabricmc.fabric-api"
 //    }
 
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
+    compileOnly "com.google.code.findbugs:jsr305:${jsr305_version}"
+    compileOnly "org.apiguardian:apiguardian-api:${apiguardian_version}"
 }
 
 processResources {

@@ -4,8 +4,8 @@
     "srcrgb": "srcalpha",
     "dstrgb": "1-srcalpha"
   },
-  "vertex": "transpositioner_ghost",
-  "fragment": "transpositioner_ghost",
+  "vertex": "transpositioners:transpositioner_ghost",
+  "fragment": "transpositioners:transpositioner_ghost",
   "attributes": [
     "Position",
     "Color",
