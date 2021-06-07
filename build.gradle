@@ -36,9 +36,9 @@ repositories {
 //        name = "CurseForge"
 //        url = "https://minecraft.curseforge.com/api/maven"
 //    }
-    flatDir {
-        dirs "./libs"
-    }
+//    flatDir {
+//        dirs "./libs"
+//    }
 }
 
 dependencies {
@@ -54,21 +54,21 @@ dependencies {
 
     // Dependencies
 
+    // lba
     modImplementation("alexiil.mc.lib:libblockattributes-all:${project.lba_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
     // jij lba
     include "alexiil.mc.lib:libblockattributes-all:${project.lba_version}"
 
-    // TODO: use official LNS
-//    modImplementation("alexiil.mc.lib:libnetworkstack-base:${project.lns_version}") {
-//        exclude group: "net.fabricmc.fabric-api"
-//    }
-//    // jij lns
-//    include "alexiil.mc.lib:libnetworkstack-base:${project.lns_version}"
+    // lns
+    modImplementation("alexiil.mc.lib:libnetworkstack-base:${project.lns_version}") {
+        exclude group: "net.fabricmc.fabric-api"
+    }
+    // jij lns
+    include "alexiil.mc.lib:libnetworkstack-base:${project.lns_version}"
 
-    modImplementation name: "LibNetworkStack-0.4.8-pre.1-dev"
-
+    // libgui
     modImplementation("io.github.cottonmc:LibGui:${project.libgui_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
