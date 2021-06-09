@@ -131,6 +131,7 @@ object TPScreenUtils {
             RenderSystem.defaultBlendFunc()
             // TODO: Figure out what this did
 //            RenderSystem.shadeModel(7425)
+            RenderSystem.setShader(GameRenderer::getPositionColorShader)
             bufferBuilder.end()
             BufferRenderer.draw(bufferBuilder)
 //            RenderSystem.shadeModel(7424)
