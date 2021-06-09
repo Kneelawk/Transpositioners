@@ -1,6 +1,7 @@
 package com.kneelawk.transpositioners.client.screen.icon
 
 import com.kneelawk.transpositioners.TPConstants.str
+import com.kneelawk.transpositioners.mixin.api.RenderLayerHelper
 import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gl.Framebuffer
@@ -16,25 +17,18 @@ open class FramebufferIcon(override val baseWidth: Int, override val baseHeight:
     protected val fbHeight = baseHeight * scale
     val framebuffer: Framebuffer = SimpleFramebuffer(fbWidth, fbHeight, true, MinecraftClient.IS_SYSTEM_MAC)
 
-    private fun renderStart() {
-        RenderSystem.setShaderTexture(0, framebuffer.colorAttachment)
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
-        RenderSystem.setShader(GameRenderer::getPositionTexShader)
-    }
+    private val texture = RenderPhase.TextureBase({ RenderSystem.setShaderTexture(0, framebuffer.colorAttachment) }, {})
 
-    private fun renderEnd() {
-    }
-
-    private val renderLayer = object : RenderLayer(
+    private val renderLayer = RenderLayerHelper.of(
         str("framebuffer_icon"),
         VertexFormats.POSITION_TEXTURE,
         VertexFormat.DrawMode.QUADS,
         1 shl 12,
         false,
         true,
-        ::renderStart,
-        ::renderEnd
-    ) {}
+        RenderLayer.MultiPhaseParameters.builder().shader(RenderLayerHelper.getPositionTextureShader())
+            .texture(texture).build(false)
+    )
 
     override fun paint(matrices: MatrixStack, x: Int, y: Int, width: Int, height: Int) {
         val tess = Tessellator.getInstance()

@@ -1,14 +1,13 @@
 package com.kneelawk.transpositioners.client.render
 
+import com.kneelawk.transpositioners.TPConstants.str
 import com.kneelawk.transpositioners.client.entity.TranspositionerEntityRenderer
 import com.kneelawk.transpositioners.item.TranspositionerItem
-import com.mojang.blaze3d.platform.GlStateManager
-import com.mojang.blaze3d.systems.RenderSystem
+import com.kneelawk.transpositioners.mixin.api.RenderLayerHelper
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.*
-import net.minecraft.client.texture.SpriteAtlasTexture
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
@@ -19,83 +18,34 @@ object TranspositionerGhostRenderer {
     private val PLACEMENT_DEPTH_RANGE = Matrix4f.scale(1f, 1f, 0.01f)
     private val GHOST_DEPTH_RANGE = Matrix4f.scale(1f, 1f, 0.01f)
 
-    private var placementDelta = 0f
+    private val GHOST_SHADER = RenderPhase.Shader(TPShaders.GHOST::getProgram)
+    private val PLACEMENT_SHADER = RenderPhase.Shader(TPShaders.PLACEMENT::getProgram)
+
     private val renderLayers = Object2ObjectLinkedOpenHashMap<RenderLayer, BufferBuilder>()
 
-    private fun ghostStart() {
-        RenderSystem.enableTexture()
-        val textureManager = MinecraftClient.getInstance().textureManager
-        textureManager.getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, true)
-        RenderSystem.setShaderTexture(0, SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE)
-        MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.enable()
-        TPShaders.GHOST.findUniformMat4("DepthRangeMat").set(GHOST_DEPTH_RANGE)
-        RenderSystem.enableCull()
-        RenderSystem.enableDepthTest()
-        RenderSystem.enableBlend()
-        RenderSystem.blendFuncSeparate(
-            GlStateManager.SrcFactor.SRC_ALPHA,
-            GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA,
-            GlStateManager.SrcFactor.ONE,
-            GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA
-        )
-        RenderSystem.setShader(TPShaders.GHOST::getProgram)
-    }
-
-    private fun ghostEnd() {
-        RenderSystem.disableBlend()
-        RenderSystem.defaultBlendFunc()
-        RenderSystem.disableCull()
-        MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.disable()
-    }
-
-    val GHOST = object : RenderLayer(
-        "TRANSPOSITIONER_GHOST",
+    val GHOST: RenderLayer = RenderLayerHelper.of(
+        str("transpositioner_ghost"),
         VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
         VertexFormat.DrawMode.QUADS,
         1 shl 12,
         false,
         true,
-        ::ghostStart,
-        ::ghostEnd
-    ) {}
+        RenderLayer.MultiPhaseParameters.builder().shader(GHOST_SHADER)
+            .texture(RenderLayerHelper.getMipmapBlockAtlasTexture())
+            .transparency(RenderLayerHelper.getTranslucentTransparency()).build(false)
+    )
 
-    private fun placementStart() {
-        RenderSystem.enableTexture()
-        val textureManager = MinecraftClient.getInstance().textureManager
-        textureManager.getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, true)
-        RenderSystem.setShaderTexture(0, SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE)
-        MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.enable()
-        RenderSystem.enableBlend()
-        RenderSystem.blendFuncSeparate(
-            GlStateManager.SrcFactor.SRC_ALPHA,
-            GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA,
-            GlStateManager.SrcFactor.ONE,
-            GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA
-        )
-        TPShaders.PLACEMENT.findUniform1f("PlacementDelta").set(placementDelta)
-        TPShaders.PLACEMENT.findUniformMat4("DepthRangeMat").set(PLACEMENT_DEPTH_RANGE)
-        RenderSystem.enableCull()
-        RenderSystem.enableDepthTest()
-        RenderSystem.setShader(TPShaders.PLACEMENT::getProgram)
-    }
-
-    private fun placementEnd() {
-        RenderSystem.disableCull()
-        RenderSystem.disableBlend()
-        RenderSystem.defaultBlendFunc()
-        MinecraftClient.getInstance().gameRenderer.lightmapTextureManager.disable()
-    }
-
-    val PLACEMENT = object : RenderLayer(
-        "TRANSPOSITIONER_PLACEMENT",
+    val PLACEMENT: RenderLayer = RenderLayerHelper.of(
+        str("transpositioner_placement"),
         VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
         VertexFormat.DrawMode.QUADS,
         1 shl 12,
         false,
         true,
-        ::placementStart,
-        ::placementEnd
-    ) {}
+        RenderLayer.MultiPhaseParameters.builder().shader(PLACEMENT_SHADER)
+            .texture(RenderLayerHelper.getMipmapBlockAtlasTexture())
+            .transparency(RenderLayerHelper.getTranslucentTransparency()).build(false)
+    )
 
     init {
         renderLayers[GHOST] = BufferBuilder(1 shl 12)
@@ -116,6 +66,8 @@ object TranspositionerGhostRenderer {
         tickDelta: Float,
         matrices: MatrixStack
     ) {
+        var placementDelta = 0f
+
         val client = MinecraftClient.getInstance()
         client.player?.let { player ->
             val world = player.world
@@ -158,6 +110,11 @@ object TranspositionerGhostRenderer {
                 }
             }
         }
+
+        // Setup shader uniforms
+        TPShaders.GHOST.findUniformMat4("DepthRangeMat").set(GHOST_DEPTH_RANGE)
+        TPShaders.PLACEMENT.findUniform1f("PlacementDelta").set(placementDelta)
+        TPShaders.PLACEMENT.findUniformMat4("DepthRangeMat").set(PLACEMENT_DEPTH_RANGE)
 
         CONSUMERS.draw()
     }

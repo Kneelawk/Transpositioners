@@ -1,74 +1,41 @@
 package com.kneelawk.transpositioners.client.screen.icon
 
 import com.kneelawk.transpositioners.TPConstants.str
+import com.kneelawk.transpositioners.mixin.api.RenderLayerHelper
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.*
 import net.minecraft.util.Identifier
+import net.minecraft.util.Util
 import net.minecraft.util.math.Matrix4f
 
 object IconRenderingUtils {
-//    private val ICON_TRANSPARENCY = RenderPhase.Transparency(str("icon_transparency"),
-//        {
-//            RenderSystem.enableBlend()
-//            RenderSystem.blendFuncSeparate(
-//                GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA,
-//                GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO
-//            )
-//        }, {
-//            RenderSystem.disableBlend()
-//            RenderSystem.defaultBlendFunc()
-//        })
+    private val ICON_TRANSPARENCY = RenderPhase.Transparency(str("icon_transparency"),
+        {
+            RenderSystem.enableBlend()
+            RenderSystem.blendFuncSeparate(
+                GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO
+            )
+        }, {
+            RenderSystem.disableBlend()
+            RenderSystem.defaultBlendFunc()
+        })
+    private val ICON_RENDER_LAYER = Util.memoize<Identifier, RenderLayer> { texture ->
+        val multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
+            .texture(RenderPhase.Texture(texture, false, false))
+            .transparency(ICON_TRANSPARENCY)
+            .build(true)
 
-    private fun beginIconRender(texture: Identifier) {
-        // texture
-        RenderSystem.enableTexture()
-        val textureManager = MinecraftClient.getInstance().textureManager
-        textureManager.getTexture(texture).setFilter(false, false)
-        RenderSystem.setShaderTexture(0, texture)
-
-        // transparency
-        RenderSystem.enableBlend()
-        RenderSystem.blendFuncSeparate(
-            GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA,
-            GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO
+        RenderLayerHelper.of(
+            str("icon"), VertexFormats.POSITION_COLOR_TEXTURE, VertexFormat.DrawMode.QUADS, 256, true, false,
+            multiPhaseParameters
         )
-
-        // shader
-        RenderSystem.setShader(GameRenderer::getPositionColorTexShader)
-    }
-
-    private fun endIconRender() {
-        // texture has no end action
-
-        // transparency
-        RenderSystem.disableBlend()
-        RenderSystem.defaultBlendFunc()
     }
 
     fun iconRenderLayer(texture: Identifier): RenderLayer {
-//        val multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
-//            .texture(RenderPhase.Texture(texture, false, false))
-//            .transparency(ICON_TRANSPARENCY)
-//            .build(true)
-//
-//        @Suppress("INACCESSIBLE_TYPE")
-//        return RenderLayer.of(
-//            str("icon"), VertexFormats.POSITION_COLOR_TEXTURE, 7, 256, true, false,
-//            multiPhaseParameters
-//        )
-
-        return object : RenderLayer(
-            str("icon"),
-            VertexFormats.POSITION_COLOR_TEXTURE,
-            VertexFormat.DrawMode.QUADS,
-            256,
-            true,
-            false,
-            { beginIconRender(texture) },
-            ::endIconRender
-        ) {}
+        return ICON_RENDER_LAYER.apply(texture)
     }
 
     fun texturedRect(

@@ -5,7 +5,9 @@
   "mixins": [
   ],
   "client": [
-    "MouseAccessor"
+    "MouseAccessor",
+    "RenderLayerAccessor",
+    "RenderPhaseAccessor"
   ],
   "server": [
   ],
