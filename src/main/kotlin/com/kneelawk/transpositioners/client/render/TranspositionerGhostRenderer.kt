@@ -56,7 +56,7 @@ object TranspositionerGhostRenderer {
         VertexConsumerProvider.immediate(renderLayers, BufferBuilder(1 shl 12))
 
     fun register() {
-        WorldRenderEvents.AFTER_ENTITIES.register { context ->
+        WorldRenderEvents.END.register { context ->
             draw(context.camera(), context.tickDelta(), context.matrixStack())
         }
     }
