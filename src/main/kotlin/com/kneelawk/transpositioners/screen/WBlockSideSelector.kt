@@ -142,6 +142,27 @@ class WBlockSideSelector(
             mc.blockEntityRenderDispatcher.render(be, mc.tickDelta, blockStack, immediate)
         }
 
+        // Draw the selected block to the gui and then draw the side selectors over top of it
+        immediate.draw()
+        mc.framebuffer.beginWrite(true)
+        icon.paint(matrices, x, y, width, height)
+        fb.clear(MinecraftClient.IS_SYSTEM_MAC)
+        fb.beginWrite(true)
+
+        for (side in selectedSides) {
+            blockRenderManager.modelRenderer.render(
+                blockStack.peek(),
+                immediate.getBuffer(TranspositionerGhostRenderer.GHOST),
+                null,
+                bakedModelManager.getModel(TPModels.SIDE_SELECTS[side.id]),
+                1.0f,
+                1.0f,
+                1.0f,
+                15728640,
+                OverlayTexture.DEFAULT_UV
+            )
+        }
+
         if (isWithinBounds(mouseX, mouseY)) {
             getHitSide(mouseX, mouseY)?.let { side ->
                 blockRenderManager.modelRenderer.render(
@@ -158,24 +179,9 @@ class WBlockSideSelector(
             }
         }
 
-        for (side in selectedSides) {
-            blockRenderManager.modelRenderer.render(
-                blockStack.peek(),
-                immediate.getBuffer(TranspositionerGhostRenderer.GHOST),
-                null,
-                bakedModelManager.getModel(TPModels.SIDE_SELECTS[side.id]),
-                1.0f,
-                1.0f,
-                1.0f,
-                15728640,
-                OverlayTexture.DEFAULT_UV
-            )
-        }
-
+        // Draw the side selectors to the gui
         immediate.draw()
-
         mc.framebuffer.beginWrite(true)
-
         icon.paint(matrices, x, y, width, height)
 
         IconUtils.BORDER_INSET.paint(matrices, x, y, width, height)
@@ -183,8 +189,8 @@ class WBlockSideSelector(
 
     private fun setupFramebuffer() {
         if (icon == null) {
-            val icon = FramebufferIcon(width, height)
-            icon.framebuffer.setClearColor(0.4f, 0.4f, 0.4f, 1.0f)
+            val icon = FramebufferIcon(width, height, true)
+            icon.framebuffer.setClearColor(0.4f, 0.4f, 0.4f, 0.0f)
             this.icon = icon
         }
     }

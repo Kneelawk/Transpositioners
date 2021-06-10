@@ -14,15 +14,19 @@ public class RenderLayerHelper {
                 .callOf(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent, phases);
     }
 
+    public static RenderPhase.Transparency getNoTransparency() {
+        return RenderPhaseAccessor.transpositioners$getNO_TRANSPARENCY();
+    }
+
     public static RenderPhase.Transparency getTranslucentTransparency() {
         return RenderPhaseAccessor.transpositioners$getTRANSLUCENT_TRANSPARENCY();
     }
 
-    public static RenderPhase.Texture getMipmapBlockAtlasTexture() {
-        return RenderPhaseAccessor.transpositioners$getMIPMAP_BLOCK_ATLAS_TEXTURE();
-    }
-
     public static RenderPhase.Shader getPositionTextureShader() {
         return RenderPhaseAccessor.transpositioners$getPOSITION_TEXTURE_SHADER();
+    }
+
+    public static RenderPhase.Texture getMipmapBlockAtlasTexture() {
+        return RenderPhaseAccessor.transpositioners$getMIPMAP_BLOCK_ATLAS_TEXTURE();
     }
 }
