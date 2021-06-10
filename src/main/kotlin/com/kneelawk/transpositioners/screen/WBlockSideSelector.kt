@@ -1,5 +1,6 @@
 package com.kneelawk.transpositioners.screen
 
+import com.kneelawk.transpositioners.client.render.TPRenderLayers
 import com.kneelawk.transpositioners.client.render.TranspositionerGhostRenderer
 import com.kneelawk.transpositioners.client.screen.icon.FramebufferIcon
 import com.kneelawk.transpositioners.client.util.TPModels
@@ -152,7 +153,7 @@ class WBlockSideSelector(
         for (side in selectedSides) {
             blockRenderManager.modelRenderer.render(
                 blockStack.peek(),
-                immediate.getBuffer(TranspositionerGhostRenderer.GHOST),
+                immediate.getBuffer(TPRenderLayers.SIDE_SELECTOR_INDICATOR),
                 null,
                 bakedModelManager.getModel(TPModels.SIDE_SELECTS[side.id]),
                 1.0f,
@@ -167,7 +168,7 @@ class WBlockSideSelector(
             getHitSide(mouseX, mouseY)?.let { side ->
                 blockRenderManager.modelRenderer.render(
                     blockStack.peek(),
-                    immediate.getBuffer(TranspositionerGhostRenderer.PLACEMENT),
+                    immediate.getBuffer(TPRenderLayers.SIDE_SELECTOR_HOVER),
                     null,
                     bakedModelManager.getModel(TPModels.SIDE_SELECTS[side.id]),
                     1.0f,

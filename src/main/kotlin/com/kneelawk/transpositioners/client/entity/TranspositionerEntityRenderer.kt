@@ -1,5 +1,6 @@
 package com.kneelawk.transpositioners.client.entity
 
+import com.kneelawk.transpositioners.client.render.TPRenderLayers
 import com.kneelawk.transpositioners.client.render.TranspositionerGhostRenderer
 import com.kneelawk.transpositioners.client.util.TPModels.TRANSPOSITIONERS
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
@@ -73,7 +74,7 @@ class TranspositionerEntityRenderer(ctx: EntityRendererFactory.Context) :
                 for (hand in Hand.values()) {
                     val stack = player.getStackInHand(hand)
                     if (stack.item is TranspositionerViewer) {
-                        return@let TranspositionerGhostRenderer.CONSUMERS.getBuffer(TranspositionerGhostRenderer.GHOST)
+                        return@let TranspositionerGhostRenderer.getVertexConsumer(TPRenderLayers.TRANSPOSITIONER_GHOST)
                     }
                 }
                 null
