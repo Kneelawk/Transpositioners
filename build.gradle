@@ -1,11 +1,11 @@
 plugins {
     id 'fabric-loom'
     id 'maven-publish'
-    id "org.jetbrains.kotlin.jvm"
+    id 'org.jetbrains.kotlin.jvm'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -19,14 +19,17 @@ minecraft {
 repositories {
     maven { url = "https://maven.fabricmc.net/" }
     maven {
+        // LBA, LNS, and SimplePipes
         name = "BuildCraft"
         url = "https://mod-buildcraft.com/maven"
     }
     maven {
+        // LibGUI
         name = "CottonMC"
         url = "https://server.bbkr.space/artifactory/libs-release"
     }
     maven {
+        // Satin
         name = 'Ladysnake Mods'
         url = 'https://ladysnake.jfrog.io/artifactory/mods'
         content {
@@ -34,17 +37,27 @@ repositories {
             includeGroupByRegex 'io\\.github\\.onyxstudios.*'
         }
     }
-//    jcenter()
-//    // where grondag's mods live
-//    maven {
-//        name = "dblsaiko"
-//        url = "https://maven.dblsaiko.net/"
-//    }
-//    // REI, odds and ends
-//    maven {
-//        name = "CurseForge"
-//        url = "https://minecraft.curseforge.com/api/maven"
-//    }
+    maven {
+        // Mod Menu
+        name = "TerraformersMC"
+        url = "https://maven.terraformersmc.com/releases/"
+    }
+    mavenCentral()
+    maven {
+        // where Grondag's mods live
+        name = "dblsaiko"
+        url = "https://maven.dblsaiko.net/"
+    }
+    maven {
+        // Cloth Config (required by Canvas)
+        name = "shedaniel"
+        url = "https://maven.shedaniel.me/"
+    }
+    maven {
+        // REI, odds and ends
+        name = "CurseForge"
+        url = "https://minecraft.curseforge.com/api/maven"
+    }
 //    flatDir {
 //        dirs "./libs"
 //    }
@@ -91,17 +104,19 @@ dependencies {
     // jij satin
     include "io.github.ladysnake:satin:${satin_version}"
 
-    // TODO: update ModMenu, SimplePipes, and Canvas
-//    modRuntime("io.github.prospector:modmenu:${project.modmenu_version}") {
-//        exclude group: "net.fabricmc.fabric-api"
-//    }
-//    modRuntime("alexiil.mc.mod:simplepipes-all:${project.simplepipes_version}") {
-//        exclude group: "net.fabricmc.fabric-api"
-//        exclude module: "libnetworkstack-base"
-//    }
-//    modRuntime("grondag:canvas-mc116:1.0.+") {
-//        exclude group: "net.fabricmc.fabric-api"
-//    }
+    modRuntime("com.terraformersmc:modmenu:${project.modmenu_version}") {
+        exclude group: "net.fabricmc.fabric-api"
+    }
+    modRuntime("alexiil.mc.mod:simplepipes-all:${project.simplepipes_version}") {
+        exclude group: "net.fabricmc.fabric-api"
+        exclude module: "libnetworkstack-base"
+    }
+    modRuntime("grondag:canvas-mc117-1.17:${project.canvas_version}") {
+        exclude group: "net.fabricmc.fabric-api"
+    }
+    modRuntime("grondag:bitraster:${project.bitraster_version}") {
+        exclude group: "net.fabricmc.fabric-api"
+    }
 
     compileOnly "com.google.code.findbugs:jsr305:${jsr305_version}"
     compileOnly "org.apiguardian:apiguardian-api:${apiguardian_version}"
@@ -122,6 +137,9 @@ processResources {
 // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
+
+    // Minecraft 1.17 (21w19a) upwards uses Java 16.
+    it.options.release = 16
 }
 
 // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
@@ -157,4 +175,4 @@ publishing {
     }
 }
 
-compileKotlin.kotlinOptions.jvmTarget = "1.8"
+compileKotlin.kotlinOptions.jvmTarget = "16"
