@@ -9,6 +9,7 @@ import com.kneelawk.transpositioners.util.IconUtils.BUTTON_REGULAR
 import io.github.cottonmc.cotton.gui.client.ScreenDrawing
 import io.github.cottonmc.cotton.gui.widget.WWidget
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
+import io.github.cottonmc.cotton.gui.widget.data.InputResult
 import io.github.cottonmc.cotton.gui.widget.icon.Icon
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -56,9 +57,9 @@ class WScalableButton(
                 icon.paint(matrices, x + padding, y + padding, width - padding * 2, height - padding * 2)
             } else {
                 val xOffset = when (alignment) {
-                    HorizontalAlignment.LEFT   -> padding
+                    HorizontalAlignment.LEFT -> padding
                     HorizontalAlignment.CENTER -> (width - icon.baseWidth) / 2
-                    HorizontalAlignment.RIGHT  -> width - icon.baseWidth - padding
+                    HorizontalAlignment.RIGHT -> width - icon.baseWidth - padding
                 }
                 icon.paint(matrices, x + xOffset, y + (height - icon.baseHeight) / 2, icon.baseWidth, icon.baseHeight)
             }
@@ -87,7 +88,7 @@ class WScalableButton(
     }
 
     @Environment(EnvType.CLIENT)
-    override fun onClick(x: Int, y: Int, button: Int) {
+    override fun onClick(x: Int, y: Int, button: Int): InputResult {
         super.onClick(x, y, button)
         if (enabled && isWithinBounds(x, y)) {
             MinecraftClient.getInstance().soundManager.play(
@@ -97,7 +98,9 @@ class WScalableButton(
                 )
             )
             onClick?.invoke(button)
+            return InputResult.PROCESSED
         }
+        return InputResult.IGNORED
     }
 
     @Environment(EnvType.CLIENT)

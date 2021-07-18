@@ -57,14 +57,14 @@ class NinePatchIcon(
         matrices: MatrixStack, consumers: VertexConsumerProvider, x: Int, y: Int, width: Int, height: Int
     ) {
         paint(x, y, width, height) { x, y, width, height, texture, u1, v1, u2, v2 ->
-            IconRenderingUtils.texturedRect(matrices.peek().model, consumers, x, y, width, height, texture, u1, v1, u2, v2, -1, 1f)
+            IconRenderingUtils.texturedRect(matrices, consumers, x, y, width, height, texture, u1, v1, u2, v2, -1, 1f)
         }
     }
 
     @Environment(EnvType.CLIENT)
     override fun paint(matrices: MatrixStack, x: Int, y: Int, width: Int, height: Int) {
         paint(x, y, width, height) { x, y, width, height, texture, u1, v1, u2, v2 ->
-            ScreenDrawing.texturedRect(x, y, width, height, texture, u1, v1, u2, v2, -1)
+            IconRenderingUtils.texturedRect(matrices, x, y, width, height, texture, u1, v1, u2, v2, -1, 1f)
         }
     }
 

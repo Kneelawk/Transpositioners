@@ -11,7 +11,7 @@ import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
@@ -40,17 +40,17 @@ class ItemNotGateModule(context: ModuleContext, path: ModulePath, val gates: Mod
         return gates.getModule(index)
     }
 
-    override fun writeToTag(tag: CompoundTag) {
-        tag.put("gates", gates.getTags())
+    override fun writeToTag(tag: NbtCompound) {
+        tag.put("gates", gates.toNbtList())
     }
 
     object Type : ModuleType<ItemNotGateModule> {
         override fun readFromTag(
-            context: ModuleContext, path: ModulePath, stack: ItemStack, tag: CompoundTag
+            context: ModuleContext, path: ModulePath, stack: ItemStack, tag: NbtCompound
         ): ItemNotGateModule {
             val gate = ModuleInventory(1, context, path, TPModules.ITEM_GATES)
             if (tag.contains("gates")) {
-                gate.readTags(tag.getList("gates", 10))
+                gate.readNbtList(tag.getList("gates", 10))
             }
 
             return ItemNotGateModule(context, path, gate)
@@ -62,7 +62,7 @@ class ItemNotGateModule(context: ModuleContext, path: ModulePath, val gates: Mod
 
         override fun appendTooltip(
             stack: ItemStack, world: World?, tooltip: MutableList<Text>, tooltipContext: TooltipContext,
-            moduleData: CompoundTag
+            moduleData: NbtCompound
         ) {
             if (moduleData.contains("gates")) {
                 val gates = moduleData.getList("gates", 10)

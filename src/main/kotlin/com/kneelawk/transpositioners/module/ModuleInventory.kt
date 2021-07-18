@@ -5,8 +5,8 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.inventory.InventoryChangedListener
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.CompoundTag
-import net.minecraft.nbt.ListTag
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtList
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.util.stream.Stream
@@ -378,7 +378,7 @@ class ModuleInventory<M : Module>(
      *
      * @param tags the ListTag to load this inventory from.
      */
-    fun readTags(tags: ListTag) {
+    fun readNbtList(tags: NbtList) {
         for (j in 0 until size()) {
             setStack(j, ItemStack.EMPTY)
         }
@@ -387,7 +387,7 @@ class ModuleInventory<M : Module>(
             val compoundTag = tags.getCompound(j)
             val k: Int = compoundTag.getByte("Slot").toInt() and 255
             if (k >= 0 && k < size()) {
-                setStack(k, ItemStack.fromTag(compoundTag))
+                setStack(k, ItemStack.fromNbt(compoundTag))
             }
         }
     }
@@ -399,15 +399,15 @@ class ModuleInventory<M : Module>(
      *
      * @return the ListTag containing the contents of this inventory.
      */
-    fun getTags(): ListTag {
-        val listTag = ListTag()
+    fun toNbtList(): NbtList {
+        val listTag = NbtList()
 
         for (i in 0 until size()) {
             val itemStack = getStack(i)
             if (!itemStack.isEmpty) {
-                val compoundTag = CompoundTag()
+                val compoundTag = NbtCompound()
                 compoundTag.putByte("Slot", i.toByte())
-                itemStack.toTag(compoundTag)
+                itemStack.writeNbt(compoundTag)
                 listTag.add(compoundTag)
             }
         }

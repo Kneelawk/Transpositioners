@@ -24,7 +24,7 @@ import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
@@ -177,11 +177,11 @@ class ItemMoverMk2Module(
         Module.writeModulePath(this, buf)
     }
 
-    override fun writeToTag(tag: CompoundTag) {
+    override fun writeToTag(tag: NbtCompound) {
         tag.putByte("direction", direction.ordinal.toByte())
         tag.putByte("insertionSide", insertionSide.id.toByte())
         tag.putByte("extractionSide", extractionSide.id.toByte())
-        tag.put("gates", gates.getTags())
+        tag.put("gates", gates.toNbtList())
     }
 
     override fun getModule(index: Int): Module? {
@@ -193,7 +193,7 @@ class ItemMoverMk2Module(
             context: ModuleContext,
             path: ModulePath,
             stack: ItemStack,
-            tag: CompoundTag
+            tag: NbtCompound
         ): ItemMoverMk2Module {
             val direction = if (tag.contains("direction")) MovementDirection.values()[tag.getByte("direction").toInt()
                 .coerceIn(0, 1)] else MovementDirection.FORWARD
@@ -216,7 +216,7 @@ class ItemMoverMk2Module(
 
             val gates = ModuleInventory(1, context, path, TPModules.ITEM_GATES)
             if (tag.contains("gates")) {
-                gates.readTags(tag.getList("gates", 10))
+                gates.readNbtList(tag.getList("gates", 10))
             }
 
             return ItemMoverMk2Module(context, path, direction, insertionSide, extractionSide, gates)
@@ -243,7 +243,7 @@ class ItemMoverMk2Module(
             world: World?,
             tooltip: MutableList<Text>,
             tooltipContext: TooltipContext,
-            moduleData: CompoundTag
+            moduleData: NbtCompound
         ) {
             if (moduleData.contains("direction")) {
                 val direction = MovementDirection.values()[moduleData.getByte("direction").toInt().coerceIn(0, 1)]

@@ -35,7 +35,7 @@ class TranspositionerItem(val mk: Int, settings: Settings) : Item(settings), Int
         val pos = context.blockPos.offset(side)
         val player = context.player
 
-        return if (player != null && !canPlaceOn(player, side, context.stack, pos)) {
+        return if (player != null && !canPlaceOn(context.world, player, side, context.stack, pos)) {
             ActionResult.FAIL
         } else {
             getTranspositionerPlacement(
@@ -122,7 +122,7 @@ class TranspositionerItem(val mk: Int, settings: Settings) : Item(settings), Int
         }
 
         val entity = TranspositionerEntity(world, blockPos.offset(direction), direction, mk)
-        stack.tag?.let { EntityType.loadFromEntityTag(world, player, entity, it) }
+        stack.tag?.let { EntityType.loadFromEntityNbt(world, player, entity, it) }
         return if (entity.canStayAttached()) entity else null
     }
 
@@ -146,7 +146,13 @@ class TranspositionerItem(val mk: Int, settings: Settings) : Item(settings), Int
         }
     }
 
-    private fun canPlaceOn(player: PlayerEntity, side: Direction, stack: ItemStack, pos: BlockPos): Boolean {
-        return !World.isOutOfBuildLimitVertically(pos) && player.canPlaceOn(pos, side, stack)
+    private fun canPlaceOn(
+        world: World,
+        player: PlayerEntity,
+        side: Direction,
+        stack: ItemStack,
+        pos: BlockPos
+    ): Boolean {
+        return world.isInBuildLimit(pos) && player.canPlaceOn(pos, side, stack)
     }
 }

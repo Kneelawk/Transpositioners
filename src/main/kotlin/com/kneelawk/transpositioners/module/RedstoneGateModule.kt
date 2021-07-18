@@ -16,7 +16,7 @@ import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
@@ -95,7 +95,7 @@ class RedstoneGateModule(
         Module.writeModulePath(this, buf)
     }
 
-    override fun writeToTag(tag: CompoundTag) {
+    override fun writeToTag(tag: NbtCompound) {
         tag.putByte("gate_type", gateType.id.toByte())
         tag.putByte("gate_side", gateSide.id.toByte())
         tag.putBoolean("previous_redstone", previousRedstone)
@@ -103,7 +103,7 @@ class RedstoneGateModule(
 
     object Type : ModuleType<RedstoneGateModule> {
         override fun readFromTag(
-            context: ModuleContext, path: ModulePath, stack: ItemStack, tag: CompoundTag
+            context: ModuleContext, path: ModulePath, stack: ItemStack, tag: NbtCompound
         ): RedstoneGateModule {
             val gateType = if (tag.contains("gate_type")) {
                 RedstoneGateType.byId(tag.getByte("gate_type").toInt())
@@ -132,7 +132,7 @@ class RedstoneGateModule(
 
         override fun appendTooltip(
             stack: ItemStack, world: World?, tooltip: MutableList<Text>, tooltipContext: TooltipContext,
-            moduleData: CompoundTag
+            moduleData: NbtCompound
         ) {
             if (moduleData.contains("gate_type")) {
                 tooltip += redstoneGateType(RedstoneGateType.byId(moduleData.getByte("gate_type").toInt()))

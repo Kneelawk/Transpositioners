@@ -1,6 +1,5 @@
 package com.kneelawk.transpositioners.client.screen.icon
 
-import io.github.cottonmc.cotton.gui.client.ScreenDrawing
 import io.github.cottonmc.cotton.gui.widget.data.Texture
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -20,14 +19,11 @@ class EnhancedTextureIcon(
     override fun paint(
         matrices: MatrixStack, consumers: VertexConsumerProvider, x: Int, y: Int, width: Int, height: Int
     ) {
-        IconRenderingUtils.texturedRect(
-            matrices.peek().model, consumers, x, y, width, height, texture.image, texture.u1, texture.v1, texture.u2, texture.v2, color,
-            opacity
-        )
+        IconRenderingUtils.texturedRect(matrices, consumers, x, y, width, height, texture, color, opacity)
     }
 
     @Environment(EnvType.CLIENT)
     override fun paint(matrices: MatrixStack, x: Int, y: Int, width: Int, height: Int) {
-        ScreenDrawing.texturedRect(x, y, width, height, texture, color, opacity)
+        IconRenderingUtils.texturedRect(matrices, x, y, width, height, texture, color, opacity)
     }
 }

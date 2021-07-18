@@ -5,7 +5,7 @@ import com.kneelawk.transpositioners.item.TPItems
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.world.World
 
@@ -53,7 +53,7 @@ object TPModules {
         }
     }
 
-    fun getModuleData(stack: ItemStack): CompoundTag? {
+    fun getModuleData(stack: ItemStack): NbtCompound? {
         return stack.getSubTag(TPConstants.str(MODULE_TAG_NAME))
     }
 
@@ -71,12 +71,12 @@ object TPModules {
         }
     }
 
-    fun putModuleData(stack: ItemStack, data: CompoundTag) {
+    fun putModuleData(stack: ItemStack, data: NbtCompound) {
         stack.putSubTag(TPConstants.str(MODULE_TAG_NAME), data)
     }
 
     fun putModule(stack: ItemStack, module: Module) {
-        val holder = CompoundTag()
+        val holder = NbtCompound()
         module.writeToTag(holder)
         putModuleData(stack, holder)
     }

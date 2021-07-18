@@ -8,7 +8,7 @@ import alexiil.mc.lib.net.impl.ActiveMinecraftConnection
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.world.World
 import org.apache.logging.log4j.LogManager
@@ -41,7 +41,7 @@ interface Module : ModuleContainer {
                 }
                 is ModuleContext.Entity -> {
                     buf.writeBoolean(true)
-                    buf.writeInt(context.entity.entityId)
+                    buf.writeInt(context.entity.id)
                 }
             }
             module.path.writeToBuf(buf)
@@ -73,7 +73,7 @@ interface Module : ModuleContainer {
     @Deprecated("This api is unused and likely to be removed.")
     fun validate(stack: ItemStack): Boolean
 
-    fun writeToTag(tag: CompoundTag)
+    fun writeToTag(tag: NbtCompound)
 
     // TODO: Evaluate the usefulness of this.
     @Deprecated("This api is unused and likely to be removed.")

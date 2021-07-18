@@ -1,10 +1,12 @@
 package com.kneelawk.transpositioners.screen
 
+import com.kneelawk.transpositioners.client.render.TPRenderLayers
 import com.kneelawk.transpositioners.client.render.TranspositionerGhostRenderer
 import com.kneelawk.transpositioners.client.screen.icon.FramebufferIcon
 import com.kneelawk.transpositioners.client.util.TPModels
 import com.kneelawk.transpositioners.util.IconUtils
 import io.github.cottonmc.cotton.gui.widget.WWidget
+import io.github.cottonmc.cotton.gui.widget.data.InputResult
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -13,15 +15,10 @@ import net.minecraft.client.render.RenderLayers
 import net.minecraft.client.render.Tessellator
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.block.BlockRenderManager
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.util.math.MatrixStack
-import net.minecraft.client.util.math.Vector3f
-import net.minecraft.client.util.math.Vector4f
 import net.minecraft.sound.SoundEvents
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Direction
-import net.minecraft.util.math.Matrix4f
+import net.minecraft.util.math.*
 import net.minecraft.world.BlockRenderView
 import org.lwjgl.opengl.GL11
 import java.util.*
@@ -38,12 +35,12 @@ class WBlockSideSelector(
     companion object {
 
         private val sides = arrayOf(
-            Side(Vector3f(0.5f, 0f, 0.5f), Direction.DOWN),
-            Side(Vector3f(0.5f, 1f, 0.5f), Direction.UP),
-            Side(Vector3f(0.5f, 0.5f, 0f), Direction.NORTH),
-            Side(Vector3f(0.5f, 0.5f, 1f), Direction.SOUTH),
-            Side(Vector3f(0f, 0.5f, 0.5f), Direction.WEST),
-            Side(Vector3f(1f, 0.5f, 0.5f), Direction.EAST)
+            Side(Vec3f(0.5f, 0f, 0.5f), Direction.DOWN),
+            Side(Vec3f(0.5f, 1f, 0.5f), Direction.UP),
+            Side(Vec3f(0.5f, 0.5f, 0f), Direction.NORTH),
+            Side(Vec3f(0.5f, 0.5f, 1f), Direction.SOUTH),
+            Side(Vec3f(0f, 0.5f, 0.5f), Direction.WEST),
+            Side(Vec3f(1f, 0.5f, 0.5f), Direction.EAST)
         )
 
         /**
@@ -58,8 +55,8 @@ class WBlockSideSelector(
          * @return The point of intersection between the line and the plane, null if the line is parallel to the plane.
          */
         private fun lineIntersection(
-            planePoint: Vector3f, planeNormal: Vector3f, linePoint: Vector3f, lineDirection: Vector3f
-        ): Vector3f? {
+            planePoint: Vec3f, planeNormal: Vec3f, linePoint: Vec3f, lineDirection: Vec3f
+        ): Vec3f? {
             if (abs(planeNormal.dot(lineDirection)) < 1.0E-5) {
                 return null
             }
@@ -129,8 +126,6 @@ class WBlockSideSelector(
         val immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().buffer)
         val blockStack = buildMatrix()
         val random = Random(42)
-        val culling = GL11.glIsEnabled(GL11.GL_CULL_FACE)
-        val frontFace = GL11.glGetInteger(GL11.GL_FRONT_FACE)
 
         val blockState = world.getBlockState(pos)
         if (!blockState.isAir) {
@@ -145,14 +140,35 @@ class WBlockSideSelector(
         }
 
         world.getBlockEntity(pos)?.let { be ->
-            BlockEntityRenderDispatcher.INSTANCE.render(be, mc.tickDelta, blockStack, immediate)
+            mc.blockEntityRenderDispatcher.render(be, mc.tickDelta, blockStack, immediate)
+        }
+
+        // Draw the selected block to the gui and then draw the side selectors over top of it
+        immediate.draw()
+        mc.framebuffer.beginWrite(true)
+        icon.paint(matrices, x, y, width, height)
+        fb.clear(MinecraftClient.IS_SYSTEM_MAC)
+        fb.beginWrite(true)
+
+        for (side in selectedSides) {
+            blockRenderManager.modelRenderer.render(
+                blockStack.peek(),
+                immediate.getBuffer(TPRenderLayers.SIDE_SELECTOR_INDICATOR),
+                null,
+                bakedModelManager.getModel(TPModels.SIDE_SELECTS[side.id]),
+                1.0f,
+                1.0f,
+                1.0f,
+                15728640,
+                OverlayTexture.DEFAULT_UV
+            )
         }
 
         if (isWithinBounds(mouseX, mouseY)) {
             getHitSide(mouseX, mouseY)?.let { side ->
                 blockRenderManager.modelRenderer.render(
                     blockStack.peek(),
-                    immediate.getBuffer(TranspositionerGhostRenderer.PLACEMENT),
+                    immediate.getBuffer(TPRenderLayers.SIDE_SELECTOR_HOVER),
                     null,
                     bakedModelManager.getModel(TPModels.SIDE_SELECTS[side.id]),
                     1.0f,
@@ -164,31 +180,9 @@ class WBlockSideSelector(
             }
         }
 
-        for (side in selectedSides) {
-            blockRenderManager.modelRenderer.render(
-                blockStack.peek(),
-                immediate.getBuffer(TranspositionerGhostRenderer.GHOST),
-                null,
-                bakedModelManager.getModel(TPModels.SIDE_SELECTS[side.id]),
-                1.0f,
-                1.0f,
-                1.0f,
-                15728640,
-                OverlayTexture.DEFAULT_UV
-            )
-        }
-
+        // Draw the side selectors to the gui
         immediate.draw()
-
-        GL11.glFrontFace(frontFace)
-        if (culling) {
-            GL11.glEnable(GL11.GL_CULL_FACE)
-        } else {
-            GL11.glDisable(GL11.GL_CULL_FACE)
-        }
-
         mc.framebuffer.beginWrite(true)
-
         icon.paint(matrices, x, y, width, height)
 
         IconUtils.BORDER_INSET.paint(matrices, x, y, width, height)
@@ -196,8 +190,8 @@ class WBlockSideSelector(
 
     private fun setupFramebuffer() {
         if (icon == null) {
-            val icon = FramebufferIcon(width, height)
-            icon.framebuffer.setClearColor(0.4f, 0.4f, 0.4f, 1.0f)
+            val icon = FramebufferIcon(width, height, true)
+            icon.framebuffer.setClearColor(0.4f, 0.4f, 0.4f, 0.0f)
             this.icon = icon
         }
     }
@@ -227,22 +221,23 @@ class WBlockSideSelector(
 //        blockStack.peek().model.multiply(Matrix4f.viewboxMatrix(45.0, 1f, 0.05f, 1000f))
 //        blockStack.translate(0.0, 0.0, -5.0)
         blockStack.translate(0.5, 0.5, 0.5)
-        blockStack.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(pitch))
-        blockStack.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(yaw))
+        blockStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(pitch))
+        blockStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(yaw))
         blockStack.scale(blockScale, blockScale, blockScale)
         blockStack.translate(-0.5, -0.5, -0.5)
         return blockStack
     }
 
     @Environment(EnvType.CLIENT)
-    override fun onMouseDrag(x: Int, y: Int, button: Int, deltaX: Double, deltaY: Double) {
+    override fun onMouseDrag(x: Int, y: Int, button: Int, deltaX: Double, deltaY: Double): InputResult {
         yaw += deltaX.toFloat() * 2f
         pitch += deltaY.toFloat() * 2f
         distanceMoved += sqrt(deltaX * deltaX + deltaY * deltaY)
+        return InputResult.PROCESSED
     }
 
     @Environment(EnvType.CLIENT)
-    override fun onClick(x: Int, y: Int, button: Int) {
+    override fun onClick(x: Int, y: Int, button: Int): InputResult {
         val mc = MinecraftClient.getInstance()
         if (distanceMoved < 4.0 / mc.window.scaleFactor && isWithinBounds(x, y)) {
             getHitSide(x, y)?.let { hit ->
@@ -253,6 +248,7 @@ class WBlockSideSelector(
             }
         }
         distanceMoved = 0.0
+        return InputResult.PROCESSED
     }
 
     private fun getHitSide(x: Int, y: Int): Direction? {
@@ -260,8 +256,8 @@ class WBlockSideSelector(
         mat.loadIdentity()
         mat.multiply(Matrix4f.translate(0.5f, 0.5f, 0.5f))
         mat.multiply(Matrix4f.scale(1f / blockScale, 1f / blockScale, 1f / blockScale))
-        mat.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-yaw))
-        mat.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(-pitch))
+        mat.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-yaw))
+        mat.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-pitch))
         mat.multiply(Matrix4f.translate(-0.5f, -0.5f, -0.5f))
         mat.multiply(Matrix4f.translate(0.0f, 1.0f, 0.0f))
         mat.multiply(Matrix4f.scale(1f / width.toFloat(), -1f / height.toFloat(), 1f))
@@ -271,15 +267,15 @@ class WBlockSideSelector(
 
         val rot = Matrix4f()
         rot.loadIdentity()
-        rot.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-yaw))
-        rot.multiply(Vector3f.POSITIVE_X.getDegreesQuaternion(-pitch))
+        rot.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-yaw))
+        rot.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-pitch))
 
         val resultingNorm = Vector4f(0f, 0f, -1f, 0f)
         resultingNorm.transform(rot)
         resultingNorm.normalize()
 
-        val clickLoc = Vector3f(resultingLoc.x, resultingLoc.y, resultingLoc.z)
-        val clickNorm = Vector3f(resultingNorm.x, resultingNorm.y, resultingNorm.z)
+        val clickLoc = Vec3f(resultingLoc.x, resultingLoc.y, resultingLoc.z)
+        val clickNorm = Vec3f(resultingNorm.x, resultingNorm.y, resultingNorm.z)
 
         var selectedSide: Direction? = null
         var selectedDistance = 10000f
@@ -303,8 +299,8 @@ class WBlockSideSelector(
         icon?.framebuffer?.delete()
     }
 
-    private class Side(val point: Vector3f, val direction: Direction) {
-        fun intersects(clickLoc: Vector3f, clickNorm: Vector3f): Vector3f? {
+    private class Side(val point: Vec3f, val direction: Direction) {
+        fun intersects(clickLoc: Vec3f, clickNorm: Vec3f): Vec3f? {
             val i = lineIntersection(point, direction.unitVector, clickLoc.copy(), clickNorm.copy()) ?: return null
 
             return if (i.x > -0.00001 && i.x < 1.00001 && i.y > -0.00001 && i.y < 1.00001 && i.z > -0.00001 && i.z < 1.00001) i else null
