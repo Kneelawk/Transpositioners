@@ -122,7 +122,7 @@ class TranspositionerItem(val mk: Int, settings: Settings) : Item(settings), Int
         }
 
         val entity = TranspositionerEntity(world, blockPos.offset(direction), direction, mk)
-        stack.tag?.let { EntityType.loadFromEntityNbt(world, player, entity, it) }
+        stack.nbt?.let { EntityType.loadFromEntityNbt(world, player, entity, it) }
         return if (entity.canStayAttached()) entity else null
     }
 

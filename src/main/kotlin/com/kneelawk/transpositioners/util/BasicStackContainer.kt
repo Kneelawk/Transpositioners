@@ -9,7 +9,7 @@ class BasicStackContainer private constructor(val stack: ItemStack) {
                 throw IllegalArgumentException("Contained stack cannot be empty")
             val newStack = stack.copy()
             newStack.count = 1
-            newStack.tag = null
+            newStack.nbt = null
             return BasicStackContainer(newStack)
         }
     }

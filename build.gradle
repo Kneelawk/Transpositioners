@@ -17,6 +17,7 @@ minecraft {
 
 
 repositories {
+    mavenCentral()
     maven { url = "https://maven.fabricmc.net/" }
     maven {
         // LBA, LNS, and SimplePipes
@@ -39,17 +40,16 @@ repositories {
     }
     maven {
         // Mod Menu
-        name = "TerraformersMC"
-        url = "https://maven.terraformersmc.com/releases/"
+        name = "TerraformersMC Archive"
+        url = "https://raw.githubusercontent.com/TerraformersMC/Archive/main/releases/"
     }
-    mavenCentral()
     maven {
         // where Grondag's mods live
         name = "dblsaiko"
         url = "https://maven.dblsaiko.net/"
     }
     maven {
-        // Cloth Config (required by Canvas)
+        // Cloth Config and REI
         name = "shedaniel"
         url = "https://maven.shedaniel.me/"
     }
@@ -76,41 +76,55 @@ dependencies {
 
     // Dependencies
 
-    // lba
+    // LBA
     modImplementation("alexiil.mc.lib:libblockattributes-all:${project.lba_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
-    // jij lba
     include "alexiil.mc.lib:libblockattributes-all:${project.lba_version}"
 
-    // lns
+    // LNS
     modImplementation("alexiil.mc.lib:libnetworkstack-base:${project.lns_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
-    // jij lns
     include "alexiil.mc.lib:libnetworkstack-base:${project.lns_version}"
 
-    // libgui
+    // LibGUI
     modImplementation("io.github.cottonmc:LibGui:${project.libgui_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
-    // jij libgui
     include "io.github.cottonmc:LibGui:${project.libgui_version}"
 
-    // satin
+    // Satin
     modImplementation("io.github.ladysnake:satin:${satin_version}") {
         exclude group: 'net.fabricmc.fabric-api'
     }
-    // jij satin
     include "io.github.ladysnake:satin:${satin_version}"
 
+    // Runtime
+
+    // Mod Menu
     modRuntime("com.terraformersmc:modmenu:${project.modmenu_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
-    modRuntime("alexiil.mc.mod:simplepipes-all:${project.simplepipes_version}") {
+
+    // REI
+    modRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${rei_version}") {
+        exclude group: "net.fabricmc.fabric-api"
+    }
+    modRuntime("dev.architectury:architectury-fabric:${architectury_version}") {
+        exclude group: "net.fabricmc.fabric-api"
+    }
+
+    // Simple Pipes
+    modRuntime("alexiil.mc.mod:simplepipes-base:${project.simplepipes_version}") {
         exclude group: "net.fabricmc.fabric-api"
         exclude module: "libnetworkstack-base"
     }
+    modRuntime("alexiil.mc.lib:libmultipart-all:${project.lmp_version}") {
+        exclude group: "net.fabricmc.fabric-api"
+    }
+
+    // Canvas
     modRuntime("grondag:canvas-mc117-1.17:${project.canvas_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }

@@ -30,7 +30,7 @@ class ExactStackContainer private constructor(val stack: ItemStack) {
         if (stack.isEmpty) return 0
 
         var result = stack.item.hashCode()
-        result = 31 * result + stack.tag.hashCode()
+        result = 31 * result + stack.nbt.hashCode()
         return result
     }
 }

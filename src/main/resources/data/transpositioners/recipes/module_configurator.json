@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SIS",
+    "IMI",
+    "SIS"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stone"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "M": {
+      "item": "transpositioners:module_base_mk1"
+    }
+  },
+  "result": {
+    "item": "transpositioners:module_configurator"
+  }
+}

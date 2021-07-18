@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "   ",
+    "MRM",
+    "RBR"
+  ],
+  "key": {
+    "M": {
+      "item": "minecraft:stone"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "B": {
+      "item": "transpositioners:gate_module_base_mk3"
+    }
+  },
+  "result": {
+    "item": "transpositioners:item_or_gate_module_mk3"
+  }
+}

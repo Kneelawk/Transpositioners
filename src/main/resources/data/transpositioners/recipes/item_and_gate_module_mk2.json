@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "   ",
+    "MTM",
+    "TBT"
+  ],
+  "key": {
+    "M": {
+      "item": "minecraft:iron_ingot"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    },
+    "B": {
+      "item": "transpositioners:gate_module_base_mk2"
+    }
+  },
+  "result": {
+    "item": "transpositioners:item_and_gate_module_mk2"
+  }
+}

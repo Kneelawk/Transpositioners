@@ -17,6 +17,13 @@ object TPItems {
     val TOOL_ITEM_SETTINGS = Item.Settings().group(TRANSPOSITIONER_ITEM_GROUP).maxCount(1)
     val MODULE_ITEM_SETTINGS = Item.Settings().group(TRANSPOSITIONER_ITEM_GROUP).maxCount(1)
 
+    val MODULE_BASE_MK1 = Item(MODULE_ITEM_SETTINGS)
+    val MODULE_BASE_MK2 = Item(MODULE_ITEM_SETTINGS)
+    val MODULE_BASE_MK3 = Item(MODULE_ITEM_SETTINGS)
+    val GATE_MODULE_BASE_MK1 = Item(MODULE_ITEM_SETTINGS)
+    val GATE_MODULE_BASE_MK2 = Item(MODULE_ITEM_SETTINGS)
+    val GATE_MODULE_BASE_MK3 = Item(MODULE_ITEM_SETTINGS)
+
     val TRANSPOSITIONER_MK1 = TranspositionerItem(1, TRANSPOSITIONERS_ITEM_SETTINGS)
     val TRANSPOSITIONER_MK2 = TranspositionerItem(2, TRANSPOSITIONERS_ITEM_SETTINGS)
     val TRANSPOSITIONER_MK3 = TranspositionerItem(3, TRANSPOSITIONERS_ITEM_SETTINGS)
@@ -40,6 +47,12 @@ object TPItems {
     val ITEM_OR_GATE_MODULE_MK3 = ModuleItem(MODULE_ITEM_SETTINGS)
 
     fun register() {
+        register(MODULE_BASE_MK1, "module_base_mk1")
+        register(MODULE_BASE_MK2, "module_base_mk2")
+        register(MODULE_BASE_MK3, "module_base_mk3")
+        register(GATE_MODULE_BASE_MK1, "gate_module_base_mk1")
+        register(GATE_MODULE_BASE_MK2, "gate_module_base_mk2")
+        register(GATE_MODULE_BASE_MK3, "gate_module_base_mk3")
         register(TRANSPOSITIONER_MK1, "transpositioner_mk1")
         register(TRANSPOSITIONER_MK2, "transpositioner_mk2")
         register(TRANSPOSITIONER_MK3, "transpositioner_mk3")

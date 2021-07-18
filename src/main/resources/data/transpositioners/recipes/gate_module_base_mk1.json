@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "   ",
+    "MBM",
+    "SMS"
+  ],
+  "key": {
+    "M": {
+      "item": "minecraft:stone"
+    },
+    "B": {
+      "item": "transpositioners:module_base_mk1"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "result": {
+    "item": "transpositioners:gate_module_base_mk1"
+  }
+}

@@ -54,7 +54,7 @@ object TPModules {
     }
 
     fun getModuleData(stack: ItemStack): NbtCompound? {
-        return stack.getSubTag(TPConstants.str(MODULE_TAG_NAME))
+        return stack.getSubNbt(TPConstants.str(MODULE_TAG_NAME))
     }
 
     fun <M : Module> getModule(
@@ -72,7 +72,7 @@ object TPModules {
     }
 
     fun putModuleData(stack: ItemStack, data: NbtCompound) {
-        stack.putSubTag(TPConstants.str(MODULE_TAG_NAME), data)
+        stack.setSubNbt(TPConstants.str(MODULE_TAG_NAME), data)
     }
 
     fun putModule(stack: ItemStack, module: Module) {
