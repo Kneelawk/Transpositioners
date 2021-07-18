@@ -11,6 +11,7 @@ import com.kneelawk.transpositioners.net.setServerReceiver
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
+import io.github.cottonmc.cotton.gui.widget.data.Insets
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.LiteralText
 import org.apache.logging.log4j.LogManager
@@ -37,10 +38,11 @@ class ItemLogicGateScreenHandler(
     private val changeNotState: WScalableButton
 
     init {
-        setTitleAlignment(HorizontalAlignment.RIGHT)
+        setTitleAlignment(HorizontalAlignment.CENTER)
 
         val root = WPlainPanel()
         setRootPanel(root)
+        root.insets = Insets.ROOT_PANEL
 
         val backButton = WScalableButton(LiteralText("<-"))
         root.add(backButton, 0, 0)

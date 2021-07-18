@@ -20,6 +20,7 @@ import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WCardPanel
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
+import io.github.cottonmc.cotton.gui.widget.data.Insets
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.LiteralText
@@ -69,7 +70,7 @@ class ItemMoverMk2ScreenHandler(
     private var curExtractionSide: Direction
 
     init {
-        setTitleAlignment(HorizontalAlignment.RIGHT)
+        setTitleAlignment(HorizontalAlignment.CENTER)
 
         val root = WCardPanel()
         setRootPanel(root)
@@ -77,7 +78,7 @@ class ItemMoverMk2ScreenHandler(
         // inventory panel
 
         val inventoryPanel = WPlainPanel()
-        root.add(0, inventoryPanel)
+        inventoryPanel.insets = Insets.ROOT_PANEL
 
         inventoryPanel.add(createPlayerInventoryPanel(), 0, 3 * 18 + 9)
 
@@ -103,10 +104,12 @@ class ItemMoverMk2ScreenHandler(
 
         addSlots(inventoryPanel, module.gates, { OPEN_MODULE.send(this, it) }, 0, 1, 5 * 18 + 9, 1 * 18)
 
+        root.add(0, inventoryPanel)
+
         // insertion side panel
 
         val insertionSidePanel = WPlainPanel()
-        root.add(1, insertionSidePanel)
+        insertionSidePanel.insets = Insets.ROOT_PANEL
         curInsertionSide = module.insertionSide
         insertionSideSelector =
             WBlockSideSelector(
@@ -132,11 +135,12 @@ class ItemMoverMk2ScreenHandler(
             ID_INSERTION_SIDE_CHANGE.sendToServer(this) { it.writeByte(curInsertionSide.id) }
             root.selectedIndex = 0
         }
+        root.add(1, insertionSidePanel)
 
         // extraction side panel
 
         val extractionSidePanel = WPlainPanel()
-        root.add(2, extractionSidePanel)
+        extractionSidePanel.insets = Insets.ROOT_PANEL
         curExtractionSide = module.extractionSide
         extractionSideSelector = WBlockSideSelector(
             module.context.world, getExtractionPos(), 5 * 18, 5 * 18, setOf(module.extractionSide)
@@ -161,6 +165,7 @@ class ItemMoverMk2ScreenHandler(
             ID_EXTRACTION_SIDE_CHANGE.sendToServer(this) { it.writeByte(curExtractionSide.id) }
             root.selectedIndex = 0
         }
+        root.add(2, extractionSidePanel)
 
         // context switch events
 

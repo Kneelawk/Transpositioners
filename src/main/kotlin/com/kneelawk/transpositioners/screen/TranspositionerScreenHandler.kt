@@ -14,6 +14,7 @@ import io.github.cottonmc.cotton.gui.widget.WButton
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
 import io.github.cottonmc.cotton.gui.widget.WItemSlot
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
+import io.github.cottonmc.cotton.gui.widget.data.Insets
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.NamedScreenHandlerFactory
@@ -47,6 +48,7 @@ class TranspositionerScreenHandler(
     init {
         val root = WPlainPanel()
         setRootPanel(root)
+        root.insets = Insets.ROOT_PANEL
 
         val moduleCount = TranspositionerEntity.moduleCountByMk(entity.mk)
 

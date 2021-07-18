@@ -13,6 +13,7 @@ import com.kneelawk.transpositioners.util.TranspositionerSide
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
+import io.github.cottonmc.cotton.gui.widget.data.Insets
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.LiteralText
 import com.kneelawk.transpositioners.util.IconUtils.redstoneGateType as redstoneGateTypeI
@@ -40,10 +41,11 @@ class RedstoneGateScreenHandler(
     private val gateSide: WScalableButton
 
     init {
-        setTitleAlignment(HorizontalAlignment.RIGHT)
+        setTitleAlignment(HorizontalAlignment.CENTER)
 
         val root = WPlainPanel()
         setRootPanel(root)
+        root.insets = Insets.ROOT_PANEL
 
         root.add(createPlayerInventoryPanel(), 0, 2 * 18 + 9)
 

@@ -13,6 +13,7 @@ import io.github.cottonmc.cotton.gui.widget.WButton
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
 import io.github.cottonmc.cotton.gui.widget.WItemSlot
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
+import io.github.cottonmc.cotton.gui.widget.data.Insets
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.text.LiteralText
@@ -45,6 +46,7 @@ class ModuleConfiguratorScreenHandler(
     init {
         val root = WPlainPanel()
         setRootPanel(root)
+        root.insets = Insets.ROOT_PANEL
 
         root.add(createPlayerInventoryPanel(), 0, 2 * 18 + 9)
 
