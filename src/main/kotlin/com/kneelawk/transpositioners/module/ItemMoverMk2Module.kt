@@ -39,11 +39,13 @@ class ItemMoverMk2Module(
     initialDirection: MovementDirection,
     initialInsertionSide: Direction,
     initialExtractionSide: Direction,
-    val gates: ModuleInventory<ItemGateModule>
+    val gates: ModuleInventory<ItemGateModule>,
+    private var lastMove: Long
 ) :
     AbstractModule(Type, context, path), MoverModule, ExtendedScreenHandlerFactory {
     companion object {
-        const val MAX_STACK_SIZE = 8
+        const val MAX_STACK_SIZE = 32
+        const val TICKS_PER_MOVE = 40
 
         private val NET_PARENT = Module.NET_ID.subType(
             ItemMoverMk2Module::class.java,
@@ -99,27 +101,32 @@ class ItemMoverMk2Module(
     }
 
     override fun move() {
-        ignoreStacks.clear()
+        val now = world.time
+        if (now - lastMove >= TICKS_PER_MOVE) {
+            lastMove = now
 
-        val insert = getItemInsertable(getInsertionPos(), insertionSide.opposite)
-        val extractInv = getFixedItemInv(getExtractionPos(), extractionSide.opposite)
+            ignoreStacks.clear()
+
+            val insert = getItemInsertable(getInsertionPos(), insertionSide.opposite)
+            val extractInv = getFixedItemInv(getExtractionPos(), extractionSide.opposite)
 
 //        val itemFilter = AggregateItemFilter.allOf(
 //            gates.moduleStream().filter { it != null }.map { it!!.getItemFilter() }.collect(Collectors.toList())
 //        )
-        val itemFilter = gates.getModule(0)?.getItemFilter() ?: ConstantItemFilter.ANYTHING
+            val itemFilter = gates.getModule(0)?.getItemFilter() ?: ConstantItemFilter.ANYTHING
 
-        if (extractInv != EmptyFixedItemInv.INSTANCE) {
-            var remaining = MAX_STACK_SIZE
-            for (slot in 0 until extractInv.slotCount) {
-                val extract = extractInv.getSlot(slot)
-                remaining = attemptTransfer(remaining, extract, insert, ignoreStacks, itemFilter)
-                if (remaining == 0) break
+            if (extractInv != EmptyFixedItemInv.INSTANCE) {
+                var remaining = MAX_STACK_SIZE
+                for (slot in 0 until extractInv.slotCount) {
+                    val extract = extractInv.getSlot(slot)
+                    remaining = attemptTransfer(remaining, extract, insert, ignoreStacks, itemFilter)
+                    if (remaining == 0) break
+                }
+            } else {
+                val extract = getItemExtractable(getExtractionPos(), extractionSide.opposite)
+
+                attemptTransfer(MAX_STACK_SIZE, extract, insert, ignoreStacks, itemFilter)
             }
-        } else {
-            val extract = getItemExtractable(getExtractionPos(), extractionSide.opposite)
-
-            attemptTransfer(MAX_STACK_SIZE, extract, insert, ignoreStacks, itemFilter)
         }
     }
 
@@ -182,6 +189,7 @@ class ItemMoverMk2Module(
         tag.putByte("insertionSide", insertionSide.id.toByte())
         tag.putByte("extractionSide", extractionSide.id.toByte())
         tag.put("gates", gates.toNbtList())
+        tag.putLong("lastMove", lastMove)
     }
 
     override fun getModule(index: Int): Module? {
@@ -219,7 +227,9 @@ class ItemMoverMk2Module(
                 gates.readNbtList(tag.getList("gates", 10))
             }
 
-            return ItemMoverMk2Module(context, path, direction, insertionSide, extractionSide, gates)
+            val lastMove = if (tag.contains("lastMove")) tag.getLong("lastMove") else 0L
+
+            return ItemMoverMk2Module(context, path, direction, insertionSide, extractionSide, gates, lastMove)
         }
 
         override fun newInstance(
@@ -234,7 +244,7 @@ class ItemMoverMk2Module(
                 }, when (context) {
                     is ModuleContext.Configurator -> Direction.DOWN
                     is ModuleContext.Entity       -> context.facing
-                }, ModuleInventory(1, context, path, TPModules.ITEM_GATES)
+                }, ModuleInventory(1, context, path, TPModules.ITEM_GATES), 0L
             )
         }
 

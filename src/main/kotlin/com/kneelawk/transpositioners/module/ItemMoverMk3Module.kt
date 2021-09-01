@@ -33,7 +33,7 @@ import net.minecraft.world.World
 class ItemMoverMk3Module(
     context: ModuleContext, path: ModulePath, initialDirection: MovementDirection, initialInsertionSide: Direction,
     initialExtractionSide: Direction, initialStackSize: Int, initialTicksPerMove: Int,
-    val gates: ModuleInventory<ItemGateModule>
+    val gates: ModuleInventory<ItemGateModule>, private var lastMove: Long
 ) : AbstractModule(Type, context, path), MoverModule, ExtendedScreenHandlerFactory {
     companion object {
         const val MIN_STACK_SIZE = 1
@@ -83,7 +83,6 @@ class ItemMoverMk3Module(
         private set
 
     private val ignoreStacks = mutableSetOf<ExactStackContainer>()
-    private var lastMove = 0L
 
     fun updateDirection(newDirection: MovementDirection) {
         direction = newDirection
@@ -209,6 +208,7 @@ class ItemMoverMk3Module(
         tag.putInt("stackSize", stackSize)
         tag.putInt("ticksPerMove", ticksPerMove)
         tag.put("gates", gates.toNbtList())
+        tag.putLong("lastMove", lastMove)
     }
 
     override fun getModule(index: Int): Module? {
@@ -250,8 +250,10 @@ class ItemMoverMk3Module(
                 gates.readNbtList(tag.getList("gates", 10))
             }
 
+            val lastMove = if (tag.contains("lastMove")) tag.getLong("lastMove") else 0L
+
             return ItemMoverMk3Module(
-                context, path, direction, insertionSide, extractionSide, stackSize, ticksPerMove, gates
+                context, path, direction, insertionSide, extractionSide, stackSize, ticksPerMove, gates, lastMove
             )
         }
 
@@ -267,7 +269,7 @@ class ItemMoverMk3Module(
                 }, when (context) {
                     is ModuleContext.Configurator -> Direction.DOWN
                     is ModuleContext.Entity -> context.facing
-                }, DEFAULT_STACK_SIZE, DEFAULT_TICKS_PER_MOVE, ModuleInventory(1, context, path, TPModules.ITEM_GATES)
+                }, DEFAULT_STACK_SIZE, DEFAULT_TICKS_PER_MOVE, ModuleInventory(1, context, path, TPModules.ITEM_GATES), 0L
             )
         }
 
