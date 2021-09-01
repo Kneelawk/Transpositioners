@@ -90,7 +90,7 @@ object TPScreenHandlerUtils {
                 if (action == SlotActionType.PICKUP
                     || (action == SlotActionType.QUICK_CRAFT && SyncedGuiDescription.unpackQuickCraftStage(button) == 1)
                 ) {
-                    val stack = screenHandler.cursorStack
+                    val stack = screenHandler.cursorStack.copy()
                     if (!stack.isEmpty) {
                         stack.count = 1
                     }
