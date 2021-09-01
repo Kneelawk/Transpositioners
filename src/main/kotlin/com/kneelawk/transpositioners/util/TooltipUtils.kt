@@ -11,7 +11,7 @@ object TooltipUtils {
             "direction",
             tooltip(direction.name.toLowerCase()).apply {
                 when (direction) {
-                    MovementDirection.FORWARD  -> formatted(Formatting.GREEN)
+                    MovementDirection.FORWARD -> formatted(Formatting.GREEN)
                     MovementDirection.BACKWARD -> formatted(Formatting.BLUE)
                 }
             })
@@ -20,12 +20,12 @@ object TooltipUtils {
     fun direction(direction: Direction): Text {
         return tooltip(direction.getName()).apply {
             when (direction) {
-                Direction.DOWN  -> formatted(Formatting.GRAY)
-                Direction.UP    -> formatted(Formatting.WHITE)
+                Direction.DOWN -> formatted(Formatting.GRAY)
+                Direction.UP -> formatted(Formatting.WHITE)
                 Direction.NORTH -> formatted(Formatting.DARK_RED)
                 Direction.SOUTH -> formatted(Formatting.DARK_BLUE)
-                Direction.WEST  -> formatted(Formatting.GREEN)
-                Direction.EAST  -> formatted(Formatting.YELLOW)
+                Direction.WEST -> formatted(Formatting.GREEN)
+                Direction.EAST -> formatted(Formatting.YELLOW)
             }
         }
     }
@@ -40,11 +40,15 @@ object TooltipUtils {
         direction(extractionSide)
     )
 
+    fun stackSize(stackSize: Int) = tooltip("stack_size", stackSize)
+
+    fun ticksPerMove(ticksPerMove: Int) = tooltip("ticks_per_move", ticksPerMove)
+
     fun listGateType(type: ListGateType): Text {
         return tooltip("list_gate_type", tooltip(type.name.toLowerCase()).apply {
             when (type) {
                 ListGateType.ALLOW -> formatted(Formatting.GREEN)
-                ListGateType.DENY  -> formatted(Formatting.RED)
+                ListGateType.DENY -> formatted(Formatting.RED)
             }
         })
     }
@@ -52,10 +56,10 @@ object TooltipUtils {
     fun redstoneGateType(type: RedstoneGateType): Text {
         return tooltip("redstone_gate_type", tooltip(type.name.toLowerCase()).apply {
             when (type) {
-                RedstoneGateType.REDSTONE_DISABLE      -> formatted(Formatting.DARK_GRAY)
-                RedstoneGateType.REDSTONE_HIGH         -> formatted(Formatting.RED)
-                RedstoneGateType.REDSTONE_LOW          -> formatted(Formatting.DARK_RED)
-                RedstoneGateType.REDSTONE_RISING_EDGE  -> formatted(Formatting.DARK_GREEN)
+                RedstoneGateType.REDSTONE_DISABLE -> formatted(Formatting.DARK_GRAY)
+                RedstoneGateType.REDSTONE_HIGH -> formatted(Formatting.RED)
+                RedstoneGateType.REDSTONE_LOW -> formatted(Formatting.DARK_RED)
+                RedstoneGateType.REDSTONE_RISING_EDGE -> formatted(Formatting.DARK_GREEN)
                 RedstoneGateType.REDSTONE_FALLING_EDGE -> formatted(Formatting.DARK_BLUE)
             }
         })
@@ -65,7 +69,7 @@ object TooltipUtils {
         return tooltip(side.name.toLowerCase()).apply {
             when (side) {
                 TranspositionerSide.FRONT -> formatted(Formatting.GREEN)
-                TranspositionerSide.BACK  -> formatted(Formatting.BLUE)
+                TranspositionerSide.BACK -> formatted(Formatting.BLUE)
             }
         }
     }

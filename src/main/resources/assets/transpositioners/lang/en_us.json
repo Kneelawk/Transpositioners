@@ -13,7 +13,7 @@
   "item.transpositioners.item_gate_module_mk2": "Item Gate Module Mk2 (Unimplemented)",
   "item.transpositioners.item_mover_module_mk1": "Item Mover Module Mk1",
   "item.transpositioners.item_mover_module_mk2": "Item Mover Module Mk2",
-  "item.transpositioners.item_mover_module_mk3": "Item Mover Module Mk3 (Unimplemented)",
+  "item.transpositioners.item_mover_module_mk3": "Item Mover Module Mk3",
   "item.transpositioners.item_not_gate_module": "Item NOT Gate Module",
   "item.transpositioners.item_or_gate_module_mk1": "Item OR Gate Module Mk1",
   "item.transpositioners.item_or_gate_module_mk2": "Item OR Gate Module Mk2",
@@ -48,6 +48,8 @@
   "tooltip.transpositioners.unconfigured": "Unconfigured",
   "tooltip.transpositioners.insertion_side": "Insertion Side: %s",
   "tooltip.transpositioners.extraction_side": "Extraction Side: %s",
+  "tooltip.transpositioners.stack_size": "Stack Size: %s",
+  "tooltip.transpositioners.ticks_per_move": "Moves every %s ticks.",
   "tooltip.transpositioners.down": "Down",
   "tooltip.transpositioners.up": "Up",
   "tooltip.transpositioners.north": "North",
@@ -70,5 +72,7 @@
   "tooltip.transpositioners.back": "Back",
   "tooltip.transpositioners.not_state": "Inversion: %s",
   "tooltip.transpositioners.not_state_true": "Inverted",
-  "tooltip.transpositioners.not_state_false": "Not Inverted"
+  "tooltip.transpositioners.not_state_false": "Not Inverted",
+  "tooltip.transpositioners.field.stack_size": "Stack Size",
+  "tooltip.transpositioners.field.ticks_per_move": "Ticks Per Move"
 }

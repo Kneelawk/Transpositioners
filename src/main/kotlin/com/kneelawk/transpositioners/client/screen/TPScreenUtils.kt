@@ -183,9 +183,7 @@ object TPScreenUtils {
             @Environment(EnvType.CLIENT)
             override fun render(matrices: MatrixStack, provider: VertexConsumerProvider, x: Int, y: Int) {
                 MinecraftClient.getInstance().textRenderer.draw(
-                    text, x.toFloat(), y.toFloat(), -1, true, matrices.peek().model, provider,
-                    false, 0,
-                    15728880
+                    text, x.toFloat(), y.toFloat(), -1, true, matrices.peek().model, provider, false, 0, 15728880
                 )
             }
         }

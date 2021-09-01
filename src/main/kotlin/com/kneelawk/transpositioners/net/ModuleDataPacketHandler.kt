@@ -1,20 +1,19 @@
 package com.kneelawk.transpositioners.net
 
+import alexiil.mc.lib.net.NetByteBuf
 import alexiil.mc.lib.net.NetIdDataK
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
 import com.kneelawk.transpositioners.module.Module
 import com.kneelawk.transpositioners.screen.ModuleScreenHandler
-import net.minecraft.network.PacketByteBuf
 import kotlin.reflect.KClass
 
 /**
  * Designed to simplify the process of a server-side module updating its client-side counterpart and client-side screen.
  */
-class ModuleDataPacketHandler<M : Module, S : ModuleScreenHandler>(private val netId: NetIdDataK<M>,
-                                                                   screenHandlerClass: KClass<S>,
-                                                                   stateEncoder: M.(PacketByteBuf) -> Unit,
-                                                                   stateDecoder: M.(PacketByteBuf) -> Unit,
-                                                                   screenNotifier: M.(S) -> Unit) {
+class ModuleDataPacketHandler<M : Module, S : ModuleScreenHandler>(
+    private val netId: NetIdDataK<M>, screenHandlerClass: KClass<S>, stateEncoder: M.(NetByteBuf) -> Unit,
+    stateDecoder: M.(NetByteBuf) -> Unit, screenNotifier: M.(S) -> Unit
+) {
 
     init {
         netId.setReadWrite({ module, buf, ctx ->

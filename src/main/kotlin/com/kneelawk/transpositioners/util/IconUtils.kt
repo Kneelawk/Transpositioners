@@ -37,6 +37,8 @@ object IconUtils {
 
     val CHECK_ICON = EnhancedTextureIcon(identifier("textures/gui/check2.png"), 16, 16)
     val DENY_ICON = EnhancedTextureIcon(identifier("textures/gui/deny2.png"), 16, 16)
+    val CHECK_SMALL_ICON = EnhancedTextureIcon(identifier("textures/gui/check_small.png"), 7, 7)
+    val DENY_SMALL_ICON = EnhancedTextureIcon(identifier("textures/gui/deny_small.png"), 7, 7)
     val X_ICON = EnhancedTextureIcon(identifier("textures/gui/disable.png"), 16, 16)
 
     val BUTTON_DISABLED =
@@ -51,29 +53,29 @@ object IconUtils {
 
     fun insertionSide(direction: Direction): EnhancedIcon {
         return when (direction) {
-            Direction.DOWN  -> INSERT_DOWN
-            Direction.UP    -> INSERT_UP
+            Direction.DOWN -> INSERT_DOWN
+            Direction.UP -> INSERT_UP
             Direction.NORTH -> INSERT_NORTH
             Direction.SOUTH -> INSERT_SOUTH
-            Direction.WEST  -> INSERT_WEST
-            Direction.EAST  -> INSERT_EAST
+            Direction.WEST -> INSERT_WEST
+            Direction.EAST -> INSERT_EAST
         }
     }
 
     fun extractionSide(direction: Direction): EnhancedIcon {
         return when (direction) {
-            Direction.DOWN  -> EXTRACT_DOWN
-            Direction.UP    -> EXTRACT_UP
+            Direction.DOWN -> EXTRACT_DOWN
+            Direction.UP -> EXTRACT_UP
             Direction.NORTH -> EXTRACT_NORTH
             Direction.SOUTH -> EXTRACT_SOUTH
-            Direction.WEST  -> EXTRACT_WEST
-            Direction.EAST  -> EXTRACT_EAST
+            Direction.WEST -> EXTRACT_WEST
+            Direction.EAST -> EXTRACT_EAST
         }
     }
 
     fun movementDirection(direction: MovementDirection): EnhancedIcon {
         return when (direction) {
-            MovementDirection.FORWARD  -> FORWARD_ICON
+            MovementDirection.FORWARD -> FORWARD_ICON
             MovementDirection.BACKWARD -> BACKWARD_ICON
         }
     }
@@ -81,16 +83,16 @@ object IconUtils {
     fun listGateType(type: ListGateType): EnhancedIcon {
         return when (type) {
             ListGateType.ALLOW -> CHECK_ICON
-            ListGateType.DENY  -> DENY_ICON
+            ListGateType.DENY -> DENY_ICON
         }
     }
 
     fun redstoneGateType(type: RedstoneGateType): EnhancedIcon {
         return when (type) {
-            RedstoneGateType.REDSTONE_DISABLE      -> X_ICON
-            RedstoneGateType.REDSTONE_HIGH         -> REDSTONE_HIGH_ICON
-            RedstoneGateType.REDSTONE_LOW          -> REDSTONE_LOW_ICON
-            RedstoneGateType.REDSTONE_RISING_EDGE  -> REDSTONE_RISING_EDGE_ICON
+            RedstoneGateType.REDSTONE_DISABLE -> X_ICON
+            RedstoneGateType.REDSTONE_HIGH -> REDSTONE_HIGH_ICON
+            RedstoneGateType.REDSTONE_LOW -> REDSTONE_LOW_ICON
+            RedstoneGateType.REDSTONE_RISING_EDGE -> REDSTONE_RISING_EDGE_ICON
             RedstoneGateType.REDSTONE_FALLING_EDGE -> REDSTONE_FALLING_EDGE_ICON
         }
     }
@@ -98,7 +100,7 @@ object IconUtils {
     fun transpositionerSide(side: TranspositionerSide): EnhancedIcon {
         return when (side) {
             TranspositionerSide.FRONT -> FORWARD_ICON
-            TranspositionerSide.BACK  -> BACKWARD_ICON
+            TranspositionerSide.BACK -> BACKWARD_ICON
         }
     }
 

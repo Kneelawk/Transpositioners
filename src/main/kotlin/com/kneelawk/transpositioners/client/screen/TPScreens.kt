@@ -9,6 +9,7 @@ object TPScreens {
         ScreenRegistry.register(TPScreenHandlers.ITEM_GATE_MK1_TYPE, ::ItemGateMk1Screen)
         ScreenRegistry.register(TPScreenHandlers.ITEM_LOGIC_GATE_TYPE, ::ItemLogicGateScreen)
         ScreenRegistry.register(TPScreenHandlers.ITEM_MOVER_MK2_TYPE, ::ItemMoverMk2Screen)
+        ScreenRegistry.register(TPScreenHandlers.ITEM_MOVER_MK3_TYPE, ::ItemMoverMk3Screen)
         ScreenRegistry.register(TPScreenHandlers.ITEM_NOT_GATE_TYPE, ::ItemNotGateScreen)
         ScreenRegistry.register(TPScreenHandlers.TRANSPOSITIONER_TYPE, ::TranspositionerScreen)
         ScreenRegistry.register(TPScreenHandlers.REDSTONE_GATE_TYPE, ::RedstoneGateScreen)

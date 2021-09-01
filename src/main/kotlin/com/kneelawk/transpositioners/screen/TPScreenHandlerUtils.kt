@@ -16,20 +16,26 @@ import net.minecraft.text.LiteralText
 import java.lang.Math.floorMod
 
 object TPScreenHandlerUtils {
+    private val NON_INTEGER_STRINGS = Regex("[^0-9]+")
+
+    fun integerStringFilter(value: String): String {
+        return value.replace(NON_INTEGER_STRINGS, "")
+    }
+
     fun openParentScreen(module: Module, player: PlayerEntity) {
         player.openHandledScreen(
             (module.path.parent?.findModule(module.context) as? NamedScreenHandlerFactory)
                 ?: when (val context = module.context) {
                     is ModuleContext.Configurator -> context.configurator
-                    is ModuleContext.Entity       -> context.entity
+                    is ModuleContext.Entity -> context.entity
                 }
         )
     }
 
     inline fun <reified E : Enum<E>> buttonCycleEnum(currentValue: E, button: Int): E {
         val amount = when (button) {
-            0    -> 1
-            1    -> -1
+            0 -> 1
+            1 -> -1
             else -> return E::class.java.enumConstants[0]
         }
         return cycleEnum(currentValue, amount)
