@@ -64,7 +64,7 @@ object TPOutlineRenderer {
     ) {
         val lines = renderCtx.consumers()!!.getBuffer(RenderLayer.LINES)
 
-        val stack = TPMatrixFixer.getStack()
+        val stack = renderCtx.matrixStack()
         stack.push()
 
         translateForFace(stack, target, outlineCtx)
