@@ -1,6 +1,8 @@
 package com.kneelawk.transpositioners.client
 
 import com.kneelawk.transpositioners.client.entity.TranspositionerEntityRenderer
+import com.kneelawk.transpositioners.client.render.TPMatrixFixer
+import com.kneelawk.transpositioners.client.render.TPOutlineRenderer
 import com.kneelawk.transpositioners.client.render.TPShaders
 import com.kneelawk.transpositioners.client.render.TranspositionerGhostRenderer
 import com.kneelawk.transpositioners.client.screen.TPScreens
@@ -29,5 +31,7 @@ fun init() {
 
     TPShaders.register()
     TPScreens.register()
+    TPMatrixFixer.register()
     TranspositionerGhostRenderer.register()
+    TPOutlineRenderer.register()
 }
