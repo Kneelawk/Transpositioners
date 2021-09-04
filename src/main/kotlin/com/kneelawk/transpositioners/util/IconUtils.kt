@@ -51,6 +51,9 @@ object IconUtils {
     val BORDER_INSET =
         NinePatchIcon(identifier("textures/gui/border_inset.png"), 16, 16, 0, 0, 16, 16, 2, 2, 2, 2, true)
 
+    val GATE_SLOT = EnhancedTextureIcon(identifier("textures/gui/gate_slot.png"), 16, 16)
+    val ITEM_GATE_SLOT = EnhancedTextureIcon(identifier("textures/gui/item_gate_slot.png"), 16, 16)
+
     fun insertionSide(direction: Direction): EnhancedIcon {
         return when (direction) {
             Direction.DOWN -> INSERT_DOWN

@@ -3,12 +3,54 @@ package com.kneelawk.transpositioners.client.screen.icon
 import com.kneelawk.transpositioners.client.render.TPRenderLayers
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
 import io.github.cottonmc.cotton.gui.widget.data.Texture
+import io.github.cottonmc.cotton.gui.widget.data.VerticalAlignment
+import io.github.cottonmc.cotton.gui.widget.icon.Icon
 import net.minecraft.client.render.*
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Identifier
+import kotlin.math.min
 
 object IconRenderingUtils {
+    fun paint(
+        icon: Icon, matrices: MatrixStack, x: Int, y: Int, width: Int, height: Int,
+        horizontalAlignment: HorizontalAlignment, verticalAlignment: VerticalAlignment
+    ) {
+        if (icon is EnhancedIcon) {
+            if (icon is ResizableIcon) {
+                icon.paint(matrices, x, y, width, height)
+            } else {
+                val (xOffset, yOffset) = calculateOffsets(width, height, horizontalAlignment, verticalAlignment, icon.baseWidth, icon.baseHeight)
+                icon.paint(matrices, x + xOffset, y + yOffset, icon.baseWidth, icon.baseHeight)
+            }
+        } else {
+            val size = min(width, height)
+            val (xOffset, yOffset) = calculateOffsets(width, height, horizontalAlignment, verticalAlignment, size, size)
+            icon.paint(matrices, x + xOffset, y + yOffset, size)
+        }
+    }
+
+    private fun calculateOffsets(
+        width: Int, height: Int,
+        horizontalAlignment: HorizontalAlignment,
+        verticalAlignment: VerticalAlignment,
+        iconWidth: Int,
+        iconHeight: Int
+    ): Pair<Int, Int> {
+        val xOffset = when (horizontalAlignment) {
+            HorizontalAlignment.LEFT -> 0
+            HorizontalAlignment.CENTER -> (width - iconWidth) / 2
+            HorizontalAlignment.RIGHT -> width - iconWidth
+        }
+        val yOffset = when (verticalAlignment) {
+            VerticalAlignment.TOP -> 0
+            VerticalAlignment.CENTER -> (height - iconHeight) / 2
+            VerticalAlignment.BOTTOM -> height - iconHeight
+        }
+        return Pair(xOffset, yOffset)
+    }
+
     fun texturedRect(
         matrices: MatrixStack,
         consumers: VertexConsumerProvider,

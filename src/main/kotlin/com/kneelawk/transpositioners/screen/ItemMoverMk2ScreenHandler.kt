@@ -4,6 +4,7 @@ import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants.str
 import com.kneelawk.transpositioners.TPConstants.tooltip
+import com.kneelawk.transpositioners.client.screen.TPBackgroundPainters
 import com.kneelawk.transpositioners.client.screen.TPScreenUtils.tooltipLine
 import com.kneelawk.transpositioners.module.ItemMoverMk2Module
 import com.kneelawk.transpositioners.module.ModuleContext
@@ -13,14 +14,18 @@ import com.kneelawk.transpositioners.net.sendToServer
 import com.kneelawk.transpositioners.net.setServerReceiver
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.addSlots
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.cycleEnum
+import com.kneelawk.transpositioners.util.IconUtils
 import com.kneelawk.transpositioners.util.IconUtils.CHECK_ICON
 import com.kneelawk.transpositioners.util.IconUtils.DENY_ICON
 import com.kneelawk.transpositioners.util.MovementDirection
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WCardPanel
+import io.github.cottonmc.cotton.gui.widget.WItemSlot
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
 import io.github.cottonmc.cotton.gui.widget.data.Insets
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.LiteralText
@@ -65,6 +70,7 @@ class ItemMoverMk2ScreenHandler(
     private val extractionSideButton: WScalableButton
     private val insertionSideSelector: WBlockSideSelector
     private val extractionSideSelector: WBlockSideSelector
+    private val gateSlots: WItemSlot
 
     private var curInsertionSide: Direction
     private var curExtractionSide: Direction
@@ -102,7 +108,7 @@ class ItemMoverMk2ScreenHandler(
         inventoryPanel.add(extractionSideButton, 2 * 18 + 9, 2 * 18)
         extractionSideButton.tooltip = listOf(tooltipLine(extractionSideT(module.extractionSide)))
 
-        addSlots(inventoryPanel, module.gates, { OPEN_MODULE.send(this, it) }, 0, 1, 5 * 18 + 9, 1 * 18)
+        gateSlots = addSlots(inventoryPanel, module.gates, { OPEN_MODULE.send(this, it) }, 0, 1, 5 * 18 + 9, 1 * 18)
 
         root.add(0, inventoryPanel)
 
@@ -184,18 +190,24 @@ class ItemMoverMk2ScreenHandler(
 
     private fun getInsertionPos() = when (module.context) {
         is ModuleContext.Configurator -> module.context.backPos
-        is ModuleContext.Entity       -> module.getInsertionPos()
+        is ModuleContext.Entity -> module.getInsertionPos()
     }
 
     private fun getExtractionPos() = when (module.context) {
         is ModuleContext.Configurator -> module.context.backPos
-        is ModuleContext.Entity       -> module.getExtractionPos()
+        is ModuleContext.Entity -> module.getExtractionPos()
     }
 
     override fun close(player: PlayerEntity) {
         insertionSideSelector.close()
         extractionSideSelector.close()
         super.close(player)
+    }
+
+    @Environment(EnvType.CLIENT)
+    override fun addPainters() {
+        super.addPainters()
+        gateSlots.backgroundPainter = TPBackgroundPainters.moduleSlot(IconUtils.ITEM_GATE_SLOT)
     }
 
     fun s2cReceiveDirectionChange(direction: MovementDirection) {

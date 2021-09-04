@@ -10,8 +10,6 @@ import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import com.kneelawk.transpositioners.proxy.CommonProxy
 import com.kneelawk.transpositioners.screen.TPScreenHandlerUtils.addSlots
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
-import io.github.cottonmc.cotton.gui.widget.WButton
-import io.github.cottonmc.cotton.gui.widget.WGridPanel
 import io.github.cottonmc.cotton.gui.widget.WItemSlot
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
 import io.github.cottonmc.cotton.gui.widget.data.Insets

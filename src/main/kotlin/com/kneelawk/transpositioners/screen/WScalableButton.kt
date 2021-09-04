@@ -1,8 +1,7 @@
 package com.kneelawk.transpositioners.screen
 
 import com.kneelawk.transpositioners.client.screen.TPScreenUtils
-import com.kneelawk.transpositioners.client.screen.icon.EnhancedIcon
-import com.kneelawk.transpositioners.client.screen.icon.ResizableIcon
+import com.kneelawk.transpositioners.client.screen.icon.IconRenderingUtils
 import com.kneelawk.transpositioners.util.IconUtils.BUTTON_DISABLED
 import com.kneelawk.transpositioners.util.IconUtils.BUTTON_HOVERED
 import com.kneelawk.transpositioners.util.IconUtils.BUTTON_REGULAR
@@ -10,6 +9,7 @@ import io.github.cottonmc.cotton.gui.client.ScreenDrawing
 import io.github.cottonmc.cotton.gui.widget.WWidget
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
 import io.github.cottonmc.cotton.gui.widget.data.InputResult
+import io.github.cottonmc.cotton.gui.widget.data.VerticalAlignment
 import io.github.cottonmc.cotton.gui.widget.icon.Icon
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -51,20 +51,11 @@ class WScalableButton(
             BUTTON_REGULAR.paint(matrices, x, y, width, height)
         }
 
-        val icon = icon
-        if (icon is EnhancedIcon) {
-            if (icon is ResizableIcon) {
-                icon.paint(matrices, x + padding, y + padding, width - padding * 2, height - padding * 2)
-            } else {
-                val xOffset = when (alignment) {
-                    HorizontalAlignment.LEFT -> padding
-                    HorizontalAlignment.CENTER -> (width - icon.baseWidth) / 2
-                    HorizontalAlignment.RIGHT -> width - icon.baseWidth - padding
-                }
-                icon.paint(matrices, x + xOffset, y + (height - icon.baseHeight) / 2, icon.baseWidth, icon.baseHeight)
-            }
-        } else {
-            icon?.paint(matrices, x + padding, y + padding, 16)
+        icon?.let {
+            IconRenderingUtils.paint(
+                it, matrices, x + padding, y + padding, width - padding * 2, height - padding * 2, alignment,
+                VerticalAlignment.CENTER
+            )
         }
 
         val label = label

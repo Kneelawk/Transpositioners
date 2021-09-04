@@ -2,14 +2,18 @@ package com.kneelawk.transpositioners.screen
 
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants.str
+import com.kneelawk.transpositioners.client.screen.TPBackgroundPainters
 import com.kneelawk.transpositioners.module.ItemNotGateModule
 import com.kneelawk.transpositioners.net.OpenModulePacketHandler
 import com.kneelawk.transpositioners.net.OpenParentPacketHandler
+import com.kneelawk.transpositioners.util.IconUtils
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WItemSlot
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
 import io.github.cottonmc.cotton.gui.widget.data.Insets
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.text.LiteralText
@@ -26,6 +30,8 @@ class ItemNotGateScreenHandler(syncId: Int, playerInventory: PlayerInventory, ov
         private val OPEN_MODULE = OpenModulePacketHandler(NET_PARENT.idData("OPEN_MODULE")) { playerInventory.player }
     }
 
+    val slot: WItemSlot
+
     init {
         setTitleAlignment(HorizontalAlignment.CENTER)
 
@@ -39,7 +45,7 @@ class ItemNotGateScreenHandler(syncId: Int, playerInventory: PlayerInventory, ov
         root.add(backButton, 0, 0)
         backButton.onClick = { OPEN_PARENT.send(this) }
 
-        val slot = WItemSlot.of(module.gates, 0)
+        slot = WItemSlot.of(module.gates, 0)
         root.add(slot, 3 * 18 + 9, 18)
         val button = WScalableButton(LiteralText("..."))
         button.enabled = module.gates.getModule(0) is NamedScreenHandlerFactory
@@ -53,5 +59,11 @@ class ItemNotGateScreenHandler(syncId: Int, playerInventory: PlayerInventory, ov
         }
 
         root.validate(this)
+    }
+
+    @Environment(EnvType.CLIENT)
+    override fun addPainters() {
+        super.addPainters()
+        slot.backgroundPainter = TPBackgroundPainters.moduleSlot(IconUtils.GATE_SLOT)
     }
 }

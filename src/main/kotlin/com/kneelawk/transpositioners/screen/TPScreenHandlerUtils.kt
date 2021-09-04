@@ -58,7 +58,7 @@ object TPScreenHandlerUtils {
         count: Int,
         x: Int,
         y: Int
-    ) {
+    ): WItemSlot {
         val slots = WItemSlot.of(modules, startIndex, count, 1)
         panel.add(slots, x, y)
         val buttons = mutableListOf<WScalableButton>()
@@ -75,6 +75,8 @@ object TPScreenHandlerUtils {
         slots.addChangeListener { _, _, index, _ ->
             buttons[index - startIndex].enabled = modules.getModule(index) is NamedScreenHandlerFactory
         }
+
+        return slots
     }
 
     fun handleGhostSlots(

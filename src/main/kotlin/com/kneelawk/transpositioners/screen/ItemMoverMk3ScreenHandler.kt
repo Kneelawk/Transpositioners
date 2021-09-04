@@ -4,6 +4,7 @@ import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.McNetworkStack
 import com.kneelawk.transpositioners.TPConstants.str
 import com.kneelawk.transpositioners.TPConstants.tooltip
+import com.kneelawk.transpositioners.client.screen.TPBackgroundPainters
 import com.kneelawk.transpositioners.client.screen.TPScreenUtils
 import com.kneelawk.transpositioners.module.ItemMoverMk3Module
 import com.kneelawk.transpositioners.module.ModuleContext
@@ -16,9 +17,12 @@ import com.kneelawk.transpositioners.util.MovementDirection
 import com.kneelawk.transpositioners.util.TooltipUtils
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WCardPanel
+import io.github.cottonmc.cotton.gui.widget.WItemSlot
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment
 import io.github.cottonmc.cotton.gui.widget.data.Insets
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.LiteralText
@@ -54,6 +58,7 @@ class ItemMoverMk3ScreenHandler(
     private val extractionSideSelector: WBlockSideSelector
     private val stackSizeField: WSpecialTextField
     private val ticksPerMoveField: WSpecialTextField
+    private val gateSlots: WItemSlot
 
     private var curInsertionSide: Direction
     private var curExtractionSide: Direction
@@ -110,7 +115,7 @@ class ItemMoverMk3ScreenHandler(
             TPScreenUtils.tooltipLine(TooltipUtils.extractionSide(module.extractionSide))
         )
 
-        TPScreenHandlerUtils.addSlots(
+        gateSlots = TPScreenHandlerUtils.addSlots(
             inventoryPanel, module.gates, { OPEN_MODULE.send(this, it) }, 0, 1, 5 * 18, 1 * 18
         )
 
@@ -248,6 +253,12 @@ class ItemMoverMk3ScreenHandler(
         insertionSideSelector.close()
         extractionSideSelector.close()
         super.close(player)
+    }
+
+    @Environment(EnvType.CLIENT)
+    override fun addPainters() {
+        super.addPainters()
+        gateSlots.backgroundPainter = TPBackgroundPainters.moduleSlot(IconUtils.ITEM_GATE_SLOT)
     }
 
     fun s2cReceiveDirectionChange(direction: MovementDirection) {
