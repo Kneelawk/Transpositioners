@@ -19,16 +19,16 @@ object TPModules {
 
     fun register() {
         register(ItemGateMk1Module.Type, TPItems.ITEM_GATE_MODULE_MK1)
-        register(ItemLogicGateModule.Type, TPItems.ITEM_AND_GATE_MODULE_MK1)
-        register(ItemLogicGateModule.Type, TPItems.ITEM_AND_GATE_MODULE_MK2)
-        register(ItemLogicGateModule.Type, TPItems.ITEM_AND_GATE_MODULE_MK3)
-        register(ItemLogicGateModule.Type, TPItems.ITEM_OR_GATE_MODULE_MK1)
-        register(ItemLogicGateModule.Type, TPItems.ITEM_OR_GATE_MODULE_MK2)
-        register(ItemLogicGateModule.Type, TPItems.ITEM_OR_GATE_MODULE_MK3)
+        register(LogicGateModule.Type, TPItems.AND_GATE_MODULE_MK1)
+        register(LogicGateModule.Type, TPItems.AND_GATE_MODULE_MK2)
+        register(LogicGateModule.Type, TPItems.AND_GATE_MODULE_MK3)
+        register(LogicGateModule.Type, TPItems.OR_GATE_MODULE_MK1)
+        register(LogicGateModule.Type, TPItems.OR_GATE_MODULE_MK2)
+        register(LogicGateModule.Type, TPItems.OR_GATE_MODULE_MK3)
         register(ItemMoverMk1Module.Type, TPItems.ITEM_MOVER_MODULE_MK1)
         register(ItemMoverMk2Module.Type, TPItems.ITEM_MOVER_MODULE_MK2)
         register(ItemMoverMk3Module.Type, TPItems.ITEM_MOVER_MODULE_MK3)
-        register(ItemNotGateModule.Type, TPItems.ITEM_NOT_GATE_MODULE)
+        register(NotGateModule.Type, TPItems.NOT_GATE_MODULE)
         register(RedstoneGateModule.Type, TPItems.REDSTONE_GATE_MODULE)
     }
 

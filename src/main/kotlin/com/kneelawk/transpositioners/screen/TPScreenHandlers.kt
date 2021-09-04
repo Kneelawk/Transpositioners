@@ -12,18 +12,18 @@ import kotlin.contracts.contract
 object TPScreenHandlers {
     val MODULE_CONFIGURATOR_ID = identifier("module_configurator")
     val ITEM_GATE_MK1_ID = identifier("item_gate_mk1")
-    val ITEM_LOGIC_GATE_ID = identifier("item_logic_gate")
     val ITEM_MOVER_MK2_ID = identifier("item_mover_mk2")
     val ITEM_MOVER_MK3_ID = identifier("item_mover_mk3")
-    val ITEM_NOT_GATE_ID = identifier("item_not_gate")
+    val LOGIC_GATE_ID = identifier("logic_gate")
+    val NOT_GATE_ID = identifier("not_gate")
     val TRANSPOSITIONER_ID = identifier("transpositioner")
     val REDSTONE_GATE_ID = identifier("redstone_gate")
     lateinit var MODULE_CONFIGURATOR_TYPE: ScreenHandlerType<ModuleConfiguratorScreenHandler>
     lateinit var ITEM_GATE_MK1_TYPE: ScreenHandlerType<ItemGateMk1ScreenHandler>
-    lateinit var ITEM_LOGIC_GATE_TYPE: ScreenHandlerType<ItemLogicGateScreenHandler>
+    lateinit var LOGIC_GATE_TYPE: ScreenHandlerType<LogicGateScreenHandler>
     lateinit var ITEM_MOVER_MK2_TYPE: ScreenHandlerType<ItemMoverMk2ScreenHandler>
     lateinit var ITEM_MOVER_MK3_TYPE: ScreenHandlerType<ItemMoverMk3ScreenHandler>
-    lateinit var ITEM_NOT_GATE_TYPE: ScreenHandlerType<ItemNotGateScreenHandler>
+    lateinit var NOT_GATE_TYPE: ScreenHandlerType<NotGateScreenHandler>
     lateinit var TRANSPOSITIONER_TYPE: ScreenHandlerType<TranspositionerScreenHandler>
     lateinit var REDSTONE_GATE_TYPE: ScreenHandlerType<RedstoneGateScreenHandler>
 
@@ -41,11 +41,11 @@ object TPScreenHandlers {
 
             ItemGateMk1ScreenHandler(syncId, playerInventory, module)
         }
-        ITEM_LOGIC_GATE_TYPE = registerExtended(ITEM_LOGIC_GATE_ID) { syncId, playerInventory, buf ->
+        LOGIC_GATE_TYPE = registerExtended(LOGIC_GATE_ID) { syncId, playerInventory, buf ->
             val module = Module.readModulePath(playerInventory.player.world, buf)
-            checkType<ItemLogicGateModule>(module)
+            checkType<LogicGateModule>(module)
 
-            ItemLogicGateScreenHandler(syncId, playerInventory, module)
+            LogicGateScreenHandler(syncId, playerInventory, module)
         }
         ITEM_MOVER_MK2_TYPE = registerExtended(ITEM_MOVER_MK2_ID) { syncId, playerInventory, buf ->
             val module = Module.readModulePath(playerInventory.player.world, buf)
@@ -65,11 +65,11 @@ object TPScreenHandlers {
 
             TranspositionerScreenHandler(syncId, playerInventory, entity)
         }
-        ITEM_NOT_GATE_TYPE = registerExtended(ITEM_NOT_GATE_ID) { syncId, playerInventory, buf ->
+        NOT_GATE_TYPE = registerExtended(NOT_GATE_ID) { syncId, playerInventory, buf ->
             val module = Module.readModulePath(playerInventory.player.world, buf)
-            checkType<ItemNotGateModule>(module)
+            checkType<NotGateModule>(module)
 
-            ItemNotGateScreenHandler(syncId, playerInventory, module)
+            NotGateScreenHandler(syncId, playerInventory, module)
         }
         REDSTONE_GATE_TYPE = registerExtended(REDSTONE_GATE_ID) { syncId, playerInventory, buf ->
             val module = Module.readModulePath(playerInventory.player.world, buf)

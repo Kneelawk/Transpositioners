@@ -38,13 +38,13 @@ object TPItems {
 
     val REDSTONE_GATE_MODULE = ModuleItem(MODULE_ITEM_SETTINGS)
 
-    val ITEM_AND_GATE_MODULE_MK1 = ModuleItem(MODULE_ITEM_SETTINGS)
-    val ITEM_AND_GATE_MODULE_MK2 = ModuleItem(MODULE_ITEM_SETTINGS)
-    val ITEM_AND_GATE_MODULE_MK3 = ModuleItem(MODULE_ITEM_SETTINGS)
-    val ITEM_NOT_GATE_MODULE = ModuleItem(MODULE_ITEM_SETTINGS)
-    val ITEM_OR_GATE_MODULE_MK1 = ModuleItem(MODULE_ITEM_SETTINGS)
-    val ITEM_OR_GATE_MODULE_MK2 = ModuleItem(MODULE_ITEM_SETTINGS)
-    val ITEM_OR_GATE_MODULE_MK3 = ModuleItem(MODULE_ITEM_SETTINGS)
+    val AND_GATE_MODULE_MK1 = ModuleItem(MODULE_ITEM_SETTINGS)
+    val AND_GATE_MODULE_MK2 = ModuleItem(MODULE_ITEM_SETTINGS)
+    val AND_GATE_MODULE_MK3 = ModuleItem(MODULE_ITEM_SETTINGS)
+    val NOT_GATE_MODULE = ModuleItem(MODULE_ITEM_SETTINGS)
+    val OR_GATE_MODULE_MK1 = ModuleItem(MODULE_ITEM_SETTINGS)
+    val OR_GATE_MODULE_MK2 = ModuleItem(MODULE_ITEM_SETTINGS)
+    val OR_GATE_MODULE_MK3 = ModuleItem(MODULE_ITEM_SETTINGS)
 
     fun register() {
         register(MODULE_BASE_MK1, "module_base_mk1")
@@ -63,13 +63,13 @@ object TPItems {
         register(ITEM_GATE_MODULE_MK1, "item_gate_module_mk1")
         register(ITEM_GATE_MODULE_MK2, "item_gate_module_mk2")
         register(REDSTONE_GATE_MODULE, "redstone_gate_module")
-        register(ITEM_AND_GATE_MODULE_MK1, "item_and_gate_module_mk1")
-        register(ITEM_AND_GATE_MODULE_MK2, "item_and_gate_module_mk2")
-        register(ITEM_AND_GATE_MODULE_MK3, "item_and_gate_module_mk3")
-        register(ITEM_NOT_GATE_MODULE, "item_not_gate_module")
-        register(ITEM_OR_GATE_MODULE_MK1, "item_or_gate_module_mk1")
-        register(ITEM_OR_GATE_MODULE_MK2, "item_or_gate_module_mk2")
-        register(ITEM_OR_GATE_MODULE_MK3, "item_or_gate_module_mk3")
+        register(AND_GATE_MODULE_MK1, "and_gate_module_mk1")
+        register(AND_GATE_MODULE_MK2, "and_gate_module_mk2")
+        register(AND_GATE_MODULE_MK3, "and_gate_module_mk3")
+        register(NOT_GATE_MODULE, "not_gate_module")
+        register(OR_GATE_MODULE_MK1, "or_gate_module_mk1")
+        register(OR_GATE_MODULE_MK2, "or_gate_module_mk2")
+        register(OR_GATE_MODULE_MK3, "or_gate_module_mk3")
 
         UseBlockCallback.EVENT.register { player, _, hand, hitResult ->
             if (!player.isSpectator) {
