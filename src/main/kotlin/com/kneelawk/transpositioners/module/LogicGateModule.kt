@@ -14,6 +14,8 @@ import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.inventory.Inventory
+import net.minecraft.inventory.InventoryChangedListener
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
@@ -26,7 +28,7 @@ import net.minecraft.world.World
 class LogicGateModule(
     context: ModuleContext, path: ModulePath, val mk: Int, val andGate: Boolean,
     val gates: ModuleInventory<ItemGateModule>, initialNotState: Boolean
-) : AbstractModule(Type, context, path), ItemGateModule, ExtendedScreenHandlerFactory {
+) : AbstractModule(Type, context, path), ItemGateModule, ExtendedScreenHandlerFactory, InventoryChangedListener {
     companion object {
         const val MIN_MK = 1
         const val MAX_MK = 3
@@ -90,9 +92,14 @@ class LogicGateModule(
     var notState = initialNotState
         private set
 
+    init {
+        gates.addListener(this)
+    }
+
     fun updateNotState(notState: Boolean) {
         this.notState = notState
         CHANGE_NOT_STATE.sendToClients(this)
+        markDirty()
     }
 
     override fun getItemFilter(): ItemFilter {
@@ -118,6 +125,10 @@ class LogicGateModule(
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         Module.writeModulePath(this, buf)
+    }
+
+    override fun onInventoryChanged(sender: Inventory) {
+        markDirty()
     }
 
     override fun getModule(index: Int): Module? {

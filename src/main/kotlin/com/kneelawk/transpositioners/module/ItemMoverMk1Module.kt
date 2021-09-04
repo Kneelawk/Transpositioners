@@ -27,6 +27,9 @@ class ItemMoverMk1Module(context: ModuleContext, path: ModulePath, private var l
         if (now - lastMove >= TICKS_PER_MOVE) {
             lastMove = now
 
+            // NBT has changed with lastMove update
+            markDirty()
+
             ignoreStacks.clear()
 
             val insert = getItemInsertable(frontPos, facing)

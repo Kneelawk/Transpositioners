@@ -8,6 +8,8 @@ import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.inventory.Inventory
+import net.minecraft.inventory.InventoryChangedListener
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.ScreenHandler
@@ -17,7 +19,7 @@ import net.minecraft.text.TranslatableText
 import net.minecraft.util.math.BlockPos
 
 class ModuleConfiguratorBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(TPBlockEntities.MODULE_CONFIGURATOR, pos, state),
-    ExtendedScreenHandlerFactory, ModuleContainer {
+    ExtendedScreenHandlerFactory, ModuleContainer, InventoryChangedListener {
     companion object {
         private const val MODULE_INVENTORY_TAG = "Inventory"
     }
@@ -28,6 +30,10 @@ class ModuleConfiguratorBlockEntity(pos: BlockPos, state: BlockState) : BlockEnt
         ModulePath.ROOT,
         TPModules.GLOBAL
     )
+
+    init {
+        modules.addListener(this)
+    }
 
     override fun readNbt(tag: NbtCompound) {
         super.readNbt(tag)
@@ -57,5 +63,9 @@ class ModuleConfiguratorBlockEntity(pos: BlockPos, state: BlockState) : BlockEnt
 
     override fun getModule(index: Int): Module? {
         return modules.getModule(index)
+    }
+
+    override fun onInventoryChanged(sender: Inventory) {
+        markDirty()
     }
 }

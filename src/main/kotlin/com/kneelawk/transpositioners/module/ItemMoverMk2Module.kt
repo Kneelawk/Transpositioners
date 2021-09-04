@@ -23,6 +23,8 @@ import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.inventory.Inventory
+import net.minecraft.inventory.InventoryChangedListener
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
@@ -42,7 +44,7 @@ class ItemMoverMk2Module(
     val gates: ModuleInventory<ItemGateModule>,
     private var lastMove: Long
 ) :
-    AbstractModule(Type, context, path), MoverModule, ExtendedScreenHandlerFactory {
+    AbstractModule(Type, context, path), MoverModule, ExtendedScreenHandlerFactory, InventoryChangedListener {
     companion object {
         const val MAX_STACK_SIZE = 32
         const val TICKS_PER_MOVE = 40
@@ -75,19 +77,26 @@ class ItemMoverMk2Module(
 
     private val ignoreStacks = mutableSetOf<ExactStackContainer>()
 
+    init {
+        gates.addListener(this)
+    }
+
     fun updateDirection(newDirection: MovementDirection) {
         direction = newDirection
         DIRECTION_CHANGE.sendToClients(this)
+        markDirty()
     }
 
     fun updateInsertionSide(newInsertionSide: Direction) {
         insertionSide = newInsertionSide
         INSERTION_SIDE_CHANGE.sendToClients(this)
+        markDirty()
     }
 
     fun updateExtractionSide(newExtractionSide: Direction) {
         extractionSide = newExtractionSide
         EXTRACTION_SIDE_CHANGE.sendToClients(this)
+        markDirty()
     }
 
     fun getInsertionPos() = when (direction) {
@@ -104,6 +113,7 @@ class ItemMoverMk2Module(
         val now = world.time
         if (now - lastMove >= TICKS_PER_MOVE) {
             lastMove = now
+            markDirty()
 
             ignoreStacks.clear()
 
@@ -182,6 +192,10 @@ class ItemMoverMk2Module(
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         Module.writeModulePath(this, buf)
+    }
+
+    override fun onInventoryChanged(sender: Inventory) {
+        markDirty()
     }
 
     override fun writeToTag(tag: NbtCompound) {
@@ -278,5 +292,4 @@ class ItemMoverMk2Module(
             }
         }
     }
-
 }

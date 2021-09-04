@@ -36,4 +36,8 @@ abstract class AbstractModule(
 
     override fun onRemove() {
     }
+
+    fun markDirty() {
+        context.markDirty()
+    }
 }

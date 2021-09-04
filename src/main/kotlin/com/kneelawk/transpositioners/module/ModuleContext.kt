@@ -12,6 +12,8 @@ sealed class ModuleContext : ModuleContainer {
     abstract val world: World
     abstract val facing: Direction
 
+    abstract fun markDirty()
+
     data class Entity(val entity: TranspositionerEntity) : ModuleContext() {
         // I am moving away from the property attachmentPos because it is misleading. The attachmentPos is actually in
         // front of the transpositioner.
@@ -26,6 +28,10 @@ sealed class ModuleContext : ModuleContainer {
 
         override fun getModule(index: Int): Module? {
             return entity.getModule(index)
+        }
+
+        override fun markDirty() {
+            // Entities save differently
         }
     }
 
@@ -42,6 +48,10 @@ sealed class ModuleContext : ModuleContainer {
 
         override fun getModule(index: Int): Module? {
             return configurator.getModule(index)
+        }
+
+        override fun markDirty() {
+            configurator.markDirty()
         }
     }
 }

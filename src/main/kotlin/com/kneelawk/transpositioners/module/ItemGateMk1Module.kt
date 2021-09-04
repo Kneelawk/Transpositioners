@@ -14,6 +14,8 @@ import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.inventory.Inventory
+import net.minecraft.inventory.InventoryChangedListener
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
@@ -27,7 +29,7 @@ class ItemGateMk1Module(
     context: ModuleContext, path: ModulePath, val items: TPSimpleInventory, initialGateType: ListGateType
 ) :
     AbstractModule(Type, context, path),
-    ItemGateModule, ExtendedScreenHandlerFactory {
+    ItemGateModule, ExtendedScreenHandlerFactory, InventoryChangedListener {
 
     companion object {
         private val NET_PARENT = Module.NET_ID.subType(ItemGateMk1Module::class.java, str("item_gate_mk1_module"))
@@ -41,9 +43,14 @@ class ItemGateMk1Module(
     var gateType = initialGateType
         private set
 
+    init {
+        items.addListener(this)
+    }
+
     fun updateGateType(type: ListGateType) {
         gateType = type
         GATE_TYPE_CHANGE.sendToClients(this)
+        markDirty()
     }
 
     override fun getItemFilter(): ItemFilter {
@@ -79,6 +86,10 @@ class ItemGateMk1Module(
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         Module.writeModulePath(this, buf)
+    }
+
+    override fun onInventoryChanged(sender: Inventory) {
+        markDirty()
     }
 
     object Type : ModuleType<ItemGateMk1Module> {

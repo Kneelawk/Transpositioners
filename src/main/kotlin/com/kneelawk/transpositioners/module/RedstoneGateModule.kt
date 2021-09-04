@@ -51,11 +51,13 @@ class RedstoneGateModule(
     fun updateGateType(type: RedstoneGateType) {
         gateType = type
         GATE_TYPE_CHANGE.sendToClients(this)
+        markDirty()
     }
 
     fun updateGateSide(side: TranspositionerSide) {
         gateSide = side
         GATE_SIDE_CHANGE.sendToClients(this)
+        markDirty()
     }
 
     override fun getItemFilter(): ItemFilter {
@@ -74,7 +76,12 @@ class RedstoneGateModule(
             RedstoneGateType.REDSTONE_FALLING_EDGE -> !redstoneValue && previousRedstone
         }
 
-        previousRedstone = redstoneValue
+        if (previousRedstone != redstoneValue) {
+            previousRedstone = redstoneValue
+
+            // NBT updated with previousRedstone change
+            markDirty()
+        }
 
         return if (res) {
             ConstantItemFilter.ANYTHING

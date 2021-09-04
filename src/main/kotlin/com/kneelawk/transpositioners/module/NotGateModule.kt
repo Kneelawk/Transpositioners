@@ -10,6 +10,8 @@ import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.inventory.Inventory
+import net.minecraft.inventory.InventoryChangedListener
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
@@ -19,7 +21,12 @@ import net.minecraft.text.Text
 import net.minecraft.world.World
 
 class NotGateModule(context: ModuleContext, path: ModulePath, val gates: ModuleInventory<ItemGateModule>) :
-    AbstractModule(Type, context, path), ItemGateModule, ExtendedScreenHandlerFactory {
+    AbstractModule(Type, context, path), ItemGateModule, ExtendedScreenHandlerFactory, InventoryChangedListener {
+
+    init {
+        gates.addListener(this)
+    }
+
     override fun getItemFilter(): ItemFilter {
         return gates.getModule(0)?.getItemFilter()?.negate() ?: ConstantItemFilter.ANYTHING
     }
@@ -34,6 +41,10 @@ class NotGateModule(context: ModuleContext, path: ModulePath, val gates: ModuleI
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         Module.writeModulePath(this, buf)
+    }
+
+    override fun onInventoryChanged(sender: Inventory) {
+        markDirty()
     }
 
     override fun getModule(index: Int): Module? {
