@@ -4,17 +4,16 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
-minecraft {
-    accessWidener = file("src/main/resources/transpositioners.accesswidener")
+loom {
+    accessWidenerPath = file("src/main/resources/transpositioners.accesswidener")
 }
-
 
 repositories {
     mavenCentral()
@@ -40,13 +39,13 @@ repositories {
     }
     maven {
         // Mod Menu
-        name = "TerraformersMC Archive"
-        url = "https://raw.githubusercontent.com/TerraformersMC/Archive/main/releases/"
+        name = "TerraformersMC"
+        url = "https://maven.terraformersmc.com/releases/"
     }
     maven {
         // where Grondag's mods live
-        name = "dblsaiko"
-        url = "https://maven.dblsaiko.net/"
+        name = "vram-group"
+        url = "https://maven.vram.io/"
     }
     maven {
         // Cloth Config and REI
@@ -103,29 +102,29 @@ dependencies {
     // Runtime
 
     // Mod Menu
-    modRuntime("com.terraformersmc:modmenu:${project.modmenu_version}") {
+    modRuntimeOnly("com.terraformersmc:modmenu:${project.modmenu_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
 
     // REI
-    modRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${rei_version}") {
+    modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:${rei_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
-    modRuntime("dev.architectury:architectury-fabric:${architectury_version}") {
+    modRuntimeOnly("dev.architectury:architectury-fabric:${architectury_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
 
     // Simple Pipes
-    modRuntime("alexiil.mc.mod:simplepipes-base:${project.simplepipes_version}") {
+    modRuntimeOnly("alexiil.mc.mod:simplepipes-base:${project.simplepipes_version}") {
         exclude group: "net.fabricmc.fabric-api"
         exclude module: "libnetworkstack-base"
     }
-    modRuntime("alexiil.mc.lib:libmultipart-all:${project.lmp_version}") {
+    modRuntimeOnly("alexiil.mc.lib:libmultipart-all:${project.lmp_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
 
     // Canvas
-    modRuntime("grondag:canvas-mc117-1.17:${project.canvas_version}") {
+    modRuntimeOnly("io.vram:canvas-fabric-mc117:${project.canvas_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
 
@@ -150,7 +149,7 @@ tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 
     // Minecraft 1.17 (21w19a) upwards uses Java 16.
-    it.options.release = 16
+    it.options.release = 17
 }
 
 // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
