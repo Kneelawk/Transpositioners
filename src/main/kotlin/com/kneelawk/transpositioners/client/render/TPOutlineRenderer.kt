@@ -73,8 +73,8 @@ object TPOutlineRenderer {
         stack.multiply(target.side.rotationQuaternion)
         stack.translate(-0.5, -0.5, -0.5)
 
-        val model = stack.peek().model
-        val normal = stack.peek().normal
+        val model = stack.peek().positionMatrix
+        val normal = stack.peek().normalMatrix
 
         for (line in PLACEMENT_OUTLINE) {
             val start = Vector4f(line.start)

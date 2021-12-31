@@ -83,10 +83,10 @@ class FramebufferIcon(
         consumer: VertexConsumer, matrices: MatrixStack,
         x: Int, y: Int, height: Int, width: Int
     ) {
-        consumer.vertex(matrices.peek().model, x.toFloat(), y.toFloat(), 0.0f).texture(0f, 1f).next()
-        consumer.vertex(matrices.peek().model, x.toFloat(), (y + height).toFloat(), 0.0f).texture(0f, 0f).next()
-        consumer.vertex(matrices.peek().model, (x + width).toFloat(), (y + height).toFloat(), 0.0f).texture(1f, 0f)
+        consumer.vertex(matrices.peek().positionMatrix, x.toFloat(), y.toFloat(), 0.0f).texture(0f, 1f).next()
+        consumer.vertex(matrices.peek().positionMatrix, x.toFloat(), (y + height).toFloat(), 0.0f).texture(0f, 0f).next()
+        consumer.vertex(matrices.peek().positionMatrix, (x + width).toFloat(), (y + height).toFloat(), 0.0f).texture(1f, 0f)
             .next()
-        consumer.vertex(matrices.peek().model, (x + width).toFloat(), y.toFloat(), 0.0f).texture(1f, 1f).next()
+        consumer.vertex(matrices.peek().positionMatrix, (x + width).toFloat(), y.toFloat(), 0.0f).texture(1f, 1f).next()
     }
 }

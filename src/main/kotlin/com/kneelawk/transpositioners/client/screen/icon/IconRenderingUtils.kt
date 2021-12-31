@@ -72,7 +72,7 @@ object IconRenderingUtils {
         stack: MatrixStack, consumers: VertexConsumerProvider, x: Int, y: Int, width: Int, height: Int,
         texture: Identifier, u1: Float, v1: Float, u2: Float, v2: Float, color: Int, opacity: Float
     ) {
-        val model = stack.peek().model
+        val model = stack.peek().positionMatrix
 
         var adjWidth = width
         var adjHeight = height
@@ -104,7 +104,7 @@ object IconRenderingUtils {
         matrices: MatrixStack, x: Int, y: Int, width: Int, height: Int, texture: Identifier, u1: Float, v1: Float,
         u2: Float, v2: Float, color: Int, opacity: Float
     ) {
-        val model = matrices.peek().model
+        val model = matrices.peek().positionMatrix
 
         var adjWidth = width
         var adjHeight = height

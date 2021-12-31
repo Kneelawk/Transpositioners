@@ -13,8 +13,8 @@ object TPMatrixFixer {
         WorldRenderEvents.AFTER_ENTITIES.register { context ->
             // Copy matrices from AFTER_ENTITIES because this is when they seem to be intact in both Indigo and Canvas.
             val stack = context.matrixStack()
-            origStack.peek().model.load(stack.peek().model)
-            origStack.peek().normal.load(stack.peek().normal)
+            origStack.peek().positionMatrix.load(stack.peek().positionMatrix)
+            origStack.peek().normalMatrix.load(stack.peek().normalMatrix)
             origModel.load(RenderSystem.getModelViewMatrix())
         }
     }
@@ -24,7 +24,7 @@ object TPMatrixFixer {
     fun renderSystemPush() {
         val stack = RenderSystem.getModelViewStack()
         stack.push()
-        stack.method_34425(origModel)
+        stack.multiplyPositionMatrix(origModel)
         RenderSystem.applyModelViewMatrix()
     }
 

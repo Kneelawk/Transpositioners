@@ -89,7 +89,7 @@ object TPScreenUtils {
             val tessellator = Tessellator.getInstance()
             val bufferBuilder = tessellator.buffer
             bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
-            val matrix4f = matrices.peek().model
+            val matrix4f = matrices.peek().positionMatrix
 
             fillGradient(
                 matrix4f, bufferBuilder, adjX - 3, adjY - 4, adjX + width + 3, adjY - 3, 400, -267386864, -267386864
@@ -183,7 +183,7 @@ object TPScreenUtils {
             @Environment(EnvType.CLIENT)
             override fun render(matrices: MatrixStack, provider: VertexConsumerProvider, x: Int, y: Int) {
                 MinecraftClient.getInstance().textRenderer.draw(
-                    text, x.toFloat(), y.toFloat(), -1, true, matrices.peek().model, provider, false, 0, 15728880
+                    text, x.toFloat(), y.toFloat(), -1, true, matrices.peek().positionMatrix, provider, false, 0, 15728880
                 )
             }
         }

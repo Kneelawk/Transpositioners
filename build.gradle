@@ -96,6 +96,8 @@ dependencies {
     // Satin
     modImplementation("io.github.ladysnake:satin:${satin_version}") {
         exclude group: 'net.fabricmc.fabric-api'
+        // Why does this depend on Iris?
+        exclude group: 'maven.modrinth', module: 'iris'
     }
     include "io.github.ladysnake:satin:${satin_version}"
 
@@ -124,7 +126,7 @@ dependencies {
     }
 
     // Canvas
-    modRuntimeOnly("io.vram:canvas-fabric-mc117:${project.canvas_version}") {
+    modRuntimeOnly("io.vram:canvas-fabric-mc118:${project.canvas_version}") {
         exclude group: "net.fabricmc.fabric-api"
     }
 

@@ -212,7 +212,7 @@ class WSpecialTextField(private val suggestion: Text? = null) : WWidget() {
     private fun invertedRect(matrices: MatrixStack, x: Int, y: Int, width: Int, height: Int) {
         val tessellator = Tessellator.getInstance()
         val buffer = tessellator.buffer
-        val model = matrices.peek().model
+        val model = matrices.peek().positionMatrix
         RenderSystem.setShaderColor(0.0f, 0.0f, 1.0f, 1.0f)
         RenderSystem.setShader(GameRenderer::getPositionTexShader)
         RenderSystem.disableTexture()
@@ -243,7 +243,7 @@ class WSpecialTextField(private val suggestion: Text? = null) : WWidget() {
     @Environment(EnvType.CLIENT)
     override fun onClick(x: Int, y: Int, button: Int): InputResult {
         requestFocus()
-        cursor = WTextField.getCaretPos(text, x - WTextField.OFFSET_X_TEXT)
+        cursor = getCaretPos(text, x - OFFSET_X_TEXT)
         return InputResult.PROCESSED
     }
 

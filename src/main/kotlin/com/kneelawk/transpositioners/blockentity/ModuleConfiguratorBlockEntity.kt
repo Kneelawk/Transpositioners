@@ -41,12 +41,10 @@ class ModuleConfiguratorBlockEntity(pos: BlockPos, state: BlockState) : BlockEnt
         modules.readNbtList(tag.getList(MODULE_INVENTORY_TAG, 10))
     }
 
-    override fun writeNbt(tag: NbtCompound): NbtCompound {
-        val newTag = super.writeNbt(tag)
+    override fun writeNbt(tag: NbtCompound) {
+        super.writeNbt(tag)
 
-        newTag.put(MODULE_INVENTORY_TAG, modules.toNbtList())
-
-        return newTag
+        tag.put(MODULE_INVENTORY_TAG, modules.toNbtList())
     }
 
     override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler {
