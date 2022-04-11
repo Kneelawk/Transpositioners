@@ -353,6 +353,10 @@ class ModuleInventory<M : Module>(
                     } else {
                         // remove invalid stacks (possible through mod updates)
                         stacks[i] = ItemStack.EMPTY
+
+                        // remove whatever module ended up associated with the invalid stack
+                        module.onRemove()
+                        modules[i] = null
                     }
                 }
             } else {
