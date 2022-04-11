@@ -136,7 +136,7 @@ class WBlockSideSelector(
         val fluidState = world.getFluidState(pos)
         if (!fluidState.isEmpty) {
             val bufferBuilder = immediate.getBuffer(RenderLayers.getFluidLayer(fluidState))
-            blockRenderManager.renderFluid(pos, world, bufferBuilder, fluidState)
+            blockRenderManager.renderFluid(pos, world, bufferBuilder, blockState, fluidState)
         }
 
         world.getBlockEntity(pos)?.let { be ->
