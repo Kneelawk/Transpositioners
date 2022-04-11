@@ -40,6 +40,8 @@
   "gui.transpositioners.east": "East",
   "gui.transpositioners.tab.config": "Config",
   "gui.transpositioners.tab.gates": "Gates",
+  "message.transpositioners.error.permission.player": "You do not have permission. Please contact %s for permission.",
+  "message.transpositioners.error.permission.unknown": "You do not have permission. Please contact an operator for permission.",
   "tooltip.transpositioners.direction": "Direction: %s",
   "tooltip.transpositioners.forward": "Forward",
   "tooltip.transpositioners.backward": "Backward",

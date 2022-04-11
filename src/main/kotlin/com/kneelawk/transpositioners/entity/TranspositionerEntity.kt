@@ -15,11 +15,16 @@ import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.TPConstants.tt
 import com.kneelawk.transpositioners.item.TranspositionerItem
 import com.kneelawk.transpositioners.module.*
+import com.kneelawk.transpositioners.net.sendToWatchingPlayers
+import com.kneelawk.transpositioners.net.setClientReceiver
 import com.kneelawk.transpositioners.screen.TranspositionerScreenHandler
+import com.kneelawk.transpositioners.util.PermissionHolder
+import com.kneelawk.transpositioners.util.PermissionManager
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.entity.*
+import net.minecraft.entity.damage.DamageSource
 import net.minecraft.entity.decoration.AbstractDecorationEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -37,11 +42,14 @@ import net.minecraft.util.Hand
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
+import net.minecraft.util.math.Vec3d
 import net.minecraft.world.GameRules
 import net.minecraft.world.World
 import org.apache.commons.lang3.Validate
+import java.util.*
 
-class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFactory, ModuleContainer {
+class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFactory, ModuleContainer,
+    PermissionHolder {
     companion object {
         private val NET_PARENT: ParentNetIdSingle<TranspositionerEntity> = McNetworkStack.ENTITY.subType(
             TranspositionerEntity::class.java,
@@ -51,6 +59,20 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
             NET_PARENT.idData("CHANGE_MK").setReceiver(TranspositionerEntity::receiveMkChange)
         private val ID_INSERT_MODULE: NetIdDataK<TranspositionerEntity> =
             NET_PARENT.idData("INSERT_MODULE").setReceiver(TranspositionerEntity::receiveInsertModule)
+        private val ID_CHANGE_OWNER: NetIdDataK<TranspositionerEntity> =
+            NET_PARENT.idData("CHANGE_OWNER")
+                .setClientReceiver { buf -> permissions?.let { it.owner = buf.readUuid() } }
+        private val ID_CHANGE_LOCKED: NetIdDataK<TranspositionerEntity> =
+            NET_PARENT.idData("CHANGE_LOCKED")
+                .setClientReceiver { buf -> permissions?.let { it.locked = buf.readBoolean() } }
+        private val ID_CHANGE_LIST_ALLOW: NetIdDataK<TranspositionerEntity> =
+            NET_PARENT.idData("CHANGE_LIST_ALLOW")
+                .setClientReceiver { buf -> permissions?.let { it.listAllow = buf.readBoolean() } }
+        private val ID_ADD_PLAYER: NetIdDataK<TranspositionerEntity> =
+            NET_PARENT.idData("ADD_PLAYER").setClientReceiver { permissions?.addPlayer(it.readUuid()) }
+        private val ID_REMOVE_PLAYER: NetIdDataK<TranspositionerEntity> =
+            NET_PARENT.idData("REMOVE_PLAYER").setClientReceiver { permissions?.removePlayer(it.readUuid()) }
+
 
         const val MIN_MK = 1
         const val MAX_MK = 3
@@ -68,6 +90,11 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     var mk: Int
         private set
     var modules: ModuleInventory<MoverModule>
+    override var permissions: PermissionManager? = null
+
+    /*
+     * Constructors
+     */
 
     constructor(entityType: EntityType<out TranspositionerEntity>, world: World) : super(entityType, world) {
         mk = MIN_MK
@@ -79,7 +106,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         )
     }
 
-    constructor(world: World, pos: BlockPos, direction: Direction, mk: Int) : super(
+    constructor(world: World, pos: BlockPos, player: PlayerEntity?, direction: Direction, mk: Int) : super(
         TPEntityTypes.TRANSPOSITIONER,
         world,
         pos
@@ -92,7 +119,12 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
             ModulePath.ROOT,
             TPModules.MOVERS
         )
+        permissions = PermissionManager.newDefault(player)
     }
+
+    /*
+     * Setters Stuff
+     */
 
     override fun setFacing(facing: Direction) {
         Validate.notNull(facing)
@@ -120,6 +152,10 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         }
     }
 
+    /*
+     * Mk Update Stuff
+     */
+
     fun updateMk(mk: Int) {
         if (!world.isClient) {
             this.mk = mk.coerceIn(MIN_MK, MAX_MK)
@@ -143,12 +179,16 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         setModuleCount(moduleCountByMk(mk), false)
     }
 
-    fun canInsertModule(stack: ItemStack): Boolean {
-        return modules.canInsert(stack)
+    /*
+     * Insert Module Stuff
+     */
+
+    fun canInsertModule(player: PlayerEntity?, stack: ItemStack): Boolean {
+        return hasPermission(player) && modules.canInsert(stack)
     }
 
-    fun insertModule(stack: ItemStack) {
-        if (!world.isClient && modules.canInsert(stack)) {
+    fun insertModule(player: PlayerEntity?, stack: ItemStack) {
+        if (!world.isClient && hasPermission(player) && modules.canInsert(stack)) {
             val toInsert = stack.split(1)
             sendInsertModule(toInsert)
             modules.addStack(toInsert)
@@ -168,6 +208,69 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         ctx.assertClientSide()
         modules.addStack(buf.readItemStack())
     }
+
+    /*
+     * Permission Stuff
+     */
+
+    fun hasPermission(player: PlayerEntity?): Boolean {
+        return permissions?.hasPermission(player) ?: false
+    }
+
+    fun isLocked(): Boolean {
+        return permissions?.locked ?: true
+    }
+
+    fun hasEditPermission(player: PlayerEntity?): Boolean {
+        return permissions?.canEditPermissions(player) ?: false
+    }
+
+    fun sendPermissionMessage(player: PlayerEntity?) {
+        if (player is ServerPlayerEntity) permissions?.sendPermissionError(player)
+    }
+
+    /*
+     * Permission Update Stuff
+     */
+
+    fun updateOwner(owner: UUID) {
+        permissions?.let { it.owner = owner }
+        ID_CHANGE_OWNER.sendToWatchingPlayers(world, attachmentPos, this) {
+            it.writeUuid(owner)
+        }
+    }
+
+    fun updateLocked(locked: Boolean) {
+        permissions?.let { it.locked = locked }
+        ID_CHANGE_LOCKED.sendToWatchingPlayers(world, attachmentPos, this) {
+            it.writeBoolean(locked)
+        }
+    }
+
+    fun updateListAllow(listAllow: Boolean) {
+        permissions?.let { it.listAllow = listAllow }
+        ID_CHANGE_LIST_ALLOW.sendToWatchingPlayers(world, attachmentPos, this) {
+            it.writeBoolean(listAllow)
+        }
+    }
+
+    fun addPermissionPlayer(uuid: UUID) {
+        permissions?.addPlayer(uuid)
+        ID_ADD_PLAYER.sendToWatchingPlayers(world, attachmentPos, this) {
+            it.writeUuid(uuid)
+        }
+    }
+
+    fun removePermissionPlayer(uuid: UUID) {
+        permissions?.removePlayer(uuid)
+        ID_REMOVE_PLAYER.sendToWatchingPlayers(world, attachmentPos, this) {
+            it.writeUuid(uuid)
+        }
+    }
+
+    /*
+     * Attachment Stuff
+     */
 
     override fun updateAttachmentPosition() {
         if (facing != null) {
@@ -209,6 +312,10 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         return ItemAttributes.EXTRACTABLE.get(world, pos, SearchOptions.inDirection(direction))
     }
 
+    /*
+     * Misc Stuff
+     */
+
     @Environment(EnvType.CLIENT)
     override fun shouldRender(distance: Double): Boolean {
         var d = 16.0
@@ -220,6 +327,10 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         return 0.0f
     }
 
+    /*
+     * NBT Stuff
+     */
+
     override fun writeCustomDataToNbt(tag: NbtCompound) {
         super.writeCustomDataToNbt(tag)
 
@@ -227,6 +338,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         tag.putByte("Mk", mk.toByte())
 
         tag.put("Inventory", modules.toNbtList())
+        permissions?.let { tag.put("Permissions", it.toNBT()) }
     }
 
     override fun readCustomDataFromNbt(tag: NbtCompound) {
@@ -238,7 +350,13 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         modules.clear()
         setModuleCount(moduleCountByMk(mk), false)
         if (tag.contains("Inventory")) modules.readNbtList(tag.getList("Inventory", 10))
+
+        if (tag.contains("Permissions")) permissions = PermissionManager.fromNBT(tag.getCompound("Permissions"))
     }
+
+    /*
+     * Spawn Packet Stuff
+     */
 
     override fun createSpawnPacket(): Packet<*> {
         return EntitySpawnS2CPacket(this, type, ((mk and 0x3) shl 3) or (facing.id and 0x7), decorationBlockPos)
@@ -261,12 +379,41 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         )
     }
 
+    /*
+     * Entity Dimensions Stuff
+     */
+
     override fun getWidthPixels(): Int {
         return 12
     }
 
     override fun getHeightPixels(): Int {
         return 12
+    }
+
+    /*
+     * Damamge Management Stuff
+     */
+
+    override fun damage(source: DamageSource?, amount: Float): Boolean {
+        val player = source?.attacker as? PlayerEntity
+        if (hasPermission(player) || source == DamageSource.OUT_OF_WORLD) {
+            return super.damage(source, amount)
+        }
+        return false
+    }
+
+    override fun move(movementType: MovementType?, movement: Vec3d?) {
+        // TODO: add piston funky-ness
+        if (!isLocked()) {
+            super.move(movementType, movement)
+        }
+    }
+
+    override fun addVelocity(deltaX: Double, deltaY: Double, deltaZ: Double) {
+        if (!isLocked()) {
+            super.addVelocity(deltaX, deltaY, deltaZ)
+        }
     }
 
     override fun onBreak(entity: Entity?) {
@@ -311,9 +458,17 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         world.spawnEntity(itemEntity)
     }
 
+    /*
+     * On Place
+     */
+
     override fun onPlace() {
         playSound(SoundEvents.BLOCK_PISTON_EXTEND, 1f, 1f)
     }
+
+    /*
+     * Tick Stuff
+     */
 
     override fun tick() {
         super.tick()
@@ -323,18 +478,37 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         }
     }
 
+    /*
+     * Interact Stuff
+     */
+
     override fun interact(player: PlayerEntity, hand: Hand): ActionResult {
-        return if (!player.shouldCancelInteraction()) {
-            player.openHandledScreen(this)
-            ActionResult.SUCCESS
-        } else {
-            ActionResult.PASS
+        return when {
+            !hasPermission(player) -> {
+                sendPermissionMessage(player)
+                ActionResult.FAIL
+            }
+            !player.shouldCancelInteraction() -> {
+                player.openHandledScreen(this)
+                ActionResult.SUCCESS
+            }
+            else -> {
+                ActionResult.PASS
+            }
         }
     }
+
+    /*
+     * Entity Name Stuff
+     */
 
     override fun getDefaultName(): Text {
         return tt(type.translationKey + ".mk" + mk)
     }
+
+    /*
+     * Screen-Opening Stuff
+     */
 
     override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler {
         return TranspositionerScreenHandler(syncId, inv, this)
@@ -343,6 +517,10 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeInt(id)
     }
+
+    /*
+     * ModuleContainer Stuff
+     */
 
     override fun getModule(index: Int): Module? {
         return modules.getModule(index)

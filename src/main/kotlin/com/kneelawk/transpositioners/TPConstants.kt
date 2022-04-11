@@ -30,6 +30,10 @@ object TPConstants {
         return tt("gui.$MOD_ID.$name", *args)
     }
 
+    fun message(name: String, vararg args: Any): TranslatableText {
+        return tt("message.$MOD_ID.$name", *args)
+    }
+
     fun tooltip(name: String, vararg args: Any): TranslatableText {
         return tt("tooltip.$MOD_ID.$name", *args)
     }

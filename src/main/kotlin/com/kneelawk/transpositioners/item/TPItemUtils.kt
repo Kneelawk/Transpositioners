@@ -3,6 +3,7 @@ package com.kneelawk.transpositioners.item
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.EntityHitResult
 import net.minecraft.util.math.Box
@@ -14,8 +15,7 @@ object TPItemUtils {
 
     fun tryOpenTranspositioner(world: World, player: PlayerEntity, hand: Hand): Boolean {
         return raycast(player)?.let { entity ->
-            entity.interact(player, hand)
-            true
+            entity.interact(player, hand) != ActionResult.FAIL
         } ?: false
     }
 

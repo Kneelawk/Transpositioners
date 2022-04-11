@@ -22,8 +22,8 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
             if (player.isSneaking) {
                 TPItemUtils.raycast(player)?.let { entity ->
                     val stack = context.stack
-                    if (entity.canInsertModule(stack)) {
-                        entity.insertModule(stack)
+                    if (entity.canInsertModule(player, stack)) {
+                        entity.insertModule(player, stack)
                         ActionResult.SUCCESS
                     } else {
                         ActionResult.FAIL
@@ -41,8 +41,8 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
         val stack = user.getStackInHand(hand)
         return if (user.isSneaking) {
             TPItemUtils.raycast(user)?.let { entity ->
-                if (entity.canInsertModule(stack)) {
-                    entity.insertModule(stack)
+                if (entity.canInsertModule(user, stack)) {
+                    entity.insertModule(user, stack)
                     TypedActionResult.success(stack)
                 } else {
                     TypedActionResult.fail(stack)
