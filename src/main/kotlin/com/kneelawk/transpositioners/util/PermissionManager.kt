@@ -120,4 +120,8 @@ class PermissionManager(var owner: UUID?, var locked: Boolean, playerSet: Set<UU
         // if !listAllow, then people in the player list are excluded
         return !listAllow
     }
+
+    override fun toString(): String {
+        return "PermissionManager(owner=$owner, locked=$locked, listAllow=$listAllow, playerSet=$playerSet)"
+    }
 }

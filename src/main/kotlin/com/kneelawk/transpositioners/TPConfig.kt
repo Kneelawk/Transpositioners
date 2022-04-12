@@ -12,12 +12,12 @@ class TPConfig {
         private val configFile = FabricLoader.getInstance().configDir.resolve("transpositioners.json")
 
         private fun load(): TPConfig {
-            val gson = GsonBuilder().setLenient().create()
+            val gson = GsonBuilder().setLenient().setPrettyPrinting().create()
 
             return try {
-                val reader = configFile.reader()
-
-                gson.fromJson(reader, TPConfig::class.java)
+                configFile.reader().use { reader ->
+                    gson.fromJson(reader, TPConfig::class.java)
+                }
             } catch (_: Exception) {
                 val config = TPConfig()
 
@@ -25,7 +25,9 @@ class TPConfig {
                     configFile.parent.createDirectories()
                 }
 
-                gson.toJson(config, configFile.writer())
+                configFile.writer().use { writer ->
+                    gson.toJson(config, writer)
+                }
 
                 config
             }

@@ -7,6 +7,7 @@ import alexiil.mc.lib.attributes.item.ItemInsertable
 import alexiil.mc.lib.attributes.item.impl.EmptyItemExtractable
 import alexiil.mc.lib.attributes.item.impl.RejectingItemInsertable
 import alexiil.mc.lib.net.IMsgReadCtx
+import alexiil.mc.lib.net.NetByteBuf
 import alexiil.mc.lib.net.NetIdDataK
 import alexiil.mc.lib.net.ParentNetIdSingle
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
@@ -22,6 +23,7 @@ import com.kneelawk.transpositioners.util.PermissionHolder
 import com.kneelawk.transpositioners.util.PermissionManager
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.entity.*
 import net.minecraft.entity.damage.DamageSource
@@ -55,23 +57,25 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
             TranspositionerEntity::class.java,
             TPConstants.str("transpositioner_entity")
         )
+        private val ID_SYNC: NetIdDataK<TranspositionerEntity> =
+            NET_PARENT.idData("SYNC").setClientReceiver(TranspositionerEntity::readSync)
         private val ID_CHANGE_MK: NetIdDataK<TranspositionerEntity> =
             NET_PARENT.idData("CHANGE_MK").setReceiver(TranspositionerEntity::receiveMkChange)
         private val ID_INSERT_MODULE: NetIdDataK<TranspositionerEntity> =
             NET_PARENT.idData("INSERT_MODULE").setReceiver(TranspositionerEntity::receiveInsertModule)
         private val ID_CHANGE_OWNER: NetIdDataK<TranspositionerEntity> =
             NET_PARENT.idData("CHANGE_OWNER")
-                .setClientReceiver { buf -> permissions?.let { it.owner = buf.readUuid() } }
+                .setClientReceiver { permissions.owner = it.readUuid() }
         private val ID_CHANGE_LOCKED: NetIdDataK<TranspositionerEntity> =
             NET_PARENT.idData("CHANGE_LOCKED")
-                .setClientReceiver { buf -> permissions?.let { it.locked = buf.readBoolean() } }
+                .setClientReceiver { permissions.locked = it.readBoolean() }
         private val ID_CHANGE_LIST_ALLOW: NetIdDataK<TranspositionerEntity> =
             NET_PARENT.idData("CHANGE_LIST_ALLOW")
-                .setClientReceiver { buf -> permissions?.let { it.listAllow = buf.readBoolean() } }
+                .setClientReceiver { permissions.listAllow = it.readBoolean() }
         private val ID_ADD_PLAYER: NetIdDataK<TranspositionerEntity> =
-            NET_PARENT.idData("ADD_PLAYER").setClientReceiver { permissions?.addPlayer(it.readUuid()) }
+            NET_PARENT.idData("ADD_PLAYER").setClientReceiver { permissions.addPlayer(it.readUuid()) }
         private val ID_REMOVE_PLAYER: NetIdDataK<TranspositionerEntity> =
-            NET_PARENT.idData("REMOVE_PLAYER").setClientReceiver { permissions?.removePlayer(it.readUuid()) }
+            NET_PARENT.idData("REMOVE_PLAYER").setClientReceiver { permissions.removePlayer(it.readUuid()) }
 
 
         const val MIN_MK = 1
@@ -85,12 +89,24 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
                 else -> throw IllegalArgumentException("Unknown transpositioner mk $mk")
             }
         }
+
+        fun setupTracking() {
+            // Extremely cursed way to make sure everything is synchronized because I don't want to use vanilla's way of doing it
+            EntityTrackingEvents.START_TRACKING.register { entity, player ->
+                if (entity is TranspositionerEntity) {
+                    ID_SYNC.send(CoreMinecraftNetUtil.getConnection(player), entity) { _, buf, ctx ->
+                        ctx.assertServerSide()
+                        entity.writeSync(buf)
+                    }
+                }
+            }
+        }
     }
 
     var mk: Int
         private set
     var modules: ModuleInventory<MoverModule>
-    override var permissions: PermissionManager? = null
+    override var permissions: PermissionManager
 
     /*
      * Constructors
@@ -104,6 +120,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
             ModulePath.ROOT,
             TPModules.MOVERS
         )
+        permissions = PermissionManager.newDefault(null)
     }
 
     constructor(world: World, pos: BlockPos, player: PlayerEntity?, direction: Direction, mk: Int) : super(
@@ -214,19 +231,19 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
      */
 
     fun hasPermission(player: PlayerEntity?): Boolean {
-        return permissions?.hasPermission(player) ?: false
+        return permissions.hasPermission(player)
     }
 
     fun isLocked(): Boolean {
-        return permissions?.locked ?: true
+        return permissions.locked
     }
 
     fun hasEditPermission(player: PlayerEntity?): Boolean {
-        return permissions?.canEditPermissions(player) ?: false
+        return permissions.canEditPermissions(player)
     }
 
     fun sendPermissionMessage(player: PlayerEntity?) {
-        if (player is ServerPlayerEntity) permissions?.sendPermissionError(player)
+        if (player is ServerPlayerEntity) permissions.sendPermissionError(player)
     }
 
     /*
@@ -234,35 +251,35 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
      */
 
     fun updateOwner(owner: UUID) {
-        permissions?.let { it.owner = owner }
+        permissions.owner = owner
         ID_CHANGE_OWNER.sendToWatchingPlayers(world, attachmentPos, this) {
             it.writeUuid(owner)
         }
     }
 
     fun updateLocked(locked: Boolean) {
-        permissions?.let { it.locked = locked }
+        permissions.locked = locked
         ID_CHANGE_LOCKED.sendToWatchingPlayers(world, attachmentPos, this) {
             it.writeBoolean(locked)
         }
     }
 
     fun updateListAllow(listAllow: Boolean) {
-        permissions?.let { it.listAllow = listAllow }
+        permissions.listAllow = listAllow
         ID_CHANGE_LIST_ALLOW.sendToWatchingPlayers(world, attachmentPos, this) {
             it.writeBoolean(listAllow)
         }
     }
 
     fun addPermissionPlayer(uuid: UUID) {
-        permissions?.addPlayer(uuid)
+        permissions.addPlayer(uuid)
         ID_ADD_PLAYER.sendToWatchingPlayers(world, attachmentPos, this) {
             it.writeUuid(uuid)
         }
     }
 
     fun removePermissionPlayer(uuid: UUID) {
-        permissions?.removePlayer(uuid)
+        permissions.removePlayer(uuid)
         ID_REMOVE_PLAYER.sendToWatchingPlayers(world, attachmentPos, this) {
             it.writeUuid(uuid)
         }
@@ -334,16 +351,25 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     override fun writeCustomDataToNbt(tag: NbtCompound) {
         super.writeCustomDataToNbt(tag)
 
+        writeDataToNbt(tag)
+    }
+
+    private fun writeDataToNbt(tag: NbtCompound) {
         tag.putByte("Facing", facing.id.toByte())
         tag.putByte("Mk", mk.toByte())
 
         tag.put("Inventory", modules.toNbtList())
-        permissions?.let { tag.put("Permissions", it.toNBT()) }
+
+        tag.put("Permissions", permissions.toNBT())
     }
 
     override fun readCustomDataFromNbt(tag: NbtCompound) {
         super.readCustomDataFromNbt(tag)
 
+        readDataFromNbt(tag)
+    }
+
+    private fun readDataFromNbt(tag: NbtCompound) {
         if (tag.contains("Facing")) setFacing(Direction.byId(tag.getByte("Facing").toInt()))
         mk = if (tag.contains("Mk")) tag.getByte("Mk").toInt().coerceIn(MIN_MK, MAX_MK) else MIN_MK
 
@@ -352,6 +378,26 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
         if (tag.contains("Inventory")) modules.readNbtList(tag.getList("Inventory", 10))
 
         if (tag.contains("Permissions")) permissions = PermissionManager.fromNBT(tag.getCompound("Permissions"))
+    }
+
+    /*
+     * Server -> Client full-sync stuff
+     */
+
+    private fun writeSync(buf: NetByteBuf) {
+        // Cursed encoding of whole state into NBT for packet.
+        // This seems to make the most sense atm though, mainly because of the way ModuleInventories are stored.
+        val tag = NbtCompound()
+
+        writeDataToNbt(tag)
+
+        buf.writeNbt(tag)
+    }
+
+    private fun readSync(buf: NetByteBuf) {
+        val tag = buf.readNbt() ?: return
+
+        readDataFromNbt(tag)
     }
 
     /*
