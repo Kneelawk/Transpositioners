@@ -14,9 +14,12 @@ class OpenModulePacketHandler<T : ModuleScreenHandler>(
     init {
         netId.setReceiver { obj, buf, ctx ->
             ctx.assertServerSide()
-            (obj.module.getModule(buf.readVarInt()) as? NamedScreenHandlerFactory)?.let(
-                obj.player()::openHandledScreen
-            )
+            val player = obj.player()
+            val module = obj.module.getModule(buf.readVarInt()) ?: return@setReceiver
+
+            if (module.context.hasPermission(player)) {
+                (module as? NamedScreenHandlerFactory)?.let(player::openHandledScreen)
+            }
         }
     }
 

@@ -65,10 +65,9 @@ class PermissionManager(var owner: UUID?, var locked: Boolean, playerSet: Set<UU
         val owner = owner
         if (owner != null) {
             val server = player.server
-            val ownerName = server.playerManager.getPlayer(owner)?.displayName?.asString() ?: "an operator"
+            val ownerName = server.userCache.getByUuid(owner).orNull()?.name ?: "an operator"
             player.sendMessage(
-                message(
-                    "error.permission.player", LiteralText(ownerName).styled { it.withFormatting(Formatting.BLUE) }),
+                message("error.permission.player", LiteralText(ownerName).formatted(Formatting.BLUE)),
                 false
             )
         } else {

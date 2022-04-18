@@ -9,7 +9,7 @@ object TooltipUtils {
     fun movementDirection(direction: MovementDirection): Text {
         return tooltip(
             "direction",
-            tooltip(direction.name.toLowerCase()).apply {
+            tooltip(direction.name.lowercase()).apply {
                 when (direction) {
                     MovementDirection.FORWARD -> formatted(Formatting.GREEN)
                     MovementDirection.BACKWARD -> formatted(Formatting.BLUE)
@@ -45,7 +45,7 @@ object TooltipUtils {
     fun ticksPerMove(ticksPerMove: Int) = tooltip("ticks_per_move", ticksPerMove)
 
     fun listGateType(type: ListGateType): Text {
-        return tooltip("list_gate_type", tooltip(type.name.toLowerCase()).apply {
+        return tooltip("list_gate_type", tooltip(type.name.lowercase()).apply {
             when (type) {
                 ListGateType.ALLOW -> formatted(Formatting.GREEN)
                 ListGateType.DENY -> formatted(Formatting.RED)
@@ -54,7 +54,7 @@ object TooltipUtils {
     }
 
     fun redstoneGateType(type: RedstoneGateType): Text {
-        return tooltip("redstone_gate_type", tooltip(type.name.toLowerCase()).apply {
+        return tooltip("redstone_gate_type", tooltip(type.name.lowercase()).apply {
             when (type) {
                 RedstoneGateType.REDSTONE_DISABLE -> formatted(Formatting.DARK_GRAY)
                 RedstoneGateType.REDSTONE_HIGH -> formatted(Formatting.RED)
@@ -66,7 +66,7 @@ object TooltipUtils {
     }
 
     fun transpositionerSide(side: TranspositionerSide): Text {
-        return tooltip(side.name.toLowerCase()).apply {
+        return tooltip(side.name.lowercase()).apply {
             when (side) {
                 TranspositionerSide.FRONT -> formatted(Formatting.GREEN)
                 TranspositionerSide.BACK -> formatted(Formatting.BLUE)
@@ -84,5 +84,21 @@ object TooltipUtils {
                 formatted(Formatting.RED)
             }
         })
+    }
+
+    fun lockedState(locked: Boolean): Text {
+        return tooltip("lock_status", tooltip(if (locked) "locked" else "unlocked").apply {
+            if (locked) {
+                formatted(Formatting.DARK_BLUE)
+            } else {
+                formatted(Formatting.DARK_GREEN)
+            }
+        })
+    }
+
+    fun lockedExtra(locked: Boolean): Text {
+        return tooltip(if (locked) "locked_extra" else "unlocked_extra").apply {
+            formatted(Formatting.ITALIC)
+        }
     }
 }

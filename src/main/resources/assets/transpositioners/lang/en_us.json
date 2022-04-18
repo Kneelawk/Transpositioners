@@ -40,8 +40,10 @@
   "gui.transpositioners.east": "East",
   "gui.transpositioners.tab.config": "Config",
   "gui.transpositioners.tab.gates": "Gates",
-  "message.transpositioners.error.permission.player": "You do not have permission. Please contact %s for permission.",
-  "message.transpositioners.error.permission.unknown": "You do not have permission. Please contact an operator for permission.",
+  "gui.transpositioners.owner": "Owner: %s",
+  "gui.transpositioners.no_owner": "No owner.",
+  "message.transpositioners.error.permission.player": "You do not have permission to open this transpositioner. Please contact %s for permission.",
+  "message.transpositioners.error.permission.unknown": "You do not have permission to open this transpositioner. Please contact an operator for permission.",
   "tooltip.transpositioners.direction": "Direction: %s",
   "tooltip.transpositioners.forward": "Forward",
   "tooltip.transpositioners.backward": "Backward",
@@ -76,5 +78,13 @@
   "tooltip.transpositioners.not_state_true": "Inverted",
   "tooltip.transpositioners.not_state_false": "Not Inverted",
   "tooltip.transpositioners.field.stack_size": "Stack Size",
-  "tooltip.transpositioners.field.ticks_per_move": "Ticks Per Move"
+  "tooltip.transpositioners.field.ticks_per_move": "Ticks Per Move",
+  "tooltip.transpositioners.edit_permissions": "Edit Permissions...",
+  "tooltip.transpositioners.locked": "Locked",
+  "tooltip.transpositioners.unlocked": "Unlocked",
+  "tooltip.transpositioners.lock_status": "Status: %s",
+  "tooltip.transpositioners.locked_extra": "Only players with permission can open this transpositioner.",
+  "tooltip.transpositioners.unlocked_extra": "All players can open this transpositioner.",
+  "tooltip.transpositioners.add_player": "Add Player",
+  "tooltip.transpositioners.remove_player": "Remove Player"
 }

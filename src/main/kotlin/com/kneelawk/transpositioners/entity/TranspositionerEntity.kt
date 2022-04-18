@@ -16,7 +16,7 @@ import com.kneelawk.transpositioners.TPConstants
 import com.kneelawk.transpositioners.TPConstants.tt
 import com.kneelawk.transpositioners.item.TranspositionerItem
 import com.kneelawk.transpositioners.module.*
-import com.kneelawk.transpositioners.net.sendToWatchingPlayers
+import com.kneelawk.transpositioners.net.sendToWatchingClients
 import com.kneelawk.transpositioners.net.setClientReceiver
 import com.kneelawk.transpositioners.screen.TranspositionerScreenHandler
 import com.kneelawk.transpositioners.util.PermissionHolder
@@ -25,6 +25,7 @@ import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
+import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.*
 import net.minecraft.entity.damage.DamageSource
 import net.minecraft.entity.decoration.AbstractDecorationEntity
@@ -67,8 +68,11 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
             NET_PARENT.idData("CHANGE_OWNER")
                 .setClientReceiver { permissions.owner = it.readUuid() }
         private val ID_CHANGE_LOCKED: NetIdDataK<TranspositionerEntity> =
-            NET_PARENT.idData("CHANGE_LOCKED")
-                .setClientReceiver { permissions.locked = it.readBoolean() }
+            NET_PARENT.idData("CHANGE_LOCKED").setClientReceiver {
+                val locked = it.readBoolean()
+                permissions.locked = locked
+                withScreen { s2cReceiveLockedChange(locked) }
+            }
         private val ID_CHANGE_LIST_ALLOW: NetIdDataK<TranspositionerEntity> =
             NET_PARENT.idData("CHANGE_LIST_ALLOW")
                 .setClientReceiver { permissions.listAllow = it.readBoolean() }
@@ -243,7 +247,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     }
 
     fun sendPermissionMessage(player: PlayerEntity?) {
-        if (player is ServerPlayerEntity) permissions.sendPermissionError(player)
+        if (!world.isClient && player is ServerPlayerEntity) permissions.sendPermissionError(player)
     }
 
     /*
@@ -252,35 +256,35 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
     fun updateOwner(owner: UUID) {
         permissions.owner = owner
-        ID_CHANGE_OWNER.sendToWatchingPlayers(world, attachmentPos, this) {
+        ID_CHANGE_OWNER.sendToWatchingClients(world, attachmentPos, this) {
             it.writeUuid(owner)
         }
     }
 
     fun updateLocked(locked: Boolean) {
         permissions.locked = locked
-        ID_CHANGE_LOCKED.sendToWatchingPlayers(world, attachmentPos, this) {
+        ID_CHANGE_LOCKED.sendToWatchingClients(world, attachmentPos, this) {
             it.writeBoolean(locked)
         }
     }
 
     fun updateListAllow(listAllow: Boolean) {
         permissions.listAllow = listAllow
-        ID_CHANGE_LIST_ALLOW.sendToWatchingPlayers(world, attachmentPos, this) {
+        ID_CHANGE_LIST_ALLOW.sendToWatchingClients(world, attachmentPos, this) {
             it.writeBoolean(listAllow)
         }
     }
 
     fun addPermissionPlayer(uuid: UUID) {
         permissions.addPlayer(uuid)
-        ID_ADD_PLAYER.sendToWatchingPlayers(world, attachmentPos, this) {
+        ID_ADD_PLAYER.sendToWatchingClients(world, attachmentPos, this) {
             it.writeUuid(uuid)
         }
     }
 
     fun removePermissionPlayer(uuid: UUID) {
         permissions.removePlayer(uuid)
-        ID_REMOVE_PLAYER.sendToWatchingPlayers(world, attachmentPos, this) {
+        ID_REMOVE_PLAYER.sendToWatchingClients(world, attachmentPos, this) {
             it.writeUuid(uuid)
         }
     }
@@ -553,7 +557,7 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
     }
 
     /*
-     * Screen-Opening Stuff
+     * Screen Stuff
      */
 
     override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler {
@@ -562,6 +566,13 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
         buf.writeInt(id)
+    }
+
+    private fun withScreen(withScreen: TranspositionerScreenHandler.() -> Unit) {
+        val openScreen = MinecraftClient.getInstance().player?.currentScreenHandler
+        if (openScreen is TranspositionerScreenHandler && openScreen.entity === this) {
+            openScreen.withScreen()
+        }
     }
 
     /*

@@ -2,6 +2,7 @@ package com.kneelawk.transpositioners.module
 
 import com.kneelawk.transpositioners.blockentity.ModuleConfiguratorBlockEntity
 import com.kneelawk.transpositioners.entity.TranspositionerEntity
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
@@ -13,6 +14,7 @@ sealed class ModuleContext : ModuleContainer {
     abstract val facing: Direction
 
     abstract fun markDirty()
+    abstract fun hasPermission(player: PlayerEntity?): Boolean
 
     data class Entity(val entity: TranspositionerEntity) : ModuleContext() {
         // I am moving away from the property attachmentPos because it is misleading. The attachmentPos is actually in
@@ -33,6 +35,10 @@ sealed class ModuleContext : ModuleContainer {
         override fun markDirty() {
             // Entities save differently
         }
+
+        override fun hasPermission(player: PlayerEntity?): Boolean {
+            return entity.hasPermission(player)
+        }
     }
 
     data class Configurator(val configurator: ModuleConfiguratorBlockEntity) : ModuleContext() {
@@ -52,6 +58,11 @@ sealed class ModuleContext : ModuleContainer {
 
         override fun markDirty() {
             configurator.markDirty()
+        }
+
+        override fun hasPermission(player: PlayerEntity?): Boolean {
+            // anyone can use a configurator
+            return true
         }
     }
 }

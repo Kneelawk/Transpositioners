@@ -54,6 +54,9 @@ object IconUtils {
     val GATE_SLOT = EnhancedTextureIcon(identifier("textures/gui/gate_slot.png"), 16, 16)
     val ITEM_GATE_SLOT = EnhancedTextureIcon(identifier("textures/gui/item_gate_slot.png"), 16, 16)
 
+    val LOCKED = EnhancedTextureIcon(identifier("textures/gui/locked.png"), 16, 16)
+    val UNLOCKED = EnhancedTextureIcon(identifier("textures/gui/unlocked.png"), 16, 16)
+
     fun insertionSide(direction: Direction): EnhancedIcon {
         return when (direction) {
             Direction.DOWN -> INSERT_DOWN

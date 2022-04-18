@@ -3,12 +3,20 @@ package com.kneelawk.transpositioners.net
 import alexiil.mc.lib.net.NetByteBuf
 import alexiil.mc.lib.net.NetIdDataK
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 fun <T> NetIdDataK<T>.sendToServer(t: T, encoder: (NetByteBuf) -> Unit) {
     send(CoreMinecraftNetUtil.getClientConnection(), t) { _, buf, ctx ->
         ctx.assertClientSide()
+        encoder(buf)
+    }
+}
+
+fun <T> NetIdDataK<T>.sendToClient(t: T, player: PlayerEntity, encoder: (NetByteBuf) -> Unit) {
+    send(CoreMinecraftNetUtil.getConnection(player), t) { _, buf, ctx ->
+        ctx.assertServerSide()
         encoder(buf)
     }
 }
@@ -27,7 +35,7 @@ fun <T> NetIdDataK<T>.setClientReceiver(receiver: T.(NetByteBuf) -> Unit): NetId
     }
 }
 
-fun <T> NetIdDataK<T>.sendToWatchingPlayers(world: World, pos: BlockPos, obj: T, write: (NetByteBuf) -> Unit) {
+fun <T> NetIdDataK<T>.sendToWatchingClients(world: World, pos: BlockPos, obj: T, write: (NetByteBuf) -> Unit) {
     for (con in CoreMinecraftNetUtil.getPlayersWatching(world, pos)) {
         send(con, obj) { _, buf, ctx ->
             ctx.assertServerSide()

@@ -23,6 +23,10 @@ object TPScreenHandlerUtils {
     }
 
     fun openParentScreen(module: Module, player: PlayerEntity) {
+        if (!module.context.hasPermission(player)) {
+            return
+        }
+
         player.openHandledScreen(
             (module.path.parent?.findModule(module.context) as? NamedScreenHandlerFactory)
                 ?: when (val context = module.context) {

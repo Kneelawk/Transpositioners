@@ -3,9 +3,8 @@ package com.kneelawk.transpositioners.screen
 import com.kneelawk.transpositioners.client.screen.TPScreenUtils
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
-import io.github.cottonmc.cotton.gui.client.BackgroundPainter
 import io.github.cottonmc.cotton.gui.client.ScreenDrawing
-import io.github.cottonmc.cotton.gui.widget.WTextField
+import io.github.cottonmc.cotton.gui.impl.client.NarrationMessages
 import io.github.cottonmc.cotton.gui.widget.WWidget
 import io.github.cottonmc.cotton.gui.widget.data.InputResult
 import net.fabricmc.api.EnvType
@@ -13,52 +12,31 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.render.*
 import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.text.LiteralText
 import net.minecraft.text.Text
+import net.minecraft.text.TranslatableText
 import net.minecraft.util.math.MathHelper
 import org.lwjgl.glfw.GLFW
 import kotlin.math.max
 import kotlin.math.min
 
-class WSpecialTextField(private val suggestion: Text? = null) : WWidget() {
+/*
+ * Copied and modified from WTextField.
+ */
+class WSpecialTextField(private var suggestion: Text? = null) : WWidget() {
     companion object {
-        const val OFFSET_X_TEXT = 4
+        private const val TEXT_PADDING_X = 4
+        private const val TEXT_HEIGHT = 8
+        private const val CURSOR_HEIGHT = 12
 
-        /**
-         * From an X offset past the left edge of a TextRenderer.draw, finds out what the closest caret
-         * position (division between letters) is.
-         * @param s
-         * @param x
-         * @return
-         */
-        @Environment(EnvType.CLIENT)
-        fun getCaretPos(s: String, x: Int): Int {
-            if (x <= 0) return 0
-            val font = MinecraftClient.getInstance().textRenderer
-            var lastAdvance = 0
-            for (i in 0 until s.length - 1) {
-                val advance = font.getWidth(s.substring(0, i + 1))
-                val charAdvance = advance - lastAdvance
-                if (x < advance + charAdvance / 2) return i + 1
-                lastAdvance = advance
-            }
-            return s.length
-        }
-
-        /**
-         * From a caret position, finds out what the x-offset to draw the caret is.
-         * @param s
-         * @param pos
-         * @return
-         */
-        @Environment(EnvType.CLIENT)
-        fun getCaretOffset(s: String, pos: Int): Int {
-            if (pos == 0) return 0 //-1;
-            val font =
-                MinecraftClient.getInstance().textRenderer
-            return font.getWidth(s.substring(0, pos)) + 1 //(font.isRightToLeft()) ? -ofs : ofs;
-        }
+        private const val BACKGROUND_COLOR = -0x1000000
+        private const val BORDER_COLOR_SELECTED = -0x60
+        private const val BORDER_COLOR_UNSELECTED = -0x5f5f60
+        private const val CURSOR_COLOR = -0x2f2f30
     }
 
     @Environment(EnvType.CLIENT)
@@ -68,53 +46,98 @@ class WSpecialTextField(private val suggestion: Text? = null) : WWidget() {
         private set
 
     var maxLength = 16
-        private set
-
+        set(value) {
+            field = value
+            if (text.length > value) {
+                setText(text.substring(0, value))
+            }
+        }
     var editable = true
+    var tooltip: List<TPScreenUtils.TooltipLine>? = null
 
+    private var tickCount = 0
+
+    var disabledColor = 0x707070
     var enabledColor = 0xE0E0E0
-    var uneditableColor = 0x707070
+    var suggestionColor = 0x808080
+
+    // Index of the leftmost character to be rendered.
+    private var scrollOffset = 0
 
     var cursor = 0
         private set
 
     /**
-     * If not -1, select is the "anchor point" of a selection. That is, if you hit shift+left with
-     * no existing selection, the selection will be anchored to where you were, but the cursor will
-     * move left, expanding the selection as you continue to move left. If you move to the right,
-     * eventually you'll overtake the anchor, drop the anchor at the same place and start expanding
-     * the selection rightwards instead.
+     * If not -1, select is the "anchor point" of a selection. That is, if you hit shift+left with no existing
+     * selection, the selection will be anchored to where you were, but the cursor will move left, expanding the
+     * selection as you continue to move left. If you move to the right, eventually you'll overtake the anchor, drop the
+     * anchor at the same place and start expanding the selection rightwards instead.
      */
     private var select = -1
 
-    var textFilter: ((String) -> String)? = null
     var onChanged: ((String) -> Unit)? = null
-    var tooltip: List<TPScreenUtils.TooltipLine>? = null
 
-    @Environment(EnvType.CLIENT)
-    private val backgroundPainter: BackgroundPainter? = null
+    var textPredicate: ((String) -> Boolean)? = null
+    var textFilter: ((String) -> String)? = null
 
-    fun setText(value: String) {
-        val textFilter = textFilter
-        val newText = textFilter?.invoke(value) ?: value
-        text = if (newText.length > maxLength) newText.substring(0, maxLength) else newText
-        val onChanged = onChanged
-        if (onChanged != null) onChanged(text)
+    /**
+     * Sets the text of this text field.
+     * If the text is more than the [max length][.getMaxLength],
+     * it'll be shortened to the max length.
+     *
+     * @param s the new text
+     */
+    fun setText(s: String) {
+        setTextWithResult(s)
+    }
+
+    private fun setTextWithResult(s: String): Boolean {
+        val textPredicate = textPredicate
+        if (textPredicate == null || textPredicate.invoke(s)) {
+            val shortened = if (s.length > maxLength) s.substring(0, maxLength) else s
+            text = textFilter?.invoke(shortened) ?: shortened
+            // Call change listener
+            if (onChanged != null) onChanged!!.invoke(text)
+            // Reset cursor if needed
+            if (cursor >= text.length) cursor = text.length - 1
+            return true
+        }
+        return false
+    }
+
+    override fun canResize(): Boolean {
+        return true
+    }
+
+    override fun tick() {
+        super.tick()
+        tickCount++
     }
 
     fun setCursorPos(location: Int) {
         cursor = MathHelper.clamp(location, 0, text.length)
+        scrollCursorIntoView()
     }
 
-    fun setMaxLength(max: Int) {
-        maxLength = max
-        if (text.length > max) {
-            text = text.substring(0, max)
-            onChanged?.invoke(text)
+    @Environment(EnvType.CLIENT)
+    fun scrollCursorIntoView() {
+        if (scrollOffset > cursor) {
+            scrollOffset = cursor
         }
+        if (scrollOffset < cursor && font!!.trimToWidth(
+                text.substring(scrollOffset), width - TEXT_PADDING_X * 2
+            ).length + scrollOffset < cursor
+        ) {
+            scrollOffset = cursor
+        }
+        checkScrollOffset()
     }
 
-    override fun canResize() = true
+    @Environment(EnvType.CLIENT)
+    private fun checkScrollOffset() {
+        val rightMostScrollOffset = text.length - font!!.trimToWidth(text, width - TEXT_PADDING_X * 2, true).length
+        scrollOffset = min(rightMostScrollOffset, scrollOffset)
+    }
 
     fun getSelection(): String? {
         if (select < 0) return null
@@ -130,82 +153,68 @@ class WSpecialTextField(private val suggestion: Text? = null) : WWidget() {
     }
 
     @Environment(EnvType.CLIENT)
-    private fun renderTextField(matrices: MatrixStack, x: Int, y: Int) {
-        val font = font ?: MinecraftClient.getInstance().textRenderer
-        this.font = font
-
-        val borderColor = if (this.isFocused) -0x60 else -0x5f5f60
+    private fun renderBox(matrices: MatrixStack?, x: Int, y: Int) {
+        val borderColor = if (this.isFocused) BORDER_COLOR_SELECTED else BORDER_COLOR_UNSELECTED
         ScreenDrawing.coloredRect(matrices, x - 1, y - 1, width + 2, height + 2, borderColor)
-        ScreenDrawing.coloredRect(matrices, x, y, width, height, -0x1000000)
-        val textColor = if (editable) enabledColor else uneditableColor
+        ScreenDrawing.coloredRect(matrices, x, y, width, height, BACKGROUND_COLOR)
+    }
 
-        //TODO: Scroll offset
-        val trimText = font!!.trimToWidth(text, width - OFFSET_X_TEXT)
-        val selection = select != -1
-        val focused =
-            this.isFocused //this.isFocused() && this.focusedTicks / 6 % 2 == 0 && boolean_1; //Blinks the cursor
+    @Environment(EnvType.CLIENT)
+    private fun renderText(matrices: MatrixStack?, x: Int, y: Int, visibleText: String?) {
+        val textColor = if (editable) enabledColor else disabledColor
+        font!!.drawWithShadow(
+            matrices, visibleText, (x + TEXT_PADDING_X).toFloat(), (y + (height - TEXT_HEIGHT) / 2).toFloat(), textColor
+        )
+    }
 
-        //int textWidth = font.getStringWidth(trimText);
-        //int textAnchor = (font.isRightToLeft()) ?
-        //		x + OFFSET_X_TEXT + textWidth :
-        //		x + OFFSET_X_TEXT;
-        val textX = x + OFFSET_X_TEXT
-        //(font.isRightToLeft()) ?
-        //textAnchor - textWidth :
-        //textAnchor;
-        val textY = y + (height - 8) / 2
+    @Environment(EnvType.CLIENT)
+    private fun renderCursor(matrices: MatrixStack?, x: Int, y: Int, visibleText: String) {
+        if (tickCount / 6 % 2 == 0) return
+        if (cursor < scrollOffset) return
+        if (cursor > scrollOffset + visibleText.length) return
+        val cursorOffset = font!!.getWidth(visibleText.substring(0, cursor - scrollOffset))
+        ScreenDrawing.coloredRect(
+            matrices, x + TEXT_PADDING_X + cursorOffset, y + (height - CURSOR_HEIGHT) / 2, 1, CURSOR_HEIGHT, CURSOR_COLOR
+        )
+    }
 
-        //TODO: Adjust by scroll offset
-        var adjustedCursor = cursor
-        if (adjustedCursor > trimText.length) {
-            adjustedCursor = trimText.length
-        }
-        var preCursorAdvance = textX
-        if (trimText.isNotEmpty()) {
-            val string2 = trimText.substring(0, adjustedCursor)
-            preCursorAdvance = font.drawWithShadow(matrices, string2, textX.toFloat(), textY.toFloat(), textColor)
-        }
-        if (adjustedCursor < trimText.length) {
-            font.drawWithShadow(
-                matrices, trimText.substring(adjustedCursor), (preCursorAdvance - 1).toFloat(),
-                textY.toFloat(), textColor
-            )
-        }
-        if (text.isEmpty() && suggestion != null) {
-            font.drawWithShadow(matrices, suggestion, textX.toFloat(), textY.toFloat(), -0x7f7f80)
-        }
+    @Environment(EnvType.CLIENT)
+    private fun renderSuggestion(matrices: MatrixStack?, x: Int, y: Int) {
+        if (this.suggestion == null) return
+        font!!.drawWithShadow(
+            matrices, this.suggestion, (x + TEXT_PADDING_X).toFloat(), (y + (height - TEXT_HEIGHT) / 2).toFloat(),
+            suggestionColor
+        )
+    }
 
-        //int var10002;
-        //int var10003;
-        if (focused && !selection) {
-            if (adjustedCursor < trimText.length) {
-                //int caretLoc = WTextField.getCaretOffset(text, cursor);
-                //if (caretLoc<0) {
-                //	caretLoc = textX+MinecraftClient.getInstance().textRenderer.getStringWidth(trimText)-caretLoc;
-                //} else {
-                //	caretLoc = textX+caretLoc-1;
-                //}
-                ScreenDrawing.coloredRect(matrices, preCursorAdvance - 1, textY - 2, 1, 12, -0x2f2f30)
-                //if (boolean_3) {
-                //	int var10001 = int_7 - 1;
-                //	var10002 = int_9 + 1;
-                //	var10003 = int_7 + 1;
-                //
-                //	DrawableHelper.fill(int_9, var10001, var10002, var10003 + 9, -3092272);
-            } else {
-                font.drawWithShadow(matrices, "_", preCursorAdvance.toFloat(), textY.toFloat(), textColor)
-            }
+    @Environment(EnvType.CLIENT)
+    private fun renderSelection(matrices: MatrixStack, x: Int, y: Int, visibleText: String) {
+        if (select == cursor || select == -1) return
+        val textLength = visibleText.length
+        val left = min(cursor, select)
+        val right = max(cursor, select)
+        if (right < scrollOffset || left > scrollOffset + textLength) return
+        val normalizedLeft = max(scrollOffset, left) - scrollOffset
+        val normalizedRight = min(scrollOffset + textLength, right) - scrollOffset
+        val leftCaret = font!!.getWidth(visibleText.substring(0, normalizedLeft))
+        val selectionWidth = font!!.getWidth(visibleText.substring(normalizedLeft, normalizedRight))
+        invertedRect(matrices, x + TEXT_PADDING_X + leftCaret, y + (height - CURSOR_HEIGHT) / 2, selectionWidth, CURSOR_HEIGHT)
+    }
+
+    @Environment(EnvType.CLIENT)
+    private fun renderTextField(matrices: MatrixStack, x: Int, y: Int) {
+        if (font == null) font = MinecraftClient.getInstance().textRenderer
+        checkScrollOffset()
+        val visibleText = font!!.trimToWidth(text.substring(scrollOffset), width - 2 * TEXT_PADDING_X)
+        renderBox(matrices, x, y)
+        renderText(matrices, x, y, visibleText)
+        if (text.isEmpty() && !this.isFocused) {
+            renderSuggestion(matrices, x, y)
         }
-        if (selection) {
-            var a = getCaretOffset(text, cursor)
-            var b = getCaretOffset(text, select)
-            if (b < a) {
-                val tmp = b
-                b = a
-                a = tmp
-            }
-            invertedRect(matrices, textX + a - 1, textY - 1, min(b - a, width - OFFSET_X_TEXT), 12)
+        if (this.isFocused) {
+            renderCursor(matrices, x, y, visibleText)
         }
+        renderSelection(matrices, x, y, visibleText)
     }
 
     @Environment(EnvType.CLIENT)
@@ -214,7 +223,7 @@ class WSpecialTextField(private val suggestion: Text? = null) : WWidget() {
         val buffer = tessellator.buffer
         val model = matrices.peek().positionMatrix
         RenderSystem.setShaderColor(0.0f, 0.0f, 1.0f, 1.0f)
-        RenderSystem.setShader(GameRenderer::getPositionTexShader)
+        RenderSystem.setShader { GameRenderer.getPositionTexShader() }
         RenderSystem.disableTexture()
         RenderSystem.enableColorLogicOp()
         RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE)
@@ -229,6 +238,11 @@ class WSpecialTextField(private val suggestion: Text? = null) : WWidget() {
         RenderSystem.enableTexture()
     }
 
+    fun setSuggestion(suggestion: String?): WSpecialTextField {
+        this.suggestion = suggestion?.let { LiteralText(it) }
+        return this
+    }
+
     override fun canFocus(): Boolean {
         return true
     }
@@ -236,29 +250,126 @@ class WSpecialTextField(private val suggestion: Text? = null) : WWidget() {
     override fun onFocusGained() {}
 
     @Environment(EnvType.CLIENT)
-    override fun paint(matrices: MatrixStack?, x: Int, y: Int, mouseX: Int, mouseY: Int) {
-        renderTextField(matrices!!, x, y)
+    override fun paint(matrices: MatrixStack, x: Int, y: Int, mouseX: Int, mouseY: Int) {
+        renderTextField(matrices, x, y)
     }
 
     @Environment(EnvType.CLIENT)
-    override fun onClick(x: Int, y: Int, button: Int): InputResult {
+    override fun onClick(x: Int, y: Int, button: Int): InputResult? {
         requestFocus()
-        cursor = getCaretPos(text, x - OFFSET_X_TEXT)
+        cursor = getCaretPosition(x - TEXT_PADDING_X)
+        scrollCursorIntoView()
         return InputResult.PROCESSED
     }
 
     @Environment(EnvType.CLIENT)
+    fun getCaretPosition(clickX: Int): Int {
+        if (clickX < 0) return 0
+        var lastPos = 0
+        checkScrollOffset()
+        val string = text.substring(scrollOffset)
+        for (i in string.indices) {
+            val w = font!!.getWidth(string[i].toString() + "")
+            if (lastPos + w >= clickX) {
+                if (clickX - lastPos < w / 2) {
+                    return i + scrollOffset
+                }
+            }
+            lastPos += w
+        }
+        return string.length
+    }
+
+    @Environment(EnvType.CLIENT)
     override fun onCharTyped(ch: Char) {
-        if (text.length < maxLength) {
-            //snap cursor into bounds if it went astray
-            if (cursor < 0) cursor = 0
-            if (cursor > text.length) cursor = text.length
-            val before = text.substring(0, cursor)
-            val after = text.substring(cursor, text.length)
-            val newText = before + ch + after
-            text = textFilter?.invoke(newText) ?: newText
-            cursor++
-            onChanged?.invoke(text)
+        insertText(ch.toString())
+    }
+
+    @Environment(EnvType.CLIENT)
+    private fun insertText(toInsert: String) {
+        val before: String
+        val after: String
+        if (select != -1 && select != cursor) {
+            val left = min(cursor, select)
+            val right = max(cursor, select)
+            before = text.substring(0, left)
+            after = text.substring(right)
+        } else {
+            before = text.substring(0, cursor)
+            after = text.substring(cursor)
+        }
+        if (before.length + after.length + toInsert.length > maxLength) return
+        if (setTextWithResult(before + toInsert + after)) {
+            select = -1
+            cursor = (before + toInsert).length
+            scrollCursorIntoView()
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    private fun copySelection() {
+        val selection = getSelection()
+        if (selection != null) {
+            MinecraftClient.getInstance().keyboard.clipboard = selection
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    private fun paste() {
+        val clip = MinecraftClient.getInstance().keyboard.clipboard
+        insertText(clip)
+    }
+
+    @Environment(EnvType.CLIENT)
+    private fun deleteSelection() {
+        val left = min(cursor, select)
+        val right = max(cursor, select)
+        if (setTextWithResult(text.substring(0, left) + text.substring(right))) {
+            select = -1
+            cursor = left
+            scrollCursorIntoView()
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    private fun delete(modifiers: Int, backwards: Boolean) {
+        if (select == -1 || select == cursor) {
+            select = skipCharaters(GLFW.GLFW_MOD_CONTROL and modifiers != 0, if (backwards) -1 else 1)
+        }
+        deleteSelection()
+    }
+
+    @Environment(EnvType.CLIENT)
+    private fun skipCharaters(skipMany: Boolean, direction: Int): Int {
+        if (direction != -1 && direction != 1) return cursor
+        var position = cursor
+        while (true) {
+            position += direction
+            if (position < 0) {
+                return 0
+            }
+            if (position > text.length) {
+                return text.length
+            }
+            if (!skipMany) return position
+            if (position < text.length && Character.isWhitespace(text[position])) {
+                return position
+            }
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    fun onDirectionalKey(direction: Int, modifiers: Int) {
+        if (GLFW.GLFW_MOD_SHIFT and modifiers != 0) {
+            if (select == -1 || select == cursor) select = cursor
+            cursor = skipCharaters(GLFW.GLFW_MOD_CONTROL and modifiers != 0, direction)
+        } else {
+            if (select != -1) {
+                cursor = if (direction < 0) min(cursor, select) else max(cursor, select)
+                select = -1
+            } else {
+                cursor = skipCharaters(GLFW.GLFW_MOD_CONTROL and modifiers != 0, direction)
+            }
         }
     }
 
@@ -266,113 +377,41 @@ class WSpecialTextField(private val suggestion: Text? = null) : WWidget() {
     override fun onKeyPressed(ch: Int, key: Int, modifiers: Int) {
         if (!editable) return
         if (Screen.isCopy(ch)) {
-            val selection = getSelection()
-            if (selection != null) {
-                MinecraftClient.getInstance().keyboard.clipboard = selection
-            }
+            copySelection()
             return
         } else if (Screen.isPaste(ch)) {
-            if (select != -1) {
-                var a = select
-                var b = cursor
-                if (b < a) {
-                    val tmp = b
-                    b = a
-                    a = tmp
-                }
-                val before = text.substring(0, a)
-                val after = text.substring(b)
-                val clip = MinecraftClient.getInstance().keyboard.clipboard
-                val newText = before + clip + after
-                text = textFilter?.invoke(newText) ?: newText
-                select = -1
-                cursor = (before + clip).length
-            } else {
-                val before = text.substring(0, cursor)
-                val after = text.substring(cursor, text.length)
-                val clip = MinecraftClient.getInstance().keyboard.clipboard
-                val newText = before + clip + after
-                text = textFilter?.invoke(newText) ?: newText
-                cursor += clip.length
-                if (text.length > maxLength) {
-                    text = text.substring(0, maxLength)
-                    if (cursor > text.length) cursor = text.length
-                }
-            }
-            onChanged?.invoke(text)
+            paste()
             return
         } else if (Screen.isSelectAll(ch)) {
             select = 0
             cursor = text.length
             return
         }
-
-        //System.out.println("Ch: "+ch+", Key: "+key+", Mod: "+modifiers);
-        if (modifiers == 0) {
-            if (ch == GLFW.GLFW_KEY_DELETE || ch == GLFW.GLFW_KEY_BACKSPACE) {
-                if (text.isNotEmpty() && cursor > 0) {
-                    // Sometimes there's weirdness with the cursor ending up beyond the end of the string
-                    cursor = min(cursor, text.length)
-
-                    if (select >= 0 && select != cursor) {
-                        var a = select
-                        var b = cursor
-                        if (b < a) {
-                            val tmp = b
-                            b = a
-                            a = tmp
-                        }
-
-                        val before = text.substring(0, a)
-                        val after = text.substring(b)
-
-                        val newText = before + after
-                        text = textFilter?.invoke(newText) ?: newText
-
-                        if (cursor == b) cursor = a
-
-                        select = -1
-                    } else {
-                        var before = text.substring(0, cursor)
-                        val after = text.substring(cursor, text.length)
-                        before = before.substring(0, before.length - 1)
-
-                        val newText = before + after
-                        text = textFilter?.invoke(newText) ?: newText
-
-                        cursor--
-                    }
-                    onChanged?.invoke(text)
+        when (ch) {
+            GLFW.GLFW_KEY_DELETE -> delete(modifiers, false)
+            GLFW.GLFW_KEY_BACKSPACE -> delete(modifiers, true)
+            GLFW.GLFW_KEY_LEFT -> onDirectionalKey(-1, modifiers)
+            GLFW.GLFW_KEY_RIGHT -> onDirectionalKey(1, modifiers)
+            GLFW.GLFW_KEY_HOME, GLFW.GLFW_KEY_UP -> {
+                if (GLFW.GLFW_MOD_SHIFT and modifiers == 0) {
+                    select = -1
                 }
-            } else if (ch == GLFW.GLFW_KEY_LEFT) {
-                if (select != -1) {
-                    cursor = min(cursor, select)
-                    select = -1 //Clear the selection anchor
-                } else {
-                    if (cursor > 0) cursor--
-                }
-            } else if (ch == GLFW.GLFW_KEY_RIGHT) {
-                if (select != -1) {
-                    cursor = max(cursor, select)
-                    select = -1 //Clear the selection anchor
-                } else {
-                    if (cursor < text.length) cursor++
-                }
-            } else {
-                //System.out.println("Ch: "+ch+", Key: "+key);
+                cursor = 0
             }
-        } else {
-            if (modifiers == GLFW.GLFW_MOD_SHIFT) {
-                if (ch == GLFW.GLFW_KEY_LEFT) {
-                    if (select == -1) select = cursor
-                    if (cursor > 0) cursor--
-                    if (select == cursor) select = -1
-                } else if (ch == GLFW.GLFW_KEY_RIGHT) {
-                    if (select == -1) select = cursor
-                    if (cursor < text.length) cursor++
-                    if (select == cursor) select = -1
+            GLFW.GLFW_KEY_END, GLFW.GLFW_KEY_DOWN -> {
+                if (GLFW.GLFW_MOD_SHIFT and modifiers == 0) {
+                    select = -1
                 }
+                cursor = text.length
             }
+        }
+        scrollCursorIntoView()
+    }
+
+    override fun addNarrations(builder: NarrationMessageBuilder) {
+        builder.put(NarrationPart.TITLE, TranslatableText(NarrationMessages.TEXT_FIELD_TITLE_KEY, text))
+        if (suggestion != null) {
+            builder.put(NarrationPart.HINT, TranslatableText(NarrationMessages.TEXT_FIELD_SUGGESTION_KEY, suggestion))
         }
     }
 
