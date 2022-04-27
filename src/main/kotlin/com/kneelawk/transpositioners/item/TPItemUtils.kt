@@ -13,12 +13,6 @@ import java.util.function.Predicate
 
 object TPItemUtils {
 
-    fun tryOpenTranspositioner(world: World, player: PlayerEntity, hand: Hand): Boolean {
-        return raycast(player)?.let { entity ->
-            entity.interact(player, hand) != ActionResult.FAIL
-        } ?: false
-    }
-
     fun raycast(player: PlayerEntity): TranspositionerEntity? {
         return raycastForPlayer(player)?.entity as? TranspositionerEntity
     }

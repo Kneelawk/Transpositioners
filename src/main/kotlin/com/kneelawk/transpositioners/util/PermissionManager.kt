@@ -8,11 +8,16 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.LiteralText
+import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.time.Duration
+import java.time.Instant
 import java.util.*
 
 class PermissionManager(var owner: UUID?, var locked: Boolean, playerSet: Set<UUID>, var listAllow: Boolean) {
     companion object {
+        private val ERROR_DELAY = Duration.ofSeconds(1)
+
         fun fromNBT(tag: NbtCompound): PermissionManager {
             val owner = if (tag.contains("owner")) tag.getUuid("owner") else null
             val locked = tag.getBoolean("locked")
@@ -31,6 +36,8 @@ class PermissionManager(var owner: UUID?, var locked: Boolean, playerSet: Set<UU
             return PermissionManager(ownerUUID, locked, playerList, listAllow)
         }
     }
+
+    private val erroredPlayers = mutableMapOf<UUID, Instant>()
 
     private val playerSetMut = playerSet.toMutableSet()
     val playerSet: Set<UUID>
@@ -61,17 +68,27 @@ class PermissionManager(var owner: UUID?, var locked: Boolean, playerSet: Set<UU
         playerSetMut.remove(uuid)
     }
 
+    private fun ServerPlayerEntity.trySendMessage(message: Text) {
+        // Sometimes the sendPermissionError method gets called multiple times for a single click, so this is used to
+        // prevent it from spamming the player who just clicked.
+        val now = Instant.now()
+        val cutoff = now.minus(ERROR_DELAY)
+        erroredPlayers.removeAll { _, instant -> instant.isBefore(cutoff) }
+
+        if (!erroredPlayers.contains(uuid)) {
+            erroredPlayers[uuid] = now
+            sendMessage(message, false)
+        }
+    }
+
     fun sendPermissionError(player: ServerPlayerEntity) {
         val owner = owner
         if (owner != null) {
             val server = player.server
             val ownerName = server.userCache.getByUuid(owner).orNull()?.name ?: "an operator"
-            player.sendMessage(
-                message("error.permission.player", LiteralText(ownerName).formatted(Formatting.BLUE)),
-                false
-            )
+            player.trySendMessage(message("error.permission.player", LiteralText(ownerName).formatted(Formatting.BLUE)))
         } else {
-            player.sendMessage(message("error.permission.unknown"), false)
+            player.trySendMessage(message("error.permission.unknown"))
         }
     }
 

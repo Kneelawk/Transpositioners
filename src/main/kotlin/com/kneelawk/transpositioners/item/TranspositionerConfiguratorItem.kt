@@ -1,5 +1,6 @@
 package com.kneelawk.transpositioners.item
 
+import com.kneelawk.transpositioners.util.typed
 import net.minecraft.entity.damage.DamageSource
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
@@ -18,35 +19,40 @@ class TranspositionerConfiguratorItem(settings: Settings) : Item(settings), Inte
 
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
         return context.player?.let { player ->
-            if (player.isSneaking) {
-                TPItemUtils.raycast(player)?.let { entity ->
-                    if (!context.world.isClient) {
-                        entity.damage(DamageSource.player(player), 1f)
-                    }
+            TPItemUtils.raycast(player)?.let { entity ->
+                if (context.world.isClient) {
                     ActionResult.SUCCESS
+                } else {
+                    if (player.isSneaking) {
+                        if (entity.damage(DamageSource.player(player), 1f)) {
+                            ActionResult.SUCCESS
+                        } else {
+                            ActionResult.FAIL
+                        }
+                    } else {
+                        entity.interact(player, context.hand)
+                    }
                 }
-            } else {
-                if (
-                    TPItemUtils.tryOpenTranspositioner(context.world, player, context.hand)
-                ) ActionResult.SUCCESS else null
             }
         } ?: ActionResult.FAIL
     }
 
     override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
-        val stack = user.getStackInHand(hand)
-        return if (user.isSneaking) {
-            // shift-right-click to break
-            TPItemUtils.raycast(user)?.let { entity ->
-                if (!world.isClient) {
-                    entity.damage(DamageSource.player(user), 1f)
+        return (TPItemUtils.raycast(user)?.let { entity ->
+            if (user.isSneaking) {
+                if (world.isClient) {
+                    ActionResult.SUCCESS
+                } else {
+                    // shift-right-click to break
+                    if (entity.damage(DamageSource.player(user), 1f)) {
+                        ActionResult.SUCCESS
+                    } else {
+                        ActionResult.FAIL
+                    }
                 }
-                TypedActionResult.success(stack)
-            } ?: TypedActionResult.fail(stack)
-        } else {
-            if (
-                TPItemUtils.tryOpenTranspositioner(world, user, hand)
-            ) TypedActionResult.success(stack) else TypedActionResult.fail(stack)
-        }
+            } else {
+                entity.interact(user, hand)
+            }
+        } ?: ActionResult.FAIL).typed(user.getStackInHand(hand))
     }
 }

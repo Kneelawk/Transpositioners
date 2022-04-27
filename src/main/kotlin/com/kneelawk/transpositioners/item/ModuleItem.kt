@@ -1,6 +1,7 @@
 package com.kneelawk.transpositioners.item
 
 import com.kneelawk.transpositioners.module.TPModules
+import com.kneelawk.transpositioners.util.typed
 import net.minecraft.client.item.TooltipContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
@@ -19,40 +20,43 @@ class ModuleItem(settings: Settings) : Item(settings), InteractionCanceler, Tran
 
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
         return context.player?.let { player ->
-            if (player.isSneaking) {
-                TPItemUtils.raycast(player)?.let { entity ->
-                    val stack = context.stack
-                    if (entity.canInsertModule(player, stack)) {
-                        entity.insertModule(player, stack)
-                        ActionResult.SUCCESS
+            TPItemUtils.raycast(player)?.let { entity ->
+                if (context.world.isClient) {
+                    ActionResult.SUCCESS
+                } else {
+                    if (player.isSneaking) {
+                        val stack = context.stack
+                        if (entity.canInsertModule(player, stack)) {
+                            entity.insertModule(player, stack)
+                            ActionResult.SUCCESS
+                        } else {
+                            ActionResult.FAIL
+                        }
                     } else {
-                        ActionResult.FAIL
+                        entity.interact(player, context.hand)
                     }
                 }
-            } else {
-                if (
-                    TPItemUtils.tryOpenTranspositioner(context.world, player, context.hand)
-                ) ActionResult.SUCCESS else ActionResult.PASS
             }
         } ?: ActionResult.FAIL
     }
 
     override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
-        val stack = user.getStackInHand(hand)
-        return if (user.isSneaking) {
-            TPItemUtils.raycast(user)?.let { entity ->
-                if (entity.canInsertModule(user, stack)) {
-                    entity.insertModule(user, stack)
-                    TypedActionResult.success(stack)
+        return (TPItemUtils.raycast(user)?.let { entity ->
+            if (world.isClient) {
+                ActionResult.SUCCESS
+            } else {
+                if (user.isSneaking) {
+                    if (entity.canInsertModule(user, user.getStackInHand(hand))) {
+                        entity.insertModule(user, user.getStackInHand(hand))
+                        ActionResult.SUCCESS
+                    } else {
+                        ActionResult.FAIL
+                    }
                 } else {
-                    TypedActionResult.fail(stack)
+                    entity.interact(user, hand)
                 }
-            } ?: TypedActionResult.fail(stack)
-        } else {
-            if (
-                TPItemUtils.tryOpenTranspositioner(world, user, hand)
-            ) TypedActionResult.success(stack) else TypedActionResult.pass(stack)
-        }
+            }
+        } ?: ActionResult.FAIL).typed(user.getStackInHand(hand))
     }
 
     override fun appendTooltip(

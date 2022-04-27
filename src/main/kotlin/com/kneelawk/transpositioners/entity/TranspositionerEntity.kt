@@ -446,8 +446,15 @@ class TranspositionerEntity : AbstractDecorationEntity, ExtendedScreenHandlerFac
      */
 
     override fun damage(source: DamageSource?, amount: Float): Boolean {
-        val player = source?.attacker as? PlayerEntity
-        if (hasPermission(player) || source == DamageSource.OUT_OF_WORLD) {
+        val attacker = source?.attacker
+        if (attacker is PlayerEntity) {
+            return if (hasPermission(attacker)) {
+                super.damage(source, amount)
+            } else {
+                sendPermissionMessage(attacker)
+                false
+            }
+        } else if (hasPermission(null) || source == DamageSource.OUT_OF_WORLD) {
             return super.damage(source, amount)
         }
         return false

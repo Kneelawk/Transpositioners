@@ -257,7 +257,9 @@ class TranspositionerScreenHandler(
                 }
             })
             this.playerListWidget = playerListWidget
-            playerListWidget.backgroundPainter = BackgroundPainter.SLOT
+            if (world.isClient) {
+                playerListWidget.backgroundPainter = BackgroundPainter.SLOT
+            }
 
             val lockedButton = WScalableButton(icon = if (entity.isLocked()) IconUtils.LOCKED else IconUtils.UNLOCKED)
             this.lockedButton = lockedButton
