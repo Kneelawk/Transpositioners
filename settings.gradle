@@ -1,16 +1,22 @@
 pluginManagement {
     repositories {
-        jcenter()
+        mavenCentral()
         maven {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
         gradlePluginPortal()
+        maven {
+            name = 'Cotton'
+            url = 'https://server.bbkr.space/artifactory/libs-release/'
+        }
     }
 
     plugins {
         id 'fabric-loom' version loom_version
-        id "org.jetbrains.kotlin.jvm" version kotlin_version
+        id 'org.jetbrains.kotlin.jvm' version kotlin_version
+        id 'io.github.juuxel.loom-quiltflower' version loom_quiltflower_version
+        id 'com.modrinth.minotaur' version minotaur_version
     }
 
 }

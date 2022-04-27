@@ -1,7 +1,12 @@
+import java.util.regex.Pattern
+import com.modrinth.minotaur.dependencies.ModDependency
+
 plugins {
     id 'fabric-loom'
     id 'maven-publish'
     id 'org.jetbrains.kotlin.jvm'
+    id 'io.github.juuxel.loom-quiltflower'
+    id 'com.modrinth.minotaur'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -179,6 +184,26 @@ publishing {
         // uncomment to publish to the local maven
         // mavenLocal()
     }
+}
+
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = mr_project_id
+    versionNumber = mod_version
+    versionType = mr_version_type
+    File changelogFile = rootProject.file("changelogs/changelog-v${mod_version}.md")
+    if (changelogFile.exists()) {
+        changelog = changelogFile.text
+    }
+    uploadFile = remapJar
+    additionalFiles = [sourcesJar]
+    gameVersions = Arrays.asList(mr_game_versions.split("\\s*,\\s*"))
+    loaders = Arrays.asList(mr_loaders.split("\\s*,\\s*"))
+    dependencies = [
+            new ModDependency(fabric_api_mr_project_id, "required"),
+            new ModDependency(fabric_lang_kotlin_mr_project_id, "required")
+    ]
+    syncBodyFrom = rootProject.file("README.md").text
 }
 
 compileKotlin.kotlinOptions.jvmTarget = "16"
