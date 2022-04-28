@@ -10,10 +10,10 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.Util
 
 object TPRenderLayers {
-    private val TRANSPOSITIONER_GHOST_SHADER = RenderPhase.Shader(TPShaders.TRANSPOSITIONER_GHOST::getProgram)
-    private val TRANSPOSITIONER_PLACEMENT_SHADER = RenderPhase.Shader(TPShaders.TRANSPOSITIONER_PLACEMENT::getProgram)
-    private val SIDE_SELECTOR_INDICATOR_SHADER = RenderPhase.Shader(TPShaders.SIDE_SELECTOR_INDICATOR::getProgram)
-    private val SIDE_SELECTOR_HOVER_SHADER = RenderPhase.Shader(TPShaders.SIDE_SELECTOR_HOVER::getProgram)
+    private val TRANSPOSITIONER_GHOST_SHADER = RenderPhase.Shader(TPShaders::TRANSPOSITIONER_GHOST)
+    private val TRANSPOSITIONER_PLACEMENT_SHADER = RenderPhase.Shader(TPShaders::TRANSPOSITIONER_PLACEMENT)
+    private val SIDE_SELECTOR_INDICATOR_SHADER = RenderPhase.Shader(TPShaders::SIDE_SELECTOR_INDICATOR)
+    private val SIDE_SELECTOR_HOVER_SHADER = RenderPhase.Shader(TPShaders::SIDE_SELECTOR_HOVER)
 
     val TRANSPOSITIONER_GHOST: RenderLayer = RenderLayerHelper.of(
         TPConstants.str("transpositioner_ghost"),

@@ -5,6 +5,8 @@ import net.minecraft.util.Identifier
 
 object TPConstants {
     const val MOD_ID = "transpositioners"
+    const val SHADER_PREFIX = "shaders/core/"
+    const val SHADER_CHECK_PREFIX = "shaders/core/$MOD_ID:"
 
     fun identifier(name: String): Identifier {
         return Identifier(MOD_ID, name)
