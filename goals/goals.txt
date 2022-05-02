@@ -1,0 +1,42 @@
+This file contains my random thoughts for things I want to add to this mod.
+
+Things I want to do:
+ * Separate Filters from Signals. Currently, Gates are both Filters and Signals. Filters should specifically check if an
+   item meets a condition. Signals should check if a condition is met that is not dependent on an item.
+ * Make it so that Transpositioners can be placed on things besides inventory blocks, because some modules do not need
+   to be adjacent to inventories to function.
+
+Modules I still want to add:
+ * Item Data Filter - This filter only allows items that have NBT data matching the one in its (ghost) inventory.
+   - Icon is that of a module with a split icon on it. One half is a potion, the other half is a partially damaged
+     pickaxe, and the divider is a blue line down the middle.
+ * Item Durability Filter - This filter only allows items whose remaining durability is optionally greater or less than
+   the given percentage.
+   - Icon is that of a module with a split icon on it. One half is partially damaged hoe, the other half is a partially
+     damaged pickaxe, and divider line is blue.
+ * Ref Item Mover (Mk1 & 2) - This is like an item mover but instead of moving between the two inventories adjacent to
+   the transpositioner, the mover moves between two inventories referenced by Inventory Reference modules. This module
+   would also have a filter module slot to give control over the items being moved. The Mk2 would, like the normal Mk3
+   Item Mover module, be able to control the stack size and frequency of movements.
+ * Adjacent Inventory Ref - This is an inventory reference to an adjacent inventory.
+ * Connected Inventory Ref - This is an inventory reference to an inventory in a position that can be reached from the
+   transpositioner by only traversing inventory blocks.
+ * Ender Inventory Ref - This is an inventory reference to an inventory anywhere within a certain radius.
+ * Player Inventory Ref - This is an inventory reference to a player's inventory.
+ * Inventory Contents Signal - This is a gate module that only allows items to pass if an item can be found in its
+   referenced inventory that satisfies its item gate.
+ * Storage Inventory - This module actually stores items in the Transpositioner. It can be referenced by Storage
+   Inventory Refs. There might be different Mk's with different storage amounts.
+ * Storage Inventory Ref - This is an inventory reference that can reference an inventory in another module in the same
+   Transpositioner.
+ * Crafting Inventory - This is an inventory split into two parts: input and output. The input inventory is used with
+   this module's crafting recipe to create output items that are then put into the output inventory. Both of these
+   inventories can be referenced by inventory references.
+ * Smelting Inventory - This is an inventory that is split into three parts: input, fuel, and output. Each of these
+   inventories can be referenced by inventory references. There might be a version that takes power from a power
+   reference to smelt items.
+ * Block Placer - This module will place a block that it can get from an inventory reference.
+ * Block Breaker - This module will break a block and put the item into a referenced inventory.
+ * Item User - This module will use an item. There may be a version that takes usable items from an inventory reference.
+   There should also be a way to supply items that are also in the "player"'s inventory but are not used. This could
+   possibly be a Mk1, Mk2, Mk3 kind of situation.
